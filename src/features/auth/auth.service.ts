@@ -67,7 +67,7 @@ export const AuthService = {
           error: {
             code: 400,
             message:
-              "Google did not return an idToken. Check EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.",
+              "Google did not return an idToken. Check EXPO_PUBLIC_WEB_CLIENT_ID.",
           },
         });
       }
@@ -80,18 +80,26 @@ export const AuthService = {
       return mapAuthSessionFromDto(data);
     } catch (error) {
       if (isErrorWithCode(error)) {
+        // Log the raw code so it appears in Metro/DevTools for diagnosis
+        console.log("[GoogleSignIn] error code:", error.code, "| message:", error.message);
+
         const messages: Record<string, string> = {
+          [statusCodes.SIGN_IN_CANCELLED]: "Sign-in was cancelled",
           [statusCodes.IN_PROGRESS]: "Sign-in is already in progress",
           [statusCodes.PLAY_SERVICES_NOT_AVAILABLE]:
             "Google Play Services not available or outdated",
-          [statusCodes.SIGN_IN_CANCELLED]: "Sign-in was cancelled",
+          // Code 10 = DEVELOPER_ERROR: SHA-1 not registered in Google Cloud Console
+          "10": "Google sign-in configuration error (code 10). Register your app's SHA-1 fingerprint in the Google Cloud Console.",
         };
-        const message = messages[error.code] ?? "Google sign-in failed";
+        const message =
+          messages[String(error.code)] ??
+          `Google sign-in failed (code ${error.code})`;
         throw mapAxiosErrorToAppError({
           status: 400,
           error: { code: 400, message },
         });
       }
+      console.log("[GoogleSignIn] non-code error:", error);
       throw mapAxiosErrorToAppError(error);
     }
   },
