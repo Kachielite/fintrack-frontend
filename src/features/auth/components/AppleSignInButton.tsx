@@ -1,64 +1,12 @@
 import React from "react";
-import {
-  Pressable,
-  Text,
-  View,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-} from "react-native";
+import { Pressable, Text, StyleSheet, ActivityIndicator, Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { FONTS, FONT_SIZE, RADIUS } from "@/core/common/constants/theme";
 
 interface AppleSignInButtonProps {
   onPress: () => void;
   isLoading?: boolean;
 }
-
-// Apple button uses hardcoded black/white per Apple's brand guidelines.
-// The mark body is always white on the black button background.
-function AppleMark() {
-  return (
-    <View style={aStyles.container}>
-      <View style={aStyles.body} />
-      <View style={aStyles.leaf} />
-      {/* Black circle cuts the "bite" from the apple shape */}
-      <View style={aStyles.bite} />
-    </View>
-  );
-}
-
-const aStyles = StyleSheet.create({
-  container: { width: 18, height: 20, position: "relative" },
-  body: {
-    position: "absolute",
-    bottom: 0,
-    left: 1,
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
-  },
-  leaf: {
-    position: "absolute",
-    top: 0,
-    left: 7,
-    width: 5,
-    height: 7,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 3,
-    backgroundColor: "#FFFFFF",
-    transform: [{ rotate: "10deg" }],
-  },
-  bite: {
-    position: "absolute",
-    top: 2,
-    right: 0,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: "#000000",
-  },
-});
 
 export default function AppleSignInButton({
   onPress,
@@ -79,7 +27,7 @@ export default function AppleSignInButton({
         <ActivityIndicator color="#FFFFFF" />
       ) : (
         <>
-          <AppleMark />
+          <Ionicons name="logo-apple" size={24} color="#FFFFFF" />
           <Text style={styles.label}>Continue with Apple</Text>
         </>
       )}
@@ -95,7 +43,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
+    gap: 10,
   },
   pressed: { opacity: 0.82 },
   label: {

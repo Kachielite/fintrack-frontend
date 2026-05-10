@@ -13,15 +13,23 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.fintrack"
+      "bundleIdentifier": "com.kachielite.fintrack"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F9F6F0"
       },
-      "package": "app.fintrack"
+      "package": "com.kachielite.fintrack"
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.215586258976-5tk7fhsjkkceqhso1be0rvoh74jsfr04"
+        }
+      ]
+    ]
   }
 }
