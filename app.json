@@ -22,6 +22,6 @@
       },
       "package": "app.fintrack"
     },
-    "plugins": ["expo-font", "expo-blur"]
+    "plugins": ["expo-font"]
   }
 }
