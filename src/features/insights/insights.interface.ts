@@ -1,0 +1,17 @@
+export type InsightType =
+  | "spending_pattern"
+  | "budget_warning"
+  | "goal_progress"
+  | "fx_impact"
+  | "subscription_alert"
+  | "positive_reinforcement";
+
+export interface Insight {
+  id: number;
+  type: InsightType;
+  message: string;
+  contextData: Record<string, unknown> | null;
+  isRead: boolean;
+  expiresAt: Date | null;
+  createdAt: Date;
+}
