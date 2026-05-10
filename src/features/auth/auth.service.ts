@@ -51,6 +51,8 @@ export const AuthService = {
   },
 
   loginGoogle: async (): Promise<AuthSession> => {
+    // webClientId  → EXPO_PUBLIC_WEB_CLIENT_ID  (Web/Android OAuth client — used on both platforms to obtain a server-verifiable idToken)
+    // iosClientId  → EXPO_PUBLIC_IOS_CLIENT_ID  (iOS OAuth client — drives the native iOS sign-in sheet; ignored on Android)
     GoogleSignin.configure({
       webClientId: ENV.GOOGLE_WEB_CLIENT_ID,
       iosClientId: ENV.GOOGLE_IOS_CLIENT_ID,

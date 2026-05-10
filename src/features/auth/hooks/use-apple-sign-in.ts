@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Toast } from "toastify-react-native";
+import Toast from "react-native-toast-message";
 import { AuthService } from "../auth.service";
 import { useAuthStore } from "../auth.state";
 
@@ -11,7 +11,7 @@ export function useAppleSignIn() {
     onSuccess: (session) => setSession(session),
     onError: (error: Error) => {
       console.log("[AppleSignIn] error:", error);
-      Toast.error(error.message ?? "Apple sign-in failed");
+      Toast.show({ type: "error", text1: error.message ?? "Apple sign-in failed" });
     },
   });
 

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ToastManager from "toastify-react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Toast from "react-native-toast-message";
 import * as SplashScreen from "expo-splash-screen";
 import Navigation from "@/core/navigation";
 import { useThemeStore } from "@/core/common/state/theme.state";
@@ -27,9 +28,11 @@ export default function App() {
   if (!loaded) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Navigation />
-      <ToastManager />
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <Navigation />
+        <Toast />
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
