@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Animated, StyleSheet } from "react-native";
 import { FONTS, RADIUS } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import { useFloatAnim } from "@/core/common/hooks/use-float-anim";
 
 const CURRENCIES = ["₦", "$", "£", "KSh"];
 
@@ -19,27 +20,37 @@ function chipPosition(index: number): { left: number; top: number } {
 export default function GlobeVisual() {
   const colors = useThemeColors();
 
+  const globeFloat = useFloatAnim({ amplitude: 5, period: 1900, delay: 0 });
+
+  // Each chip floats at its own pace — staggered 350 ms apart
+  const chip0 = useFloatAnim({ amplitude: 6, period: 1400, delay: 0 });
+  const chip1 = useFloatAnim({ amplitude: 5, period: 1600, delay: 350 });
+  const chip2 = useFloatAnim({ amplitude: 6, period: 1400, delay: 700 });
+  const chip3 = useFloatAnim({ amplitude: 5, period: 1600, delay: 1050 });
+  const chipFloats = [chip0, chip1, chip2, chip3];
+
   return (
     <View style={styles.container}>
-      {/* Globe circle */}
-      <View
+      {/* Globe — floats as a whole */}
+      <Animated.View
         style={[
           styles.globe,
           {
             backgroundColor: colors.primaryLight,
             borderColor: colors.border,
+            transform: [{ translateY: globeFloat }],
           },
         ]}
       >
         <View style={[styles.globeH, { backgroundColor: colors.border }]} />
         <View style={[styles.globeV, { borderColor: colors.border }]} />
-      </View>
+      </Animated.View>
 
-      {/* Currency chips */}
+      {/* Currency chips — each orbits at its own rhythm */}
       {CURRENCIES.map((symbol, i) => {
         const pos = chipPosition(i);
         return (
-          <View
+          <Animated.View
             key={symbol}
             style={[
               styles.chip,
@@ -49,13 +60,14 @@ export default function GlobeVisual() {
                 backgroundColor: colors.surface,
                 borderColor: colors.border,
                 shadowColor: colors.textPrimary,
+                transform: [{ translateY: chipFloats[i] }],
               },
             ]}
           >
             <Text style={[styles.chipText, { color: colors.textPrimary }]}>
               {symbol}
             </Text>
-          </View>
+          </Animated.View>
         );
       })}
     </View>

@@ -1,6 +1,10 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
@@ -234,6 +238,7 @@ export default function RootNavigator() {
   const onboardingComplete = useAuthStore((s) => s.onboardingComplete);
 
   const navTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
     dark: isDark,
     colors: {
       primary: colors.primary,

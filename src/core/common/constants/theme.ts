@@ -76,6 +76,7 @@ export const FONTS = {
   medium: "PlusJakartaSans_500Medium",
   semiBold: "PlusJakartaSans_600SemiBold",
   bold: "PlusJakartaSans_700Bold",
+  extraBold: "PlusJakartaSans_800ExtraBold",
   mono: "SpaceMono_400Regular",
 } as const;
 

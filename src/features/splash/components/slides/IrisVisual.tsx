@@ -1,42 +1,44 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Animated, StyleSheet } from "react-native";
 import { FONTS, FONT_SIZE, RADIUS } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import { useFloatAnim } from "@/core/common/hooks/use-float-anim";
 
 export default function IrisVisual() {
   const colors = useThemeColors();
 
+  // Avatar bobs slowly; each bubble drifts at its own pace
+  const avatarFloat      = useFloatAnim({ amplitude: 8, period: 1800, delay: 0 });
+  const bubbleLeftFloat  = useFloatAnim({ amplitude: 5, period: 1500, delay: 300 });
+  const bubbleRightFloat = useFloatAnim({ amplitude: 6, period: 1700, delay: 600 });
+
   return (
     <View style={styles.container}>
-      {/* Advisor avatar */}
-      <View style={styles.avatarWrap}>
+      {/* Advisor avatar — bobs gently */}
+      <Animated.View
+        style={[styles.avatarWrap, { transform: [{ translateY: avatarFloat }] }]}
+      >
         <View
           style={[
             styles.avatar,
             { backgroundColor: colors.primary, shadowColor: colors.primary },
           ]}
         >
-          <Text style={[styles.avatarLetter, { color: colors.onPrimary }]}>
-            I
-          </Text>
+          <Text style={[styles.avatarLetter, { color: colors.onPrimary }]}>I</Text>
         </View>
 
-        {/* Sparkle badge */}
         <View
           style={[
             styles.sparkleBadge,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
+            { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
           <Text style={[styles.sparkleIcon, { color: colors.primary }]}>✦</Text>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* "You're doing well" bubble — bottom left */}
-      <View
+      {/* "You're doing well" bubble — floats independently */}
+      <Animated.View
         style={[
           styles.bubble,
           styles.bubbleLeft,
@@ -44,26 +46,31 @@ export default function IrisVisual() {
             backgroundColor: colors.surface,
             borderColor: colors.border,
             shadowColor: colors.textPrimary,
+            transform: [{ translateY: bubbleLeftFloat }],
           },
         ]}
       >
         <Text style={[styles.bubbleTextDark, { color: colors.textPrimary }]}>
           You're doing well 👌
         </Text>
-      </View>
+      </Animated.View>
 
-      {/* "Try ₦40k dining" bubble — top right */}
-      <View
+      {/* "Try ₦40k dining" bubble — drifts at its own rhythm */}
+      <Animated.View
         style={[
           styles.bubble,
           styles.bubbleRight,
-          { backgroundColor: colors.primary, borderWidth: 0 },
+          {
+            backgroundColor: colors.primary,
+            borderWidth: 0,
+            transform: [{ translateY: bubbleRightFloat }],
+          },
         ]}
       >
         <Text style={[styles.bubbleTextLight, { color: colors.onPrimary }]}>
           Try ₦40k dining
         </Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -117,12 +124,6 @@ const styles = StyleSheet.create({
   },
   bubbleLeft: { bottom: 16, left: 0 },
   bubbleRight: { top: 20, right: 0 },
-  bubbleTextDark: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.caption,
-  },
-  bubbleTextLight: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.caption,
-  },
+  bubbleTextDark: { fontFamily: FONTS.semiBold, fontSize: FONT_SIZE.caption },
+  bubbleTextLight: { fontFamily: FONTS.semiBold, fontSize: FONT_SIZE.caption },
 });
