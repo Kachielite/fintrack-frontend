@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Animated, Pressable, StyleSheet } from "react-native";
-import { COLORS, RADIUS, SPACING } from "@/core/common/constants/theme";
+import { RADIUS, SPACING } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 
 interface SplashDotsProps {
   count: number;
@@ -15,6 +16,7 @@ function AnimatedDot({
   active: boolean;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
   const width = useRef(new Animated.Value(active ? 24 : 6)).current;
   const opacity = useRef(new Animated.Value(active ? 1 : 0.35)).current;
 
@@ -41,7 +43,7 @@ function AnimatedDot({
           styles.dot,
           {
             width,
-            backgroundColor: active ? COLORS.primary : COLORS.surface2,
+            backgroundColor: active ? colors.primary : colors.surface2,
             opacity,
           },
         ]}

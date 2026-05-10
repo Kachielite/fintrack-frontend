@@ -1,30 +1,28 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import {
-  COLORS,
-  FONTS,
-  FONT_SIZE,
-  RADIUS,
-  SPACING,
-} from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, RADIUS, SPACING } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 
 interface SplashHeaderProps {
   onSkip: () => void;
 }
 
 export default function SplashHeader({ onSkip }: SplashHeaderProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.row}>
-      {/* Logo mark + wordmark */}
       <View style={styles.brand}>
-        <View style={styles.mark}>
-          <Text style={styles.markLetter}>F</Text>
+        <View style={[styles.mark, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.markLetter, { color: colors.onPrimary }]}>F</Text>
         </View>
-        <Text style={styles.wordmark}>FinTrack</Text>
+        <Text style={[styles.wordmark, { color: colors.textPrimary }]}>
+          FinTrack
+        </Text>
       </View>
 
       <Pressable onPress={onSkip} hitSlop={12}>
-        <Text style={styles.skip}>Skip</Text>
+        <Text style={[styles.skip, { color: colors.textSecondary }]}>Skip</Text>
       </Pressable>
     </View>
   );
@@ -47,25 +45,21 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: RADIUS.sm,
-    backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   markLetter: {
     fontFamily: FONTS.bold,
     fontSize: 14,
-    color: COLORS.textInverse,
     lineHeight: 18,
   },
   wordmark: {
     fontFamily: FONTS.bold,
     fontSize: FONT_SIZE.body,
-    color: COLORS.textPrimary,
     letterSpacing: -0.3,
   },
   skip: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.bodySmall,
-    color: COLORS.textSecondary,
   },
 });

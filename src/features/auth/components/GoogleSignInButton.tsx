@@ -6,12 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import {
-  COLORS,
-  FONTS,
-  FONT_SIZE,
-  RADIUS,
-} from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, RADIUS } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 
 interface GoogleSignInButtonProps {
   onPress: () => void;
@@ -23,7 +19,6 @@ interface GoogleSignInButtonProps {
 function GoogleMark() {
   return (
     <View style={gStyles.mark}>
-      {/* Top half — blue */}
       <View
         style={[
           gStyles.half,
@@ -34,28 +29,16 @@ function GoogleMark() {
           },
         ]}
       />
-      {/* Bottom-left — green */}
       <View
         style={[
           gStyles.quarter,
-          {
-            backgroundColor: "#34A853",
-            left: 0,
-            bottom: 0,
-            borderBottomLeftRadius: 10,
-          },
+          { backgroundColor: "#34A853", left: 0, bottom: 0, borderBottomLeftRadius: 10 },
         ]}
       />
-      {/* Bottom-right — yellow then red — simplified to two colours */}
       <View
-        style={[
-          gStyles.quarter,
-          { backgroundColor: "#FBBC05", right: 0, bottom: 0 },
-        ]}
+        style={[gStyles.quarter, { backgroundColor: "#FBBC05", right: 0, bottom: 0 }]}
       />
-      {/* Inner white circle */}
       <View style={gStyles.inner} />
-      {/* White G bar */}
       <View style={gStyles.gBar} />
     </View>
   );
@@ -70,18 +53,8 @@ const gStyles = StyleSheet.create({
     position: "relative",
     backgroundColor: "#EA4335",
   },
-  half: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 10,
-  },
-  quarter: {
-    position: "absolute",
-    width: 10,
-    height: 10,
-  },
+  half: { position: "absolute", top: 0, left: 0, right: 0, height: 10 },
+  quarter: { position: "absolute", width: 10, height: 10 },
   inner: {
     position: "absolute",
     top: 5,
@@ -106,20 +79,31 @@ export default function GoogleSignInButton({
   onPress,
   isLoading = false,
 }: GoogleSignInButtonProps) {
+  const colors = useThemeColors();
+
   return (
     <Pressable
       onPress={onPress}
       disabled={isLoading}
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.borderStrong,
+        },
+        pressed && { backgroundColor: colors.primaryLight },
+      ]}
       accessibilityRole="button"
       accessibilityLabel="Continue with Google"
     >
       {isLoading ? (
-        <ActivityIndicator color={COLORS.textSecondary} />
+        <ActivityIndicator color={colors.textSecondary} />
       ) : (
         <>
           <GoogleMark />
-          <Text style={styles.label}>Continue with Google</Text>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>
+            Continue with Google
+          </Text>
         </>
       )}
     </Pressable>
@@ -130,21 +114,14 @@ const styles = StyleSheet.create({
   button: {
     height: 56,
     borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.borderStrong,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
   },
-  pressed: {
-    opacity: 0.85,
-    backgroundColor: COLORS.primaryLight,
-  },
   label: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: COLORS.textPrimary,
   },
 });

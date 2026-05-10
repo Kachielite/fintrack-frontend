@@ -1,41 +1,74 @@
-// Colours extracted from Fintrack design tokens (tokens.jsx — amber palette, light mode)
-export const COLORS = {
-  // Brand
-  primary: "#C77638", // amber-500
-  primaryDark: "#B25C24", // amber-600 — gradient end / hover
-  primaryLight: "#FBF5EE", // amber-50 — soft tinted backgrounds
-  primaryMid: "#F5E8D6", // amber-100
+// Design tokens extracted from Fintrack/tokens.jsx — amber palette, light + dark modes
+export interface ThemeColors {
+  primary: string;
+  primaryDark: string;
+  primaryLight: string;
+  primaryMid: string;
+  onPrimary: string;
+  background: string;
+  surface: string;
+  surfaceElevated: string;
+  surface2: string;
+  border: string;
+  borderStrong: string;
+  textPrimary: string;
+  textSecondary: string;
+  textSubtle: string;
+  success: string;
+  warning: string;
+  error: string;
+}
 
-  // Surfaces — warm cream
+export const LIGHT_COLORS: ThemeColors = {
+  primary: "#C77638",
+  primaryDark: "#B25C24",
+  primaryLight: "#FBF5EE",
+  primaryMid: "#F5E8D6",
+  onPrimary: "#FFFFFF",
   background: "#FAF6EF",
   surface: "#FFFFFF",
   surfaceElevated: "#FFFCF6",
-  surface2: "#F5EFE3", // muted fills, skeleton, dots
-
-  // Borders
+  surface2: "#F5EFE3",
   border: "rgba(35, 28, 19, 0.08)",
   borderStrong: "rgba(35, 28, 19, 0.16)",
-
-  // Text — warm near-black
   textPrimary: "#231C13",
   textSecondary: "rgba(35, 28, 19, 0.62)",
   textSubtle: "rgba(35, 28, 19, 0.42)",
-  textInverse: "#FFFFFF",
-
-  // Status
   success: "#5E8650",
   warning: "#C77638",
   error: "#B85948",
+};
 
-  // Category colours
-  categoryFood: "#E8845A",
-  categoryTransit: "#5A84B8",
-  categoryUtility: "#8A6EB0",
-  categorySubs: "#5AADA0",
-  categoryTransfer: "#8A9E6B",
-  categoryFun: "#D48A5A",
-  categoryHealth: "#D45A7A",
-  categoryOther: "#9A9A8A",
+export const DARK_COLORS: ThemeColors = {
+  primary: "#D69356",
+  primaryDark: "#E2B47C",
+  primaryLight: "rgba(214, 147, 86, 0.15)",
+  primaryMid: "rgba(214, 147, 86, 0.25)",
+  onPrimary: "#1B1209",
+  background: "#141210",
+  surface: "#1C1916",
+  surfaceElevated: "#252119",
+  surface2: "#2E2920",
+  border: "rgba(245, 239, 230, 0.10)",
+  borderStrong: "rgba(245, 239, 230, 0.18)",
+  textPrimary: "#F5EFE6",
+  textSecondary: "rgba(245, 239, 230, 0.62)",
+  textSubtle: "rgba(245, 239, 230, 0.42)",
+  success: "#7BAE6B",
+  warning: "#D69356",
+  error: "#D87466",
+};
+
+// Category colours are the same in both modes — used for chip/badge fills
+export const CATEGORY_COLORS = {
+  food: "#E8845A",
+  transit: "#5A84B8",
+  utility: "#8A6EB0",
+  subs: "#5AADA0",
+  transfer: "#8A9E6B",
+  fun: "#D48A5A",
+  health: "#D45A7A",
+  other: "#9A9A8A",
 } as const;
 
 export const FONTS = {

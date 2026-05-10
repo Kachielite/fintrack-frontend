@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, SafeAreaView } from "react-native";
-import { COLORS, SPACING } from "@/core/common/constants/theme";
+import { SPACING } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SPLASH_SLIDES } from "../splash.interface";
 import SplashHeader from "./SplashHeader";
 import SplashSlideContent from "./SplashSlideContent";
@@ -12,6 +13,7 @@ interface SplashCarouselProps {
 }
 
 export default function SplashCarousel({ onFinish }: SplashCarouselProps) {
+  const colors = useThemeColors();
   const [idx, setIdx] = useState(0);
   const slide = SPLASH_SLIDES[idx];
   const isLast = idx === SPLASH_SLIDES.length - 1;
@@ -25,7 +27,7 @@ export default function SplashCarousel({ onFinish }: SplashCarouselProps) {
   }
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
       <SplashHeader onSkip={onFinish} />
 
       <SplashSlideContent slide={slide} />
@@ -49,14 +51,7 @@ export default function SplashCarousel({ onFinish }: SplashCarouselProps) {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  bottom: {
-    paddingBottom: SPACING.xxl,
-  },
-  cta: {
-    paddingHorizontal: SPACING.xl,
-  },
+  root: { flex: 1 },
+  bottom: { paddingBottom: SPACING.xxl },
+  cta: { paddingHorizontal: SPACING.xl },
 });

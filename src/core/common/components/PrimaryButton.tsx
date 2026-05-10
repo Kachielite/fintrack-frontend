@@ -1,11 +1,7 @@
 import React from "react";
 import { Pressable, Text, ActivityIndicator, StyleSheet } from "react-native";
-import {
-  COLORS,
-  FONTS,
-  FONT_SIZE,
-  RADIUS,
-} from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, RADIUS } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 
 interface PrimaryButtonProps {
   label: string;
@@ -20,6 +16,7 @@ export default function PrimaryButton({
   isLoading = false,
   disabled = false,
 }: PrimaryButtonProps) {
+  const colors = useThemeColors();
   const isDisabled = disabled || isLoading;
 
   return (
@@ -28,16 +25,20 @@ export default function PrimaryButton({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        pressed && !isDisabled && styles.pressed,
+        {
+          backgroundColor: colors.primary,
+          shadowColor: colors.primary,
+        },
+        pressed && !isDisabled && { backgroundColor: colors.primaryDark },
         isDisabled && styles.disabled,
       ]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       {isLoading ? (
-        <ActivityIndicator color={COLORS.textInverse} />
+        <ActivityIndicator color={colors.onPrimary} />
       ) : (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.onPrimary }]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -47,18 +48,12 @@ const styles = StyleSheet.create({
   button: {
     height: 56,
     borderRadius: RADIUS.full,
-    backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.22,
     shadowRadius: 12,
     elevation: 4,
-  },
-  pressed: {
-    backgroundColor: COLORS.primaryDark,
-    shadowOpacity: 0.12,
   },
   disabled: {
     opacity: 0.5,
@@ -68,7 +63,6 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: COLORS.textInverse,
     letterSpacing: 0.1,
   },
 });

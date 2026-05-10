@@ -1,15 +1,16 @@
-import { COLORS } from "@/core/common/constants/theme";
+import { ThemeColors, CATEGORY_COLORS } from "@/core/common/constants/theme";
 
 export function budgetStatusColor(
   status: "healthy" | "warning" | "over",
+  colors: ThemeColors,
 ): string {
   switch (status) {
     case "healthy":
-      return COLORS.success;
+      return colors.success;
     case "warning":
-      return COLORS.warning;
+      return colors.warning;
     case "over":
-      return COLORS.error;
+      return colors.error;
   }
 }
 
@@ -28,15 +29,8 @@ export function categoryIcon(category: string): string {
 }
 
 export function categoryColor(category: string): string {
-  const map: Record<string, string> = {
-    food: COLORS.categoryFood,
-    transit: COLORS.categoryTransit,
-    utility: COLORS.categoryUtility,
-    subs: COLORS.categorySubs,
-    transfer: COLORS.categoryTransfer,
-    fun: COLORS.categoryFun,
-    health: COLORS.categoryHealth,
-    other: COLORS.categoryOther,
-  };
-  return map[category] ?? COLORS.categoryOther;
+  return (
+    CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] ??
+    CATEGORY_COLORS.other
+  );
 }

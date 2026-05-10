@@ -1,11 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Animated, StyleSheet } from "react-native";
-import {
-  COLORS,
-  FONTS,
-  FONT_SIZE,
-  SPACING,
-} from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, SPACING } from "@/core/common/constants/theme";
+import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SplashSlide } from "../splash.interface";
 import MailVisual from "./slides/MailVisual";
 import GlobeVisual from "./slides/GlobeVisual";
@@ -27,6 +23,7 @@ function renderVisual(visual: SplashSlide["visual"]) {
 }
 
 export default function SplashSlideContent({ slide }: SplashSlideContentProps) {
+  const colors = useThemeColors();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(12)).current;
 
@@ -52,12 +49,14 @@ export default function SplashSlideContent({ slide }: SplashSlideContentProps) {
     <Animated.View
       style={[styles.container, { opacity, transform: [{ translateY }] }]}
     >
-      {/* Visual area */}
       <View style={styles.visual}>{renderVisual(slide.visual)}</View>
 
-      {/* Text */}
-      <Text style={styles.title}>{slide.title}</Text>
-      <Text style={styles.sub}>{slide.sub}</Text>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>
+        {slide.title}
+      </Text>
+      <Text style={[styles.sub, { color: colors.textSecondary }]}>
+        {slide.sub}
+      </Text>
     </Animated.View>
   );
 }
@@ -77,7 +76,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONTS.bold,
     fontSize: 30,
-    color: COLORS.textPrimary,
     letterSpacing: -0.7,
     lineHeight: 34,
     marginBottom: SPACING.md,
@@ -85,7 +83,6 @@ const styles = StyleSheet.create({
   sub: {
     fontFamily: FONTS.regular,
     fontSize: FONT_SIZE.body,
-    color: COLORS.textSecondary,
     lineHeight: 24,
   },
 });

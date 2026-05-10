@@ -7,7 +7,8 @@ import { BlurView } from "expo-blur";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isIOS26 } from "@/core/common/utils/platform";
-import { COLORS, FONTS } from "@/core/common/constants/theme";
+import { FONTS } from "@/core/common/constants/theme";
+import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
@@ -73,43 +74,6 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const UnauthStack = createNativeStackNavigator();
 const OnboardingStack = createNativeStackNavigator();
 
-const tabBarBackground = isIOS26
-  ? () => (
-      <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
-    )
-  : undefined;
-
-const bottomTabScreenOptions = {
-  tabBarStyle: isIOS26
-    ? {
-        position: "absolute" as const,
-        borderTopWidth: 0,
-        backgroundColor: "transparent",
-        elevation: 0,
-      }
-    : {
-        backgroundColor: COLORS.surface,
-        borderTopColor: COLORS.border,
-        borderTopWidth: StyleSheet.hairlineWidth,
-      },
-  tabBarBackground,
-  tabBarActiveTintColor: COLORS.primary,
-  tabBarInactiveTintColor: COLORS.textSecondary,
-  tabBarLabelStyle: { fontFamily: FONTS.medium, fontSize: 11 },
-  headerShown: false,
-};
-
-const headerOptions = isIOS26
-  ? {
-      headerTransparent: true,
-      headerBlurEffect: "light" as const,
-      headerShadowVisible: false,
-    }
-  : {
-      headerStyle: { backgroundColor: COLORS.surface },
-      headerShadowVisible: false,
-    };
-
 const modalOptions = {
   headerShown: false,
   presentation: "transparentModal" as const,
@@ -118,8 +82,41 @@ const modalOptions = {
 };
 
 function Tabs() {
+  const colors = useThemeColors();
+  const isDark = useIsDark();
+
+  const tabBarBackground = isIOS26
+    ? () => (
+        <BlurView
+          intensity={80}
+          tint={isDark ? "dark" : "light"}
+          style={StyleSheet.absoluteFill}
+        />
+      )
+    : undefined;
+
+  const screenOptions = {
+    tabBarStyle: isIOS26
+      ? {
+          position: "absolute" as const,
+          borderTopWidth: 0,
+          backgroundColor: "transparent",
+          elevation: 0,
+        }
+      : {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          borderTopWidth: StyleSheet.hairlineWidth,
+        },
+    tabBarBackground,
+    tabBarActiveTintColor: colors.primary,
+    tabBarInactiveTintColor: colors.textSecondary,
+    tabBarLabelStyle: { fontFamily: FONTS.medium, fontSize: 11 },
+    headerShown: false,
+  };
+
   return (
-    <Tab.Navigator screenOptions={bottomTabScreenOptions}>
+    <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Transactions" component={TransactionsScreen} />
       <Tab.Screen name="Budget" component={BudgetScreen} />
@@ -152,6 +149,19 @@ function OnboardingNavigator() {
 }
 
 function MainStack() {
+  const colors = useThemeColors();
+
+  const headerOptions = isIOS26
+    ? {
+        headerTransparent: true,
+        headerBlurEffect: "light" as const,
+        headerShadowVisible: false,
+      }
+    : {
+        headerStyle: { backgroundColor: colors.surface },
+        headerShadowVisible: false,
+      };
+
   return (
     <Stack.Navigator screenOptions={headerOptions}>
       <Stack.Screen
@@ -218,8 +228,22 @@ function MainStack() {
 }
 
 export default function RootNavigator() {
+  const colors = useThemeColors();
+  const isDark = useIsDark();
   const token = useAuthStore((s) => s.token);
   const onboardingComplete = useAuthStore((s) => s.onboardingComplete);
+
+  const navTheme = {
+    dark: isDark,
+    colors: {
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.textPrimary,
+      border: colors.border,
+      notification: colors.primary,
+    },
+  };
 
   let ActiveNavigator: React.ComponentType;
   if (token === null) {
@@ -231,7 +255,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <ActiveNavigator />
     </NavigationContainer>
   );

@@ -7,38 +7,28 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import {
-  COLORS,
-  FONTS,
-  FONT_SIZE,
-  RADIUS,
-} from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, RADIUS } from "@/core/common/constants/theme";
 
 interface AppleSignInButtonProps {
   onPress: () => void;
   isLoading?: boolean;
 }
 
-// Apple logo approximated — replace with react-native-svg for production
+// Apple button uses hardcoded black/white per Apple's brand guidelines.
+// The mark body is always white on the black button background.
 function AppleMark() {
   return (
     <View style={aStyles.container}>
-      {/* Body of the apple */}
       <View style={aStyles.body} />
-      {/* Leaf */}
       <View style={aStyles.leaf} />
-      {/* Bite (white circle to cut top-right) */}
+      {/* Black circle cuts the "bite" from the apple shape */}
       <View style={aStyles.bite} />
     </View>
   );
 }
 
 const aStyles = StyleSheet.create({
-  container: {
-    width: 18,
-    height: 20,
-    position: "relative",
-  },
+  container: { width: 18, height: 20, position: "relative" },
   body: {
     position: "absolute",
     bottom: 0,
@@ -46,7 +36,7 @@ const aStyles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 4,
-    backgroundColor: COLORS.textInverse,
+    backgroundColor: "#FFFFFF",
   },
   leaf: {
     position: "absolute",
@@ -56,7 +46,7 @@ const aStyles = StyleSheet.create({
     height: 7,
     borderTopLeftRadius: 4,
     borderTopRightRadius: 3,
-    backgroundColor: COLORS.textInverse,
+    backgroundColor: "#FFFFFF",
     transform: [{ rotate: "10deg" }],
   },
   bite: {
@@ -66,7 +56,7 @@ const aStyles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: COLORS.textPrimary,
+    backgroundColor: "#000000",
   },
 });
 
@@ -86,7 +76,7 @@ export default function AppleSignInButton({
       accessibilityLabel="Continue with Apple"
     >
       {isLoading ? (
-        <ActivityIndicator color={COLORS.textInverse} />
+        <ActivityIndicator color="#FFFFFF" />
       ) : (
         <>
           <AppleMark />
@@ -101,18 +91,16 @@ const styles = StyleSheet.create({
   button: {
     height: 56,
     borderRadius: RADIUS.full,
-    backgroundColor: COLORS.textPrimary,
+    backgroundColor: "#000000",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
   },
-  pressed: {
-    opacity: 0.82,
-  },
+  pressed: { opacity: 0.82 },
   label: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: COLORS.textInverse,
+    color: "#FFFFFF",
   },
 });
