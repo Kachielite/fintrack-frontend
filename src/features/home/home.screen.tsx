@@ -1,5 +1,5 @@
-import React from "react";
-import { ScrollView, View, StyleSheet } from "react-native";
+import React, { useState, useCallback } from "react";
+import { ScrollView, View, StyleSheet, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SPACING } from "@/core/common/constants/theme";
@@ -21,14 +21,22 @@ export default function HomeScreen() {
   const month = now.getMonth() + 1;
 
   const { profile } = useProfile();
-  const { summary, isLoading: summaryLoading } = useTransactionSummary(
-    year,
-    month,
-  );
-  const { transactions, isLoading: txLoading } = useTransactions({ limit: 4 });
-  const { insights, isLoading: insightsLoading } = useInsights();
+  const { summary, isLoading: summaryLoading, refetch: refetchSummary } = useTransactionSummary(year, month);
+  const { transactions, isLoading: txLoading, refetch: refetchTx } = useTransactions({ limit: 4 });
+  const { insights, isLoading: insightsLoading, refetch: refetchInsights } = useInsights();
 
   const latestInsight = insights.find((i) => !i.isRead) ?? insights[0];
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchSummary(), refetchTx(), refetchInsights()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchSummary, refetchTx, refetchInsights]);
 
   return (
     <SafeAreaView
@@ -39,6 +47,13 @@ export default function HomeScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
         <HomeHeader firstName={profile?.firstName} />
 

@@ -6,7 +6,15 @@ import { TransactionService } from "../transactions.service";
 export function useTransactionsInfinite(
   params?: Omit<TransactionQueryParams, "page">,
 ) {
-  return useInfiniteQuery({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+    error,
+  } = useInfiniteQuery({
     queryKey: [QUERY_KEYS.TRANSACTIONS, "infinite", params],
     queryFn: ({ pageParam }) =>
       TransactionService.listTransactions({
@@ -18,4 +26,6 @@ export function useTransactionsInfinite(
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     initialPageParam: 1,
   });
+
+  return { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, refetch, error };
 }

@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   ListRenderItem,
+  RefreshControl,
 } from "react-native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SPACING } from "@/core/common/constants/theme";
@@ -51,6 +52,8 @@ interface Props {
   hasNextPage: boolean;
   onEndReached: () => void;
   onPressTx: (tx: Transaction) => void;
+  refreshing: boolean;
+  onRefresh: () => void;
 }
 
 export default function TransactionsFeed({
@@ -60,6 +63,8 @@ export default function TransactionsFeed({
   hasNextPage,
   onEndReached,
   onPressTx,
+  refreshing,
+  onRefresh,
 }: Props) {
   const colors = useThemeColors();
 
@@ -88,6 +93,13 @@ export default function TransactionsFeed({
       onEndReached={hasNextPage ? onEndReached : undefined}
       onEndReachedThreshold={0.4}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.primary}
+        />
+      }
       ListEmptyComponent={
         <EmptyState
           icon="search-outline"

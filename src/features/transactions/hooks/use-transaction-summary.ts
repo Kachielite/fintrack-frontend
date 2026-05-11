@@ -7,9 +7,10 @@ export function useTransactionSummary(year?: number, month?: number) {
     data: summary,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY, year, month],
     queryFn: () => TransactionService.getSummary(year, month),
   });
-  return { summary, isLoading, error };
+  return { summary, isLoading, error, refetch };
 }
