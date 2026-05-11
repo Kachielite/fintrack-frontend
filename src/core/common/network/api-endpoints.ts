@@ -44,4 +44,13 @@ export const API_ENDPOINTS = {
   // Insights
   INSIGHTS: "/insights",
   INSIGHT_READ: (id: number) => `/insights/${id}/read`,
+
+  // Notifications
+  NOTIFICATIONS: "/notifications",
+  NOTIFICATION_UNREAD_COUNT: "/notifications/unread-count",
+  NOTIFICATION_READ: (id: number) => `/notifications/${id}/read`,
+  NOTIFICATIONS_READ_ALL: "/notifications/read-all",
+
+  // Email sync SSE stream (not a standard API call — used directly with XHR)
+  EMAIL_CONNECTION_SYNC_STREAM: (id: number) => `/email-connections/${id}/sync-stream`,
 } as const;

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@/core/common/constants/storage-keys";
-import { registerClearSession } from "@/core/common/network/session-handler";
+import { registerClearSession, registerUpdateToken } from "@/core/common/network/session-handler";
 import { AuthUser, AuthSession } from "./auth.interface";
 
 interface AuthState {
@@ -13,10 +13,11 @@ interface AuthState {
   setSession(session: AuthSession): void;
   clearSession(): void;
   setOnboardingComplete(): void;
+  persistOnboardingComplete(): void;
   initSession(): Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   refreshToken: null,
@@ -26,6 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSession(session) {
     AsyncStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, session.accessToken);
     AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, session.refreshToken);
+    AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(session.user));
     set({
       user: session.user,
       token: session.accessToken,
@@ -49,7 +51,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setOnboardingComplete() {
+    const { user } = get();
+    if (user) {
+      const updated = { ...user, onboardingComplete: true };
+      AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updated));
+    }
     set({ onboardingComplete: true });
+  },
+
+  // Persists to disk without switching the navigator — call this mid-flow
+  persistOnboardingComplete() {
+    const { user } = get();
+    if (user) {
+      const updated = { ...user, onboardingComplete: true };
+      AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updated));
+    }
   },
 
   async initSession() {
@@ -83,5 +99,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 }));
 
-// Register clearSession so the api-client can trigger sign-out on 401 without circular import
+// Register callbacks so api-client can mutate auth state without circular import
 registerClearSession(() => useAuthStore.getState().clearSession());
+registerUpdateToken((token) => useAuthStore.setState({ token }));

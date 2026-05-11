@@ -11,14 +11,17 @@ import { BlurView } from "expo-blur";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isIOS26 } from "@/core/common/utils/platform";
-import { FONTS } from "@/core/common/constants/theme";
+import { FONTS, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
 // Onboarding
 import OnboardingGmailScreen from "@/features/onboarding/screens/onboarding-gmail.screen";
+import OnboardingConnectScreen from "@/features/onboarding/screens/onboarding-connect.screen";
 import OnboardingGoalScreen from "@/features/onboarding/screens/onboarding-goal.screen";
+import OnboardingLoadingScreen from "@/features/onboarding/screens/onboarding-loading.screen";
+import OnboardingResultsScreen from "@/features/onboarding/screens/onboarding-results.screen";
 // Tabs
 import HomeScreen from "@/features/home/home.screen";
 import TransactionsScreen from "@/features/transactions/screens/transaction-detail.screen";
@@ -43,9 +46,12 @@ import GmailLabelPickerScreen from "@/features/email-connection/screens/gmail-la
 import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
+import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
+import NotificationBell from "@/features/notifications/components/notification-bell";
 
 export type RootStackParamList = {
   Tabs: undefined;
+  Notifications: undefined;
   TransactionDetail: { transactionId: number };
   CorrectTransaction: { transactionId: number };
   BudgetDetail: { budgetId: number };
@@ -121,7 +127,23 @@ function Tabs() {
 
   return (
     <Tab.Navigator screenOptions={screenOptions}>
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          headerShown: true,
+          headerRight: () => <NotificationBell />,
+          headerRightContainerStyle: { paddingRight: SPACING.lg },
+          headerStyle: isIOS26
+            ? undefined
+            : { backgroundColor: colors.surface },
+          headerShadowVisible: false,
+          headerTitle: "",
+          ...(isIOS26
+            ? { headerTransparent: true, headerBlurEffect: "light" as const }
+            : {}),
+        }}
+      />
       <Tab.Screen name="Transactions" component={TransactionsScreen} />
       <Tab.Screen name="Budget" component={BudgetScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
@@ -145,8 +167,20 @@ function OnboardingNavigator() {
         component={OnboardingGmailScreen}
       />
       <OnboardingStack.Screen
+        name="OnboardingConnect"
+        component={OnboardingConnectScreen}
+      />
+      <OnboardingStack.Screen
         name="OnboardingGoal"
         component={OnboardingGoalScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingLoading"
+        component={OnboardingLoadingScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingResults"
+        component={OnboardingResultsScreen}
       />
     </OnboardingStack.Navigator>
   );
@@ -227,6 +261,11 @@ function MainStack() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

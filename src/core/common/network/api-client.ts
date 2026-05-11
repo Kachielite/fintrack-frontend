@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ENV } from "@/core/common/constants/env";
 import { STORAGE_KEYS } from "@/core/common/constants/storage-keys";
 import { API_ENDPOINTS } from "./api-endpoints";
-import { clearSessionGlobal } from "./session-handler";
+import { clearSessionGlobal, updateTokenGlobal } from "./session-handler";
 
 const apiClient = axios.create({
   baseURL: ENV.API_BASE_URL,
@@ -70,6 +70,7 @@ apiClient.interceptors.response.use(
 
         const newToken = data.access_token;
         await AsyncStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, newToken);
+        updateTokenGlobal(newToken);
         processQueue(null, newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);

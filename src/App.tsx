@@ -6,8 +6,9 @@ import * as SplashScreen from "expo-splash-screen";
 import Navigation from "@/core/navigation";
 import { useThemeStore } from "@/core/common/state/theme.state";
 import useLoadFonts from "@/core/common/hooks/use-load-fonts";
+import { useAuthStore } from "@/features/auth/auth.state";
 
-// Keep the OS splash screen visible until fonts are ready
+// Keep the OS splash screen visible until fonts and auth session are ready
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
@@ -20,12 +21,24 @@ const queryClient = new QueryClient({
 export default function App() {
   const { loaded } = useLoadFonts();
   const loadSaved = useThemeStore((s) => s.loadSaved);
+  const initSession = useAuthStore((s) => s.initSession);
+  const isAuthLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
     loadSaved();
   }, [loadSaved]);
 
-  if (!loaded) return null;
+  useEffect(() => {
+    initSession();
+  }, [initSession]);
+
+  useEffect(() => {
+    if (loaded && !isAuthLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, isAuthLoading]);
+
+  if (!loaded || isAuthLoading) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
