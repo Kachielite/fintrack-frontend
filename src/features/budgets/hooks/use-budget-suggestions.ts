@@ -7,9 +7,10 @@ export function useBudgetSuggestions() {
     data: suggestions,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: [QUERY_KEYS.BUDGET_SUGGESTIONS],
     queryFn: () => BudgetService.getSuggestions(),
   });
-  return { suggestions: suggestions ?? [], isLoading, error };
+  return { suggestions: suggestions ?? [], isLoading, error, refetch };
 }

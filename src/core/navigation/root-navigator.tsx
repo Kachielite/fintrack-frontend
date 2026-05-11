@@ -23,7 +23,7 @@ import OnboardingResultsScreen from "@/features/onboarding/screens/onboarding-re
 // Tabs
 import HomeScreen from "@/features/home/home.screen";
 import TransactionsScreen from "@/features/transactions/transactions.screen";
-import BudgetScreen from "@/features/budgets/screens/budget-detail.screen";
+import BudgetScreen from "@/features/budgets/budgets.screen";
 import ProfileScreen from "@/features/user/screens/profile.screen";
 // Main stack screens
 import TransactionDetailScreen from "@/features/transactions/screens/transaction-detail.screen";

@@ -23,6 +23,7 @@ export default function TransactionsScreen() {
   });
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // ── Data ─────────────────────────────────────────────────────────────────
   const {
@@ -31,6 +32,7 @@ export default function TransactionsScreen() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
+    refetch,
   } = useTransactionsInfinite({ search });
 
   /** All loaded transaction items flattened across pages */
@@ -70,6 +72,15 @@ export default function TransactionsScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView
@@ -92,6 +103,8 @@ export default function TransactionsScreen() {
         hasNextPage={hasNextPage ?? false}
         onEndReached={handleEndReached}
         onPressTx={setSelectedTx}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
       />
 
       {/* Filter sheet */}
