@@ -1,24 +1,24 @@
-import React from "react";
-import { StyleSheet } from "react-native";
+import React, { useState } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { BlurView } from "expo-blur";
+import TabView, { SceneMap } from "react-native-bottom-tabs";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isIOS26 } from "@/core/common/utils/platform";
-import { FONTS } from "@/core/common/constants/theme";
 import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
 // Onboarding
 import OnboardingGmailScreen from "@/features/onboarding/screens/onboarding-gmail.screen";
+import OnboardingConnectScreen from "@/features/onboarding/screens/onboarding-connect.screen";
 import OnboardingGoalScreen from "@/features/onboarding/screens/onboarding-goal.screen";
+import OnboardingLoadingScreen from "@/features/onboarding/screens/onboarding-loading.screen";
+import OnboardingResultsScreen from "@/features/onboarding/screens/onboarding-results.screen";
 // Tabs
 import HomeScreen from "@/features/home/home.screen";
 import TransactionsScreen from "@/features/transactions/screens/transaction-detail.screen";
@@ -43,9 +43,12 @@ import GmailLabelPickerScreen from "@/features/email-connection/screens/gmail-la
 import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
+import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
+
 
 export type RootStackParamList = {
   Tabs: undefined;
+  Notifications: undefined;
   TransactionDetail: { transactionId: number };
   CorrectTransaction: { transactionId: number };
   BudgetDetail: { budgetId: number };
@@ -66,15 +69,7 @@ export type RootStackParamList = {
   TermsOfService: undefined;
 };
 
-export type TabParamList = {
-  Home: undefined;
-  Transactions: undefined;
-  Budget: undefined;
-  Profile: undefined;
-};
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<TabParamList>();
 const UnauthStack = createNativeStackNavigator();
 const OnboardingStack = createNativeStackNavigator();
 
@@ -85,47 +80,52 @@ const modalOptions = {
   animationDuration: 50,
 };
 
+const TAB_ROUTES = [
+  {
+    key: "home",
+    title: "Home",
+    focusedIcon: { sfSymbol: "house.fill" },
+    unfocusedIcon: { sfSymbol: "house" },
+  },
+  {
+    key: "transactions",
+    title: "Transactions",
+    focusedIcon: { sfSymbol: "creditcard.fill" },
+    unfocusedIcon: { sfSymbol: "creditcard" },
+  },
+  {
+    key: "budget",
+    title: "Budget",
+    focusedIcon: { sfSymbol: "chart.pie.fill" },
+    unfocusedIcon: { sfSymbol: "chart.pie" },
+  },
+  {
+    key: "profile",
+    title: "Profile",
+    focusedIcon: { sfSymbol: "person.fill" },
+    unfocusedIcon: { sfSymbol: "person" },
+  },
+];
+
+const renderScene = SceneMap({
+  home: HomeScreen,
+  transactions: TransactionsScreen,
+  budget: BudgetScreen,
+  profile: ProfileScreen,
+});
+
 function Tabs() {
   const colors = useThemeColors();
-  const isDark = useIsDark();
-
-  const tabBarBackground = isIOS26
-    ? () => (
-        <BlurView
-          intensity={80}
-          tint={isDark ? "dark" : "light"}
-          style={StyleSheet.absoluteFill}
-        />
-      )
-    : undefined;
-
-  const screenOptions = {
-    tabBarStyle: isIOS26
-      ? {
-          position: "absolute" as const,
-          borderTopWidth: 0,
-          backgroundColor: "transparent",
-          elevation: 0,
-        }
-      : {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-        },
-    tabBarBackground,
-    tabBarActiveTintColor: colors.primary,
-    tabBarInactiveTintColor: colors.textSecondary,
-    tabBarLabelStyle: { fontFamily: FONTS.medium, fontSize: 11 },
-    headerShown: false,
-  };
+  const [index, setIndex] = useState(0);
 
   return (
-    <Tab.Navigator screenOptions={screenOptions}>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Transactions" component={TransactionsScreen} />
-      <Tab.Screen name="Budget" component={BudgetScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+    <TabView
+      navigationState={{ index, routes: TAB_ROUTES }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      tabBarActiveTintColor={colors.primary}
+      hapticFeedbackEnabled
+    />
   );
 }
 
@@ -145,8 +145,20 @@ function OnboardingNavigator() {
         component={OnboardingGmailScreen}
       />
       <OnboardingStack.Screen
+        name="OnboardingConnect"
+        component={OnboardingConnectScreen}
+      />
+      <OnboardingStack.Screen
         name="OnboardingGoal"
         component={OnboardingGoalScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingLoading"
+        component={OnboardingLoadingScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingResults"
+        component={OnboardingResultsScreen}
       />
     </OnboardingStack.Navigator>
   );
@@ -227,6 +239,11 @@ function MainStack() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

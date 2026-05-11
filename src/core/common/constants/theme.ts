@@ -16,6 +16,8 @@ export interface ThemeColors {
   textSubtle: string;
   success: string;
   warning: string;
+  warningLight: string;
+  warningMid: string;
   error: string;
 }
 
@@ -35,7 +37,9 @@ export const LIGHT_COLORS: ThemeColors = {
   textSecondary: "rgba(35, 28, 19, 0.62)",
   textSubtle: "rgba(35, 28, 19, 0.42)",
   success: "#5E8650",
-  warning: "#C77638",
+  warning: "#9A6B1A",
+  warningLight: "#FDF8EE",
+  warningMid: "#F0DC9A",
   error: "#B85948",
 };
 
@@ -55,7 +59,9 @@ export const DARK_COLORS: ThemeColors = {
   textSecondary: "rgba(245, 239, 230, 0.62)",
   textSubtle: "rgba(245, 239, 230, 0.42)",
   success: "#7BAE6B",
-  warning: "#D69356",
+  warning: "#D4B04A",
+  warningLight: "rgba(212, 176, 74, 0.12)",
+  warningMid: "rgba(212, 176, 74, 0.28)",
   error: "#D87466",
 };
 

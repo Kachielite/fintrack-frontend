@@ -7,7 +7,8 @@ import Navigation from "@/core/navigation";
 import { useThemeStore } from "@/core/common/state/theme.state";
 import useLoadFonts from "@/core/common/hooks/use-load-fonts";
 
-// Keep the OS splash screen visible until fonts are ready
+// Keep the OS splash screen visible until fonts are ready.
+// Auth state is hydrated synchronously from MMKV — no async wait needed.
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
@@ -24,6 +25,10 @@ export default function App() {
   useEffect(() => {
     loadSaved();
   }, [loadSaved]);
+
+  useEffect(() => {
+    if (loaded) SplashScreen.hideAsync();
+  }, [loaded]);
 
   if (!loaded) return null;
 

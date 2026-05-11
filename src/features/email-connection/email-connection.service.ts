@@ -14,9 +14,7 @@ import {
 
 export const EmailConnectionService = {
   async getAuthUrl(): Promise<string> {
-    const { data } = await apiClient.get<GmailAuthUrlDto>(
-      API_ENDPOINTS.GMAIL_AUTH_URL,
-    );
+    const { data } = await apiClient.get<GmailAuthUrlDto>(API_ENDPOINTS.GMAIL_AUTH_URL);
     return data.url;
   },
 
