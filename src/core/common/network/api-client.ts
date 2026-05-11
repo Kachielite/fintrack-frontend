@@ -1,9 +1,30 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ENV } from "@/core/common/constants/env";
-import { STORAGE_KEYS } from "@/core/common/constants/storage-keys";
 import { API_ENDPOINTS } from "./api-endpoints";
 import { clearSessionGlobal, updateTokenGlobal } from "./session-handler";
+import { storage } from "@/core/common/storage/zustand-storage";
+
+const AUTH_STORE_KEY = "auth-store";
+
+function getStoredToken(): string | null {
+  try {
+    const raw = storage.getString(AUTH_STORE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw)?.state?.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function getStoredRefreshToken(): string | null {
+  try {
+    const raw = storage.getString(AUTH_STORE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw)?.state?.refreshToken ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const apiClient = axios.create({
   baseURL: ENV.API_BASE_URL,
@@ -25,15 +46,13 @@ function processQueue(error: unknown, token: string | null) {
   failedQueue = [];
 }
 
-apiClient.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    const token = await AsyncStorage.getItem(STORAGE_KEYS.SESSION_TOKEN);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-);
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 apiClient.interceptors.response.use(
   (response) => response,
@@ -58,9 +77,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const storedRefreshToken = await AsyncStorage.getItem(
-          STORAGE_KEYS.REFRESH_TOKEN,
-        );
+        const storedRefreshToken = getStoredRefreshToken();
         if (!storedRefreshToken) throw new Error("No refresh token");
 
         const { data } = await axios.post<{ access_token: string }>(
@@ -69,7 +86,6 @@ apiClient.interceptors.response.use(
         );
 
         const newToken = data.access_token;
-        await AsyncStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, newToken);
         updateTokenGlobal(newToken);
         processQueue(null, newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;

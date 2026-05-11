@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EmailConnectionService } from "@/features/email-connection/email-connection.service";
 import { openSSE } from "@/core/common/network/sse-client";
 import { ENV } from "@/core/common/constants/env";
-import { STORAGE_KEYS } from "@/core/common/constants/storage-keys";
+import { storage } from "@/core/common/storage/zustand-storage";
 
 export type CrawlPhase = "loading" | "connecting" | "searching" | "syncing" | "done" | "skipped" | "error";
 
@@ -34,9 +33,14 @@ export function useCrawlStatus(): CrawlStatus {
           return;
         }
 
-        // Read from AsyncStorage to guarantee a fresh token even if Zustand is stale
-        // (apiClient auto-refreshes tokens but only updates AsyncStorage, not the store)
-        const freshToken = await AsyncStorage.getItem(STORAGE_KEYS.SESSION_TOKEN);
+        // Read fresh token directly from MMKV — bypasses any potential Zustand staleness
+        let freshToken: string | null = null;
+        try {
+          const raw = storage.getString("auth-store");
+          freshToken = raw ? JSON.parse(raw)?.state?.token ?? null : null;
+        } catch {
+          freshToken = null;
+        }
         if (!freshToken || cancelled) {
           setPhase("error");
           setStatusMessage("Session expired. Please sign in again.");

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS } from "@/core/common/constants/storage-keys";
+import { persist, createJSONStorage } from "zustand/middleware";
+import zustandStorage, { storage } from "@/core/common/storage/zustand-storage";
 import { registerClearSession, registerUpdateToken } from "@/core/common/network/session-handler";
 import { AuthUser, AuthSession } from "./auth.interface";
 
@@ -9,95 +9,73 @@ interface AuthState {
   token: string | null;
   refreshToken: string | null;
   onboardingComplete: boolean;
-  isLoading: boolean;
   setSession(session: AuthSession): void;
   clearSession(): void;
   setOnboardingComplete(): void;
   persistOnboardingComplete(): void;
-  initSession(): Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  token: null,
-  refreshToken: null,
-  onboardingComplete: false,
-  isLoading: true,
-
-  setSession(session) {
-    AsyncStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, session.accessToken);
-    AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, session.refreshToken);
-    AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(session.user));
-    set({
-      user: session.user,
-      token: session.accessToken,
-      refreshToken: session.refreshToken,
-      onboardingComplete: session.user.onboardingComplete,
-    });
-  },
-
-  clearSession() {
-    AsyncStorage.multiRemove([
-      STORAGE_KEYS.SESSION_TOKEN,
-      STORAGE_KEYS.REFRESH_TOKEN,
-      STORAGE_KEYS.USER_PROFILE,
-    ]);
-    set({
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
       user: null,
       token: null,
       refreshToken: null,
       onboardingComplete: false,
-    });
-  },
 
-  setOnboardingComplete() {
-    const { user } = get();
-    if (user) {
-      const updated = { ...user, onboardingComplete: true };
-      AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updated));
-    }
-    set({ onboardingComplete: true });
-  },
+      setSession(session) {
+        set({
+          user: session.user,
+          token: session.accessToken,
+          refreshToken: session.refreshToken,
+          onboardingComplete: session.user.onboardingComplete,
+        });
+      },
 
-  // Persists to disk without switching the navigator — call this mid-flow
-  persistOnboardingComplete() {
-    const { user } = get();
-    if (user) {
-      const updated = { ...user, onboardingComplete: true };
-      AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updated));
-    }
-  },
+      clearSession() {
+        set({
+          user: null,
+          token: null,
+          refreshToken: null,
+          onboardingComplete: false,
+        });
+      },
 
-  async initSession() {
-    set({ isLoading: true });
-    try {
-      const [token, refreshToken] = await AsyncStorage.multiGet([
-        STORAGE_KEYS.SESSION_TOKEN,
-        STORAGE_KEYS.REFRESH_TOKEN,
-      ]);
-      const accessToken = token[1];
-      const storedRefreshToken = refreshToken[1];
+      setOnboardingComplete() {
+        const { user } = get();
+        set({
+          onboardingComplete: true,
+          user: user ? { ...user, onboardingComplete: true } : user,
+        });
+      },
 
-      if (!accessToken) {
-        set({ isLoading: false });
-        return;
-      }
-
-      const profileRaw = await AsyncStorage.getItem(STORAGE_KEYS.USER_PROFILE);
-      const user: AuthUser | null = profileRaw ? JSON.parse(profileRaw) : null;
-
-      set({
-        token: accessToken,
-        refreshToken: storedRefreshToken,
-        user,
-        onboardingComplete: user?.onboardingComplete ?? false,
-        isLoading: false,
-      });
-    } catch {
-      set({ isLoading: false });
-    }
-  },
-}));
+      // Writes onboardingComplete to disk WITHOUT updating Zustand state,
+      // so the navigator doesn't switch mid-flow (before the results screen).
+      persistOnboardingComplete() {
+        try {
+          const raw = storage.getString("auth-store");
+          if (raw) {
+            const blob = JSON.parse(raw);
+            blob.state.onboardingComplete = true;
+            if (blob.state.user) blob.state.user.onboardingComplete = true;
+            storage.set("auth-store", JSON.stringify(blob));
+          }
+        } catch {
+          // fallback: just flip the state (will switch nav, but better than nothing)
+          const { user } = get();
+          set({
+            onboardingComplete: true,
+            user: user ? { ...user, onboardingComplete: true } : user,
+          });
+        }
+      },
+    }),
+    {
+      name: "auth-store",
+      storage: createJSONStorage(() => zustandStorage),
+    },
+  ),
+);
 
 // Register callbacks so api-client can mutate auth state without circular import
 registerClearSession(() => useAuthStore.getState().clearSession());

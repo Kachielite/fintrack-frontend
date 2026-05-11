@@ -119,19 +119,24 @@ export default function OnboardingLoadingScreen() {
           {statusMessage}
         </Animated.Text>
 
-        {/* Progress bar when reading emails */}
+        {/* Progress bar + count when reading emails */}
         {showProgress && (
-          <View style={[styles.progressTrack, { backgroundColor: colors.surface2 }]}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: colors.primary,
-                  width: `${Math.round((progress.processed / progress.total) * 100)}%`,
-                },
-              ]}
-            />
-          </View>
+          <>
+            <View style={[styles.progressTrack, { backgroundColor: colors.surface2 }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    backgroundColor: colors.primary,
+                    width: `${Math.round((progress.processed / progress.total) * 100)}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={[styles.progressCount, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+              {progress.processed} of {progress.total} emails read
+            </Text>
+          </>
         )}
 
         {!showProgress && !isError && (
@@ -204,6 +209,11 @@ const styles = StyleSheet.create({
   subtext: {
     fontSize: 13,
     textAlign: "center",
+  },
+  progressCount: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: -8,
   },
   progressTrack: {
     width: "100%",
