@@ -1,17 +1,14 @@
-import React from "react";
-import { StyleSheet } from "react-native";
+import React, { useState } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { BlurView } from "expo-blur";
+import TabView, { SceneMap } from "react-native-bottom-tabs";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isIOS26 } from "@/core/common/utils/platform";
-import { FONTS, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
 
 // Auth
@@ -47,7 +44,7 @@ import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
 import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
-import NotificationBell from "@/features/notifications/components/notification-bell";
+
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -72,15 +69,7 @@ export type RootStackParamList = {
   TermsOfService: undefined;
 };
 
-export type TabParamList = {
-  Home: undefined;
-  Transactions: undefined;
-  Budget: undefined;
-  Profile: undefined;
-};
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<TabParamList>();
 const UnauthStack = createNativeStackNavigator();
 const OnboardingStack = createNativeStackNavigator();
 
@@ -91,63 +80,52 @@ const modalOptions = {
   animationDuration: 50,
 };
 
+const TAB_ROUTES = [
+  {
+    key: "home",
+    title: "Home",
+    focusedIcon: { sfSymbol: "house.fill" },
+    unfocusedIcon: { sfSymbol: "house" },
+  },
+  {
+    key: "transactions",
+    title: "Transactions",
+    focusedIcon: { sfSymbol: "creditcard.fill" },
+    unfocusedIcon: { sfSymbol: "creditcard" },
+  },
+  {
+    key: "budget",
+    title: "Budget",
+    focusedIcon: { sfSymbol: "chart.pie.fill" },
+    unfocusedIcon: { sfSymbol: "chart.pie" },
+  },
+  {
+    key: "profile",
+    title: "Profile",
+    focusedIcon: { sfSymbol: "person.fill" },
+    unfocusedIcon: { sfSymbol: "person" },
+  },
+];
+
+const renderScene = SceneMap({
+  home: HomeScreen,
+  transactions: TransactionsScreen,
+  budget: BudgetScreen,
+  profile: ProfileScreen,
+});
+
 function Tabs() {
   const colors = useThemeColors();
-  const isDark = useIsDark();
-
-  const tabBarBackground = isIOS26
-    ? () => (
-        <BlurView
-          intensity={80}
-          tint={isDark ? "dark" : "light"}
-          style={StyleSheet.absoluteFill}
-        />
-      )
-    : undefined;
-
-  const screenOptions = {
-    tabBarStyle: isIOS26
-      ? {
-          position: "absolute" as const,
-          borderTopWidth: 0,
-          backgroundColor: "transparent",
-          elevation: 0,
-        }
-      : {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-        },
-    tabBarBackground,
-    tabBarActiveTintColor: colors.primary,
-    tabBarInactiveTintColor: colors.textSecondary,
-    tabBarLabelStyle: { fontFamily: FONTS.medium, fontSize: 11 },
-    headerShown: false,
-  };
+  const [index, setIndex] = useState(0);
 
   return (
-    <Tab.Navigator screenOptions={screenOptions}>
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          headerShown: true,
-          headerRight: () => <NotificationBell />,
-          headerRightContainerStyle: { paddingRight: SPACING.lg },
-          headerStyle: isIOS26
-            ? undefined
-            : { backgroundColor: colors.surface },
-          headerShadowVisible: false,
-          headerTitle: "",
-          ...(isIOS26
-            ? { headerTransparent: true, headerBlurEffect: "light" as const }
-            : {}),
-        }}
-      />
-      <Tab.Screen name="Transactions" component={TransactionsScreen} />
-      <Tab.Screen name="Budget" component={BudgetScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+    <TabView
+      navigationState={{ index, routes: TAB_ROUTES }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      tabBarActiveTintColor={colors.primary}
+      hapticFeedbackEnabled
+    />
   );
 }
 
