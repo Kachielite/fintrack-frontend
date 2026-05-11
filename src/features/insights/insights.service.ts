@@ -18,4 +18,8 @@ export const InsightService = {
     );
     return mapInsightFromDto(data);
   },
+
+  async generate(): Promise<void> {
+    await apiClient.post(API_ENDPOINTS.INSIGHTS_GENERATE);
+  },
 };

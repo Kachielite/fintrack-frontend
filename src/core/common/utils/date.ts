@@ -10,8 +10,18 @@ function toDate(date: string | Date): Date {
   return typeof date === "string" ? parseISO(date) : date;
 }
 
+function safeDate(date: string | Date): Date | null {
+  try {
+    const d = toDate(date);
+    return isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
 export function formatDate(date: string | Date): string {
-  return format(toDate(date), "MMM d, yyyy");
+  const d = safeDate(date);
+  return d ? format(d, "MMM d, yyyy") : "—";
 }
 
 export function formatRelative(date: string | Date): string {

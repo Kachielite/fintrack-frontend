@@ -26,19 +26,19 @@ export interface TransactionDto {
   id: number;
   merchant: string;
   category: string;
-  transaction_type: string;
+  transactionType: string;
   amount: number;
   currency: string;
-  ref_amount: number;
-  ref_currency: string;
-  exchange_rate_used: number | null;
-  transaction_date: string;
+  refAmount: number;
+  refCurrency: string;
+  exchangeRateUsed: number | null;
+  transactionDate: string;
   status: string;
-  bank_id: number | null;
+  bankId: number | null;
   reference: string | null;
   balance: number | null;
-  original_merchant: string | null;
-  original_category: string | null;
+  originalMerchant: string | null;
+  originalCategory: string | null;
 }
 
 export interface TransactionQueryParams {
