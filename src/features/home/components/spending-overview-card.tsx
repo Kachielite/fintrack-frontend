@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import CurrencyBreakdownSheet from "./currency-breakdown-sheet";
 import { FONTS, FONT_SIZE, SPACING } from "@/core/common/constants/theme";
 import { TransactionSummary } from "@/features/transactions/transactions.interface";
 import { formatCurrency } from "@/core/common/utils/currency";
@@ -20,7 +20,7 @@ export default function SpendingOverviewCard({
   isLoading,
 }: SpendingOverviewCardProps) {
   const colors = useThemeColors();
-  const navigation = useNavigation();
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const now = new Date();
   const dayOfMonth = now.getDate();
@@ -143,7 +143,7 @@ export default function SpendingOverviewCard({
               </View>
             )}
             <Pressable
-              onPress={() => navigation.navigate("CurrencyBreakdown" as never)}
+              onPress={() => setSheetOpen(true)}
               style={styles.currencyLink}
             >
               <Text
@@ -162,6 +162,14 @@ export default function SpendingOverviewCard({
             </Pressable>
           </View>
         </>
+      )}
+
+      {summary && (
+        <CurrencyBreakdownSheet
+          visible={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          summary={summary}
+        />
       )}
     </GlassCard>
   );
