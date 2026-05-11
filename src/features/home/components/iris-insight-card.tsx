@@ -1,73 +1,69 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { Insight } from "@/features/insights/insights.interface";
+import InsightSheet from "./insight-sheet";
 
 interface IrisInsightCardProps {
   insight: Insight | undefined;
   isLoading: boolean;
 }
 
-export default function IrisInsightCard({
-  insight,
-  isLoading,
-}: IrisInsightCardProps) {
+export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardProps) {
   const colors = useThemeColors();
-  const navigation = useNavigation();
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Don't render anything while loading or if there's genuinely no insight
   if (isLoading) return null;
   if (!insight) return null;
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.primaryLight,
-          borderColor: colors.primary + "33",
-        },
-      ]}
-    >
-      <View style={styles.headerRow}>
-        <Ionicons name="sparkles" size={13} color={colors.primary} />
-        <Text
-          style={[
-            styles.label,
-            { color: colors.primary, fontFamily: FONTS.bold },
-          ]}
-        >
-          IRIS NOTICED
-        </Text>
-      </View>
-
-      <Text
+    <>
+      <View
         style={[
-          styles.message,
-          { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+          styles.card,
+          {
+            backgroundColor: colors.primaryLight,
+            borderColor: colors.primary + "33",
+          },
         ]}
       >
-        {insight.message}
-      </Text>
+        <View style={styles.headerRow}>
+          <Ionicons name="sparkles" size={13} color={colors.primary} />
+          <Text
+            style={[styles.label, { color: colors.primary, fontFamily: FONTS.bold }]}
+          >
+            IRIS NOTICED
+          </Text>
+        </View>
 
-      <Pressable
-        onPress={() => navigation.navigate("Insights" as never)}
-        style={styles.link}
-      >
         <Text
           style={[
-            styles.linkText,
-            { color: colors.primary, fontFamily: FONTS.semiBold },
+            styles.message,
+            { color: colors.textPrimary, fontFamily: FONTS.semiBold },
           ]}
+          numberOfLines={3}
         >
-          See the breakdown
+          {insight.message}
         </Text>
-        <Ionicons name="chevron-forward" size={13} color={colors.primary} />
-      </Pressable>
-    </View>
+
+        <Pressable onPress={() => setSheetOpen(true)} style={styles.link}>
+          <Text
+            style={[styles.linkText, { color: colors.primary, fontFamily: FONTS.semiBold }]}
+          >
+            See the breakdown
+          </Text>
+          <Ionicons name="chevron-forward" size={13} color={colors.primary} />
+        </Pressable>
+      </View>
+
+      <InsightSheet
+        visible={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        insight={insight}
+      />
+    </>
   );
 }
 
