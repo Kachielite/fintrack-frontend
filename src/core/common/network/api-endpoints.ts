@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   // Insights
   INSIGHTS: "/insights",
   INSIGHT_READ: (id: number) => `/insights/${id}/read`,
+  INSIGHTS_GENERATE: "/insights/generate",
 
   // Notifications
   NOTIFICATIONS: "/notifications",

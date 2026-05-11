@@ -17,11 +17,20 @@ export const TransactionService = {
   async listTransactions(
     params?: TransactionQueryParams,
   ): Promise<PaginatedResponse<Transaction>> {
-    const { data } = await apiClient.get<PaginatedResponse<TransactionDto>>(
-      API_ENDPOINTS.TRANSACTIONS,
-      { params },
-    );
-    return { ...data, data: data.data.map(mapTransactionFromDto) };
+    const { data } = await apiClient.get<{
+      items: TransactionDto[];
+      total_items: number;
+      page: number;
+      limit: number;
+      pages: number;
+    }>(API_ENDPOINTS.TRANSACTIONS, { params });
+    return {
+      data: data.items.map(mapTransactionFromDto),
+      total: data.total_items,
+      page: data.page,
+      limit: data.limit,
+      totalPages: data.pages,
+    };
   },
 
   async getTransaction(id: number): Promise<Transaction> {

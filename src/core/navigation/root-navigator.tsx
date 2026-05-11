@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -10,6 +10,7 @@ import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isIOS26 } from "@/core/common/utils/platform";
 import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
+import { useTabStore } from "@/core/common/state/tab.state";
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
@@ -116,13 +117,13 @@ const renderScene = SceneMap({
 
 function Tabs() {
   const colors = useThemeColors();
-  const [index, setIndex] = useState(0);
+  const { tabIndex, setTabIndex } = useTabStore();
 
   return (
     <TabView
-      navigationState={{ index, routes: TAB_ROUTES }}
+      navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
       renderScene={renderScene}
-      onIndexChange={setIndex}
+      onIndexChange={setTabIndex}
       tabBarActiveTintColor={colors.primary}
       hapticFeedbackEnabled
     />
