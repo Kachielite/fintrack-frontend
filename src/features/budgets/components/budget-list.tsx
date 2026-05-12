@@ -29,8 +29,8 @@ export default function BudgetList({
         <GlassCard style={styles.emptyCard}>
           <EmptyState
             icon="sparkles-outline"
-            message="No budgets yet"
-            subMessage="Accept a suggestion below to set your first spending limit, or tap + to create one manually."
+            message="Setting up your budgets"
+            subMessage="Iris is analysing your spending history and setting limits automatically."
           />
         </GlassCard>
       ) : (

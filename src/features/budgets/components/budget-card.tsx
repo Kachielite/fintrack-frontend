@@ -116,6 +116,18 @@ export default function BudgetCard({ budget, onPress }: Props) {
           percentage={budget.percentage}
           status={budget.status}
         />
+
+        {budget.habitDescription && (
+          <Text
+            style={[
+              styles.habitNote,
+              { color: colors.textSubtle, fontFamily: FONTS.regular },
+            ]}
+            numberOfLines={2}
+          >
+            {budget.habitDescription}
+          </Text>
+        )}
       </GlassCard>
     </Pressable>
   );
@@ -143,5 +155,6 @@ const styles = StyleSheet.create({
   amounts: { alignItems: "flex-end", flexShrink: 0 },
   spent: { fontSize: FONT_SIZE.bodySmall, letterSpacing: -0.2 },
   limit: { fontSize: 10, marginTop: 1 },
+  habitNote: { fontSize: 11, lineHeight: 16, marginTop: 2 },
 });
 

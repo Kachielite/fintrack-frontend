@@ -50,6 +50,7 @@ export interface BudgetDto {
   percentage: number;
   status: "healthy" | "warning" | "over";
   days_remaining: number;
+  habit_description?: string | null;
 }
 
 export interface BudgetDetailDto extends BudgetDto {

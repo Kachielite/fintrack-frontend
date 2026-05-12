@@ -2,6 +2,7 @@ export const API_ENDPOINTS = {
   // Auth
   AUTH_GOOGLE: "/auth/google",
   AUTH_APPLE: "/auth/apple",
+  AUTH_DEMO: "/auth/demo",
   AUTH_REFRESH: "/auth/refresh",
   AUTH_LOGOUT: "/auth/logout",
 
@@ -27,9 +28,11 @@ export const API_ENDPOINTS = {
   // Transactions
   TRANSACTIONS: "/transactions",
   TRANSACTION_DETAIL: (id: number) => `/transactions/${id}`,
+  TRANSACTION_SIMILAR: (id: number) => `/transactions/${id}/similar`,
   TRANSACTIONS_SUMMARY: "/transactions/summary",
   TRANSACTIONS_UNVERIFIED: "/transactions/unverified",
   TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
+  TRANSACTIONS_BULK_CATEGORY: "/transactions/bulk-category",
 
   // Exchange rates
   EXCHANGE_RATES: "/exchange-rates",
@@ -39,6 +42,7 @@ export const API_ENDPOINTS = {
   BUDGET_DETAIL: (id: number) => `/budgets/${id}`,
   BUDGET_CATEGORY_DETAIL: (id: number) => `/budgets/${id}/detail`,
   BUDGET_SUGGESTIONS: "/budgets/suggestions",
+  BUDGET_AUTO_GENERATE: "/budgets/auto-generate",
 
   // Goals
   GOALS: "/goals",

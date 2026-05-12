@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import {
   FONTS,
@@ -49,17 +49,42 @@ export default function TransactionDetailSheet({
     transaction.category,
   );
   const [reviewDone, setReviewDone] = useState(false);
+  const [confirmedCategory, setConfirmedCategory] = useState<CategoryType | null>(null);
+  const [similarDismissed, setSimilarDismissed] = useState(false);
 
   const showReviewBanner = isReview && !reviewDone;
 
   const mutation = useMutation({
     mutationFn: (category: CategoryType) =>
       TransactionService.correctTransaction(transaction.id, { category }),
-    onSuccess: () => {
+    onSuccess: (_, category) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
       setReviewDone(true);
+      setConfirmedCategory(category);
     },
   });
+
+  // Fetch similar transactions once the category is confirmed
+  const { data: similarTransactions = [] } = useQuery({
+    queryKey: [QUERY_KEYS.TRANSACTION_DETAIL, transaction.id, "similar"],
+    queryFn: () => TransactionService.getSimilarTransactions(transaction.id),
+    enabled: confirmedCategory !== null && !similarDismissed,
+    staleTime: Infinity,
+  });
+
+  const bulkMutation = useMutation({
+    mutationFn: (ids: number[]) =>
+      TransactionService.bulkCorrectCategory(ids, confirmedCategory!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      setSimilarDismissed(true);
+    },
+  });
+
+  const showSimilarBanner =
+    confirmedCategory !== null &&
+    !similarDismissed &&
+    similarTransactions.length > 0;
 
   const isCredit = transaction.transactionType === "credit";
   const showRef = transaction.currency !== transaction.refCurrency;
@@ -298,6 +323,77 @@ export default function TransactionDetailSheet({
               </View>
             )}
 
+            {/* Similar expense prompt */}
+            {showSimilarBanner && (
+              <View
+                style={[
+                  styles.similarCard,
+                  {
+                    backgroundColor: colors.surface2,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View style={styles.similarHeader}>
+                  <Ionicons name="git-branch-outline" size={14} color={colors.primary} />
+                  <Text
+                    style={[
+                      styles.similarLabel,
+                      { color: colors.primary, fontFamily: FONTS.bold },
+                    ]}
+                  >
+                    SIMILAR EXPENSES FOUND
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.similarBody,
+                    { color: colors.textPrimary, fontFamily: FONTS.regular },
+                  ]}
+                >
+                  {similarTransactions.length} other{" "}
+                  <Text style={{ fontFamily: FONTS.semiBold }}>
+                    {transaction.merchant}
+                  </Text>{" "}
+                  {similarTransactions.length === 1 ? "expense has" : "expenses have"} a different category.
+                  Apply{" "}
+                  <Text style={{ fontFamily: FONTS.semiBold }}>
+                    {CATEGORY_LABELS[confirmedCategory!]}
+                  </Text>{" "}
+                  to all of them?
+                </Text>
+                <View style={styles.similarActions}>
+                  <Pressable
+                    onPress={() =>
+                      bulkMutation.mutate(similarTransactions.map((t) => t.id))
+                    }
+                    disabled={bulkMutation.isPending}
+                    style={[
+                      styles.similarBtn,
+                      styles.similarBtnPrimary,
+                      { backgroundColor: colors.primary, opacity: bulkMutation.isPending ? 0.7 : 1 },
+                    ]}
+                  >
+                    {bulkMutation.isPending ? (
+                      <ActivityIndicator size="small" color={colors.onPrimary} />
+                    ) : (
+                      <Text style={[styles.similarBtnText, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
+                        Yes, update all
+                      </Text>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSimilarDismissed(true)}
+                    style={[styles.similarBtn, { borderColor: colors.border, borderWidth: 1 }]}
+                  >
+                    <Text style={[styles.similarBtnText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                      No, just this one
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+
             {/* Detail rows */}
             <View
               style={[
@@ -481,5 +577,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   ctaText: { fontSize: FONT_SIZE.body, letterSpacing: -0.2 },
+  similarCard: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    padding: SPACING.base,
+    gap: SPACING.sm,
+  },
+  similarHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.xs,
+  },
+  similarLabel: { fontSize: 11, letterSpacing: 0.6 },
+  similarBody: { fontSize: 14, lineHeight: 20 },
+  similarActions: {
+    flexDirection: "row",
+    gap: SPACING.sm,
+    flexWrap: "wrap",
+    marginTop: SPACING.xs,
+  },
+  similarBtn: {
+    paddingHorizontal: SPACING.base,
+    paddingVertical: SPACING.xs + 2,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 34,
+  },
+  similarBtnPrimary: {},
+  similarBtnText: { fontSize: 13 },
 });
 

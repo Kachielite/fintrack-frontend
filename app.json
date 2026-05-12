@@ -31,6 +31,10 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.215586258976-5tk7fhsjkkceqhso1be0rvoh74jsfr04"
         }
+      ],
+      [
+        "./plugins/with-kotlin-version",
+        { "kotlinVersion": "1.9.25" }
       ]
     ]
   }

@@ -67,4 +67,19 @@ export const TransactionService = {
     );
     return mapTransactionFromDto(data);
   },
+
+  async getSimilarTransactions(id: number): Promise<Transaction[]> {
+    const { data } = await apiClient.get<TransactionDto[]>(
+      API_ENDPOINTS.TRANSACTION_SIMILAR(id),
+    );
+    return data.map(mapTransactionFromDto);
+  },
+
+  async bulkCorrectCategory(ids: number[], category: string): Promise<{ updated: number }> {
+    const { data } = await apiClient.patch<{ updated: number }>(
+      API_ENDPOINTS.TRANSACTIONS_BULK_CATEGORY,
+      { ids, category },
+    );
+    return data;
+  },
 };
