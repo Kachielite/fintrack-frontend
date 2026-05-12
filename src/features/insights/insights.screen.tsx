@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { TransactionQueryParams } from "@/features/transactions/transactions.dto";
 import { Transaction } from "@/features/transactions/transactions.interface";
+import { CATEGORY_LABELS, CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
 import DrilldownSheet from "./components/drilldown-sheet";
 import TransactionDetailSheet from "@/features/transactions/components/transaction-detail-sheet";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -284,16 +285,12 @@ function DailySpendChart({ data, refCurrency, screenWidth }: { data: DailyPoint[
 // ──────────────────────────────────────────────────────────
 // Q2: Category bars with icons
 // ──────────────────────────────────────────────────────────
-const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
-  food:     { label: "Food & Dining",  icon: "restaurant-outline" },
-  transit:  { label: "Transport",      icon: "car-outline" },
-  utility:  { label: "Utilities",      icon: "flash-outline" },
-  subs:     { label: "Subscriptions",  icon: "repeat-outline" },
-  transfer: { label: "Transfers",      icon: "swap-horizontal-outline" },
-  fun:      { label: "Entertainment",  icon: "happy-outline" },
-  health:   { label: "Health",         icon: "medical-outline" },
-  other:    { label: "Other",          icon: "ellipsis-horizontal-outline" },
-};
+const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = Object.fromEntries(
+  Object.keys(CATEGORY_LABELS).map((key) => [
+    key,
+    { label: CATEGORY_LABELS[key as keyof typeof CATEGORY_LABELS], icon: CATEGORY_ICON_NAMES[key as keyof typeof CATEGORY_ICON_NAMES] ?? "ellipsis-horizontal-outline" },
+  ])
+);
 
 function CategoryChart({ data, refCurrency, onCategoryPress }: { data: CategoryPoint[]; refCurrency: string; onCategoryPress?: (category: string) => void }) {
   const colors = useThemeColors();

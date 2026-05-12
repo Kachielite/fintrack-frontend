@@ -8,16 +8,6 @@ import { CategoryPoint } from "@/features/insights/hooks/use-chart-data";
 import { CATEGORY_LABELS } from "@/features/transactions/transactions.constants";
 import { currencySymbol } from "@/core/common/utils/currency";
 
-const CATEGORY_DISPLAY: Record<string, string> = {
-  food: "Food & Dining",
-  transit: "Transport",
-  utility: "Utilities",
-  subs: "Subscriptions",
-  transfer: "Transfers",
-  fun: "Entertainment",
-  health: "Health",
-  other: "Other",
-};
 
 function buildMessage(
   budgets: Budget[],
@@ -33,8 +23,8 @@ function buildMessage(
 
   if (unbudgeted.length >= 2) {
     const [top, second] = unbudgeted;
-    const topLabel = CATEGORY_DISPLAY[top.category] ?? top.category;
-    const secondLabel = CATEGORY_DISPLAY[second.category] ?? second.category;
+    const topLabel = CATEGORY_LABELS[top.category] ?? top.category;
+    const secondLabel = CATEGORY_LABELS[second.category] ?? second.category;
     return {
       title: "Untracked spending areas",
       body: `${topLabel} (${sym}${Math.round(top.total)}) and ${secondLabel} (${sym}${Math.round(second.total)}) have no budget limits yet. Setting caps on these could give you a clearer picture of where your money goes.`,
@@ -43,7 +33,7 @@ function buildMessage(
 
   if (unbudgeted.length === 1) {
     const u = unbudgeted[0];
-    const label = CATEGORY_DISPLAY[u.category] ?? u.category;
+    const label = CATEGORY_LABELS[u.category] ?? u.category;
     return {
       title: "One area to consider",
       body: `You're spending ${sym}${Math.round(u.total)} on ${label} this month with no budget set. A small limit here could help you stay in control.`,
@@ -52,7 +42,7 @@ function buildMessage(
 
   const over = budgets.filter((b) => b.status === "over");
   if (over.length > 0) {
-    const labels = over.map((b) => CATEGORY_DISPLAY[b.category] ?? b.category).join(" and ");
+    const labels = over.map((b) => CATEGORY_LABELS[b.category] ?? b.category).join(" and ");
     return {
       title: "Budget exceeded",
       body: `You've gone over your ${labels} budget this month. Consider adjusting the limit or trimming back spending there for the rest of the period.`,
@@ -62,7 +52,7 @@ function buildMessage(
   const warning = budgets.filter((b) => b.status === "warning");
   if (warning.length > 0) {
     const first = warning[0];
-    const label = CATEGORY_DISPLAY[first.category] ?? first.category;
+    const label = CATEGORY_LABELS[first.category] ?? first.category;
     return {
       title: "Getting close",
       body: `Your ${label} budget is approaching its limit with ${first.daysRemaining} day${first.daysRemaining !== 1 ? "s" : ""} left this month. You're doing well — stay steady and you'll finish in the green.`,

@@ -243,7 +243,7 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
               >
                 {transactions.map((tx, i) => (
                   <View
-                    key={tx.id}
+                    key={tx.reference ?? String(tx.id)}
                     style={[
                       styles.txRow,
                       i < transactions.length - 1 && {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -118,6 +118,10 @@ const renderScene = SceneMap({
 function Tabs() {
   const colors = useThemeColors();
   const { tabIndex, setTabIndex } = useTabStore();
+
+  useEffect(() => {
+    setTabIndex(0);
+  }, []);
 
   return (
     <TabView

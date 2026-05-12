@@ -16,37 +16,12 @@ import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS, CATEGORY_COLORS } from "@/core/common/constants/theme";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { Transaction, CategoryType } from "@/features/transactions/transactions.interface";
+import { CATEGORY_LABELS, CATEGORY_ICON_NAMES, ALL_CATEGORIES } from "@/features/transactions/transactions.constants";
 import { TransactionService } from "@/features/transactions/transactions.service";
 import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate, formatTime } from "@/core/common/utils/date";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
-
-const CATEGORY_ICONS: Record<CategoryType, React.ComponentProps<typeof Ionicons>["name"]> = {
-  food: "restaurant-outline",
-  transit: "car-outline",
-  utility: "flash-outline",
-  subs: "tv-outline",
-  transfer: "swap-horizontal-outline",
-  fun: "game-controller-outline",
-  health: "heart-outline",
-  other: "ellipsis-horizontal-outline",
-};
-
-const CATEGORY_LABELS: Record<CategoryType, string> = {
-  food: "Food & Dining",
-  transit: "Transport",
-  utility: "Utilities",
-  subs: "Subscriptions",
-  transfer: "Transfers",
-  fun: "Entertainment",
-  health: "Health",
-  other: "Other",
-};
-
-const ALL_CATEGORIES: CategoryType[] = [
-  "food", "transit", "utility", "subs", "transfer", "fun", "health", "other",
-];
 
 interface Props {
   visible: boolean;
@@ -78,7 +53,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   const showRef = transaction.currency !== transaction.refCurrency;
 
   const catColor = CATEGORY_COLORS[pickedCat] ?? colors.textSubtle;
-  const iconName = CATEGORY_ICONS[pickedCat] ?? "ellipsis-horizontal-outline";
+  const iconName = CATEGORY_ICON_NAMES[pickedCat] ?? "ellipsis-horizontal-outline";
 
   const detailRows: [string, string][] = [
     ["Category", CATEGORY_LABELS[transaction.category] ?? transaction.category],
@@ -178,7 +153,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                   {ALL_CATEGORIES.map((cat) => {
                     const active = pickedCat === cat;
                     const catColor = CATEGORY_COLORS[cat] ?? colors.textSubtle;
-                    const catIcon = (CATEGORY_ICONS[cat] as React.ComponentProps<typeof Ionicons>["name"]) ?? "ellipsis-horizontal-outline";
+                    const catIcon = (CATEGORY_ICON_NAMES[cat] as React.ComponentProps<typeof Ionicons>["name"]) ?? "ellipsis-horizontal-outline";
                     return (
                       <Pressable
                         key={cat}
