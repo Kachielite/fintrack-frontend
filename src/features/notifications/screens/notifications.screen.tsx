@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { useNotifications, useMarkRead, useMarkAllRead } from "../hooks/use-notifications";
@@ -74,12 +75,16 @@ function NotificationRow({ item }: { item: AppNotification }) {
 
 export default function NotificationsScreen() {
   const colors = useThemeColors();
+  const navigation = useNavigation();
   const { data, isLoading } = useNotifications();
   const { mutate: markAllRead } = useMarkAllRead();
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        </Pressable>
         <Text style={[styles.heading, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
           Notifications
         </Text>
@@ -129,12 +134,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: SPACING.xl,
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.base,
     paddingVertical: SPACING.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  heading: { fontSize: FONT_SIZE.h2 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  heading: { fontSize: FONT_SIZE.h2, flex: 1 },
   markAll: { fontSize: 14 },
   loader: { flex: 1 },
   empty: {

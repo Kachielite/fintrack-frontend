@@ -703,7 +703,7 @@ export default function InsightsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
+        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
           <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
         </Pressable>
         <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>Insights</Text>
@@ -820,7 +820,14 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
     gap: SPACING.xs,
   },
-  backBtn: { marginRight: 2 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 2,
+  },
   title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   filterBtn: {
     flexDirection: "row",

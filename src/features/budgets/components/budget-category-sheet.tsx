@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   View,
@@ -27,6 +27,7 @@ import { formatCurrency } from "@/core/common/utils/currency";
 import { Budget } from "../budgets.interface";
 import { useBudgetDetail } from "../hooks/use-budget-detail";
 import BudgetProgressBar from "./budget-progress-bar";
+import EditBudgetSheet from "./edit-budget-sheet";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -49,6 +50,7 @@ export default function BudgetCategorySheet({
 }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const [editVisible, setEditVisible] = useState(false);
   const { budget: detail, isLoading } = useBudgetDetail(budget.id);
 
   const catColor = CATEGORY_COLORS[budget.category] ?? colors.textSubtle;
@@ -111,13 +113,22 @@ export default function BudgetCategorySheet({
                 {CATEGORY_LABELS[budget.category]}
               </Text>
             </View>
-            <Pressable
-              onPress={onClose}
-              hitSlop={12}
-              style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
-            >
-              <Ionicons name="close" size={18} color={colors.textSecondary} />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={() => setEditVisible(true)}
+                hitSlop={12}
+                style={[styles.editBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} />
+              </Pressable>
+              <Pressable
+                onPress={onClose}
+                hitSlop={12}
+                style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
           </View>
 
           {isLoading ? (
@@ -458,6 +469,12 @@ export default function BudgetCategorySheet({
           )}
         </View>
       </View>
+
+      <EditBudgetSheet
+        visible={editVisible}
+        onClose={() => setEditVisible(false)}
+        budget={budget}
+      />
     </Modal>
   );
 }
@@ -488,7 +505,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
     paddingVertical: SPACING.md,
   },
-  headerLeft: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
+  headerLeft: { flexDirection: "row", alignItems: "center", gap: SPACING.sm, flex: 1 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
+  editBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 99,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   headerIcon: {
     width: 30,
     height: 30,
