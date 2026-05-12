@@ -174,29 +174,33 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                   We weren't sure how to categorise this one. Pick the closest fit:
                 </Text>
 
-                <View style={styles.chips}>
+                <View style={styles.categoryGrid}>
                   {ALL_CATEGORIES.map((cat) => {
                     const active = pickedCat === cat;
+                    const catColor = CATEGORY_COLORS[cat] ?? colors.textSubtle;
+                    const catIcon = (CATEGORY_ICONS[cat] as React.ComponentProps<typeof Ionicons>["name"]) ?? "ellipsis-horizontal-outline";
                     return (
                       <Pressable
                         key={cat}
                         onPress={() => setPickedCat(cat)}
                         style={[
-                          styles.chip,
+                          styles.categoryTile,
                           {
-                            backgroundColor: active ? colors.warning : colors.surface,
-                            borderColor: active ? colors.warning : colors.border,
+                            backgroundColor: active ? catColor + "18" : colors.surface,
+                            borderColor: active ? catColor : colors.border,
                           },
                         ]}
                       >
+                        <Ionicons name={catIcon} size={18} color={active ? catColor : colors.textSubtle} />
                         <Text
                           style={[
-                            styles.chipText,
+                            styles.categoryTileLabel,
                             {
-                              color: active ? colors.surface : colors.textPrimary,
-                              fontFamily: FONTS.semiBold,
+                              color: active ? catColor : colors.textSecondary,
+                              fontFamily: active ? FONTS.semiBold : FONTS.regular,
                             },
                           ]}
+                          numberOfLines={1}
                         >
                           {CATEGORY_LABELS[cat]}
                         </Text>
@@ -330,14 +334,19 @@ const styles = StyleSheet.create({
   },
   reviewLabel: { fontSize: 11, letterSpacing: 0.6 },
   reviewBody: { fontSize: 14, lineHeight: 20 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 99,
+  categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  categoryTile: {
+    width: "22%",
+    flex: 1,
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: 4,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
+    minWidth: 64,
   },
-  chipText: { fontSize: 12 },
+  categoryTileLabel: { fontSize: 10, textAlign: "center" },
   confirmBtn: {
     borderRadius: RADIUS.xl,
     paddingVertical: SPACING.sm + 2,

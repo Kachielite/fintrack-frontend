@@ -226,7 +226,7 @@ function MainStack() {
         component={EditGoalScreen}
         options={modalOptions}
       />
-      <Stack.Screen name="Insights" component={InsightsScreen} />
+      <Stack.Screen name="Insights" component={InsightsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CurrencyBreakdown" component={ExchangeRatesScreen} />
       <Stack.Screen
         name="EmailConnections"
@@ -238,8 +238,16 @@ function MainStack() {
         component={GmailLabelPickerScreen}
       />
       <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
-      <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{ title: "Privacy Policy" }}
+      />
+      <Stack.Screen
+        name="TermsOfService"
+        component={TermsOfServiceScreen}
+        options={{ title: "Terms of Service" }}
+      />
       <Stack.Screen
         name="Notifications"
         component={NotificationsScreen}

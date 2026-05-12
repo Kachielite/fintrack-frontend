@@ -19,6 +19,8 @@ export const API_ENDPOINTS = {
   EMAIL_CONNECTION_LABELS: (id: number) => `/email-connections/${id}/labels`,
   EMAIL_CONNECTION_LABEL: (id: number) => `/email-connections/${id}/label`,
   EMAIL_CONNECTION_SYNC: (id: number) => `/email-connections/${id}/sync`,
+  EMAIL_CONNECTION_STATS: (id: number) => `/email-connections/${id}/stats`,
+  EMAIL_CONNECTION_DATA: (id: number) => `/email-connections/${id}/data`,
   GMAIL_AUTH_URL: "/email-connections/google/auth-url",
   GMAIL_CALLBACK: "/email-connections/google/callback",
 
@@ -27,6 +29,7 @@ export const API_ENDPOINTS = {
   TRANSACTION_DETAIL: (id: number) => `/transactions/${id}`,
   TRANSACTIONS_SUMMARY: "/transactions/summary",
   TRANSACTIONS_UNVERIFIED: "/transactions/unverified",
+  TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
 
   // Exchange rates
   EXCHANGE_RATES: "/exchange-rates",

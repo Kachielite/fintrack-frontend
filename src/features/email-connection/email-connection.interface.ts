@@ -15,3 +15,12 @@ export interface GmailLabel {
   name: string;
   messagesTotal?: number;
 }
+
+export interface ConnectionStats {
+  emailsScanned: number;
+  transactionsExtracted: number;
+  nonTransactions: number;
+  failed: number;
+  byRegex: number;
+  byAi: number;
+}

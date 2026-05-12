@@ -6,7 +6,7 @@ import {
   GmailAuthUrlDto,
   SetLabelSchemaType,
 } from "./email-connection.dto";
-import { EmailConnection, GmailLabel } from "./email-connection.interface";
+import { EmailConnection, GmailLabel, ConnectionStats } from "./email-connection.interface";
 import {
   mapEmailConnectionFromDto,
   mapGmailLabelFromDto,
@@ -66,6 +66,17 @@ export const EmailConnectionService = {
 
   async triggerSync(connectionId: number): Promise<void> {
     await apiClient.post(API_ENDPOINTS.EMAIL_CONNECTION_SYNC(connectionId));
+  },
+
+  async getStats(id: number): Promise<ConnectionStats> {
+    const { data } = await apiClient.get<ConnectionStats>(
+      API_ENDPOINTS.EMAIL_CONNECTION_STATS(id),
+    );
+    return data;
+  },
+
+  async deleteConnectionData(id: number): Promise<void> {
+    await apiClient.delete(API_ENDPOINTS.EMAIL_CONNECTION_DATA(id));
   },
 
   async deleteConnection(id: number): Promise<void> {

@@ -16,4 +16,5 @@ export const QUERY_KEYS = {
   EMAIL_CONNECTION_DETAIL: "email-connection-detail",
   GMAIL_LABELS: "gmail-labels",
   GMAIL_AUTH_URL: "gmail-auth-url",
+  CHART_DATA: "chart-data",
 } as const;
