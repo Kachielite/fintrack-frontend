@@ -7,7 +7,6 @@ import {
   DarkTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import TabView, { SceneMap } from "react-native-bottom-tabs";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import * as NavigationBar from "expo-navigation-bar";
@@ -18,7 +17,6 @@ import {
   useThemeColors,
   useIsDark,
 } from "@/core/common/hooks/use-theme-colors";
-import { useTabStore } from "@/core/common/state/tab.state";
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
@@ -86,65 +84,6 @@ const modalOptions = {
   animationDuration: 50,
 };
 
-// ─── iOS 26 native tab bar (SF Symbols) ───────────────────────────────────────
-
-const IOS_TAB_ROUTES = [
-  {
-    key: "home",
-    title: "Home",
-    focusedIcon: { sfSymbol: "house.fill" },
-    unfocusedIcon: { sfSymbol: "house" },
-  },
-  {
-    key: "transactions",
-    title: "Transactions",
-    focusedIcon: { sfSymbol: "creditcard.fill" },
-    unfocusedIcon: { sfSymbol: "creditcard" },
-  },
-  {
-    key: "budget",
-    title: "Budget",
-    focusedIcon: { sfSymbol: "chart.pie.fill" },
-    unfocusedIcon: { sfSymbol: "chart.pie" },
-  },
-  {
-    key: "profile",
-    title: "Profile",
-    focusedIcon: { sfSymbol: "person.fill" },
-    unfocusedIcon: { sfSymbol: "person" },
-  },
-];
-
-const renderScene = SceneMap({
-  home: HomeScreen,
-  transactions: TransactionsScreen,
-  budget: BudgetScreen,
-  profile: ProfileScreen,
-});
-
-function TabsIOS26() {
-  const colors = useThemeColors();
-  const { tabIndex, setTabIndex } = useTabStore();
-
-  useEffect(() => {
-    setTabIndex(0);
-  }, []);
-
-  return (
-    <TabView
-      navigationState={{ index: tabIndex, routes: IOS_TAB_ROUTES }}
-      renderScene={renderScene}
-      onIndexChange={setTabIndex}
-      tabBarActiveTintColor={colors.primary}
-      tabBarStyle={{ backgroundColor: colors.surface }}
-      translucent={false}
-      disablePageAnimations
-      hapticFeedbackEnabled
-      scrollEdgeAppearance="opaque"
-      rippleColor="transparent"
-    />
-  );
-}
 
 // ─── Cross-platform tab bar (Android + older iOS) ─────────────────────────────
 
@@ -196,7 +135,7 @@ function TabsCrossPlatform() {
   // Using a custom bar avoids platform-specific overlays applied by the default bar.
   function MyTabBar({ state, _descriptors, navigation }: any) {
     return (
-      <SafeAreaView style={{ backgroundColor: colors.surface }}>
+      <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
         <View
           style={{
             flexDirection: "row",
@@ -280,7 +219,8 @@ function TabsCrossPlatform() {
 }
 
 function Tabs() {
-  return isIOS26 ? <TabsIOS26 /> : <TabsCrossPlatform />;
+  // Use the custom tab bar on iOS 26 as well to avoid native press flash/ripple visuals.
+  return <TabsCrossPlatform />;
 }
 
 // ─── Android system nav bar color sync ───────────────────────────────────────
