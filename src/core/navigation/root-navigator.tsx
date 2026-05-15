@@ -6,9 +6,12 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabView, { SceneMap } from "react-native-bottom-tabs";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import * as NavigationBar from "expo-navigation-bar";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
-import { isIOS26 } from "@/core/common/utils/platform";
+import { isAndroid, isIOS26 } from "@/core/common/utils/platform";
 import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
 import { useTabStore } from "@/core/common/state/tab.state";
 
@@ -81,7 +84,9 @@ const modalOptions = {
   animationDuration: 50,
 };
 
-const TAB_ROUTES = [
+// ─── iOS 26 native tab bar (SF Symbols) ───────────────────────────────────────
+
+const IOS_TAB_ROUTES = [
   {
     key: "home",
     title: "Home",
@@ -115,7 +120,7 @@ const renderScene = SceneMap({
   profile: ProfileScreen,
 });
 
-function Tabs() {
+function TabsIOS26() {
   const colors = useThemeColors();
   const { tabIndex, setTabIndex } = useTabStore();
 
@@ -125,13 +130,74 @@ function Tabs() {
 
   return (
     <TabView
-      navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
+      navigationState={{ index: tabIndex, routes: IOS_TAB_ROUTES }}
       renderScene={renderScene}
       onIndexChange={setTabIndex}
       tabBarActiveTintColor={colors.primary}
       hapticFeedbackEnabled
+      scrollEdgeAppearance="opaque"
     />
   );
+}
+
+// ─── Cross-platform tab bar (Android + older iOS) ─────────────────────────────
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
+
+const ANDROID_TABS: {
+  name: string;
+  label: string;
+  component: React.ComponentType<any>;
+  icon: IoniconsName;
+  iconFocused: IoniconsName;
+}[] = [
+  { name: "Home", label: "Home", component: HomeScreen, icon: "home-outline", iconFocused: "home" },
+  { name: "Transactions", label: "Transactions", component: TransactionsScreen, icon: "card-outline", iconFocused: "card" },
+  { name: "Budget", label: "Budget", component: BudgetScreen, icon: "pie-chart-outline", iconFocused: "pie-chart" },
+  { name: "Profile", label: "Profile", component: ProfileScreen, icon: "person-outline", iconFocused: "person" },
+];
+
+const BottomTab = createBottomTabNavigator();
+
+function TabsCrossPlatform() {
+  const colors = useThemeColors();
+
+  return (
+    <BottomTab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSubtle,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarIcon: ({ focused, color, size }) => {
+          const tab = ANDROID_TABS.find((t) => t.name === route.name);
+          const iconName = focused ? tab!.iconFocused : tab!.icon;
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      {ANDROID_TABS.map((tab) => (
+        <BottomTab.Screen key={tab.name} name={tab.name} component={tab.component} options={{ title: tab.label }} />
+      ))}
+    </BottomTab.Navigator>
+  );
+}
+
+function Tabs() {
+  return isIOS26 ? <TabsIOS26 /> : <TabsCrossPlatform />;
+}
+
+// ─── Android system nav bar color sync ───────────────────────────────────────
+
+function useAndroidNavBar() {
+  const colors = useThemeColors();
+  const isDark = useIsDark();
+
+  useEffect(() => {
+    if (!isAndroid) return;
+    NavigationBar.setBackgroundColorAsync(colors.surface);
+    NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
+  }, [colors.surface, isDark]);
 }
 
 function UnauthenticatedStack() {
@@ -265,6 +331,7 @@ export default function RootNavigator() {
   const colors = useThemeColors();
   const isDark = useIsDark();
   const token = useAuthStore((s) => s.token);
+  useAndroidNavBar();
   const onboardingComplete = useAuthStore((s) => s.onboardingComplete);
 
   const navTheme = {

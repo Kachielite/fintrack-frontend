@@ -10,6 +10,7 @@ import {
   Linking,
   Platform,
   Dimensions,
+  KeyboardAvoidingView,
 } from "react-native";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -124,7 +125,10 @@ export default function GmailHowToSheet({ visible, onClose }: Props) {
       statusBarTranslucent
     >
       {/* flex: 1 container — backdrop takes top space, sheet sits at bottom */}
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <Pressable style={styles.backdrop} onPress={onClose} />
 
         <View
@@ -306,7 +310,7 @@ export default function GmailHowToSheet({ visible, onClose }: Props) {
             </Pressable>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

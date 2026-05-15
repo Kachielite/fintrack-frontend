@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   Pressable,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { FONTS, FONT_SIZE, RADIUS, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
@@ -29,6 +31,10 @@ export default function AuthForm() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <View style={styles.body}>
         <AuthLogo />
 
@@ -124,6 +130,7 @@ export default function AuthForm() {
       </View>
 
       <AuthFooter />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

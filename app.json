@@ -14,8 +14,12 @@
       "backgroundColor": "#F9F6F0"
     },
     "ios": {
+      "usesAppleSignIn": true,
       "supportsTablet": false,
-      "bundleIdentifier": "com.kachielite.fintrack"
+      "bundleIdentifier": "com.kachielite.fintrack",
+          "infoPlist": {
+      "ITSAppUsesNonExemptEncryption": false
+    }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +30,7 @@
     },
     "plugins": [
       "expo-font",
+      "expo-apple-authentication",
       [
         "@react-native-google-signin/google-signin",
         {
