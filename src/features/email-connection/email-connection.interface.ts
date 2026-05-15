@@ -10,12 +10,6 @@ export interface EmailConnection {
   createdAt: Date;
 }
 
-export interface GmailLabel {
-  id: string;
-  name: string;
-  messagesTotal?: number;
-}
-
 export interface ConnectionStats {
   emailsScanned: number;
   transactionsExtracted: number;

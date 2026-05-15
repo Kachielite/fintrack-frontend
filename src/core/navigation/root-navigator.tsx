@@ -43,7 +43,6 @@ import InsightsScreen from "@/features/insights/insights.screen";
 import ExchangeRatesScreen from "@/features/exchange-rates/exchange-rates.screen";
 import EmailConnectionsScreen from "@/features/email-connection/screens/email-connections.screen";
 import ConnectGmailScreen from "@/features/email-connection/screens/connect-gmail.screen";
-import GmailLabelPickerScreen from "@/features/email-connection/screens/gmail-label-picker.screen";
 import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
@@ -67,7 +66,6 @@ export type RootStackParamList = {
   CurrencyBreakdown: undefined;
   EmailConnections: undefined;
   ConnectGmail: undefined;
-  GmailLabelPicker: { connectionId: number };
   Settings: undefined;
   PrivacyPolicy: undefined;
   TermsOfService: undefined;
@@ -303,10 +301,6 @@ function MainStack() {
         component={EmailConnectionsScreen}
       />
       <Stack.Screen name="ConnectGmail" component={ConnectGmailScreen} />
-      <Stack.Screen
-        name="GmailLabelPicker"
-        component={GmailLabelPickerScreen}
-      />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen
         name="PrivacyPolicy"

@@ -17,8 +17,6 @@ export const API_ENDPOINTS = {
   // Email connections
   EMAIL_CONNECTIONS: "/email-connections",
   EMAIL_CONNECTION_DETAIL: (id: number) => `/email-connections/${id}`,
-  EMAIL_CONNECTION_LABELS: (id: number) => `/email-connections/${id}/labels`,
-  EMAIL_CONNECTION_LABEL: (id: number) => `/email-connections/${id}/label`,
   EMAIL_CONNECTION_SYNC: (id: number) => `/email-connections/${id}/sync`,
   EMAIL_CONNECTION_STATS: (id: number) => `/email-connections/${id}/stats`,
   EMAIL_CONNECTION_DATA: (id: number) => `/email-connections/${id}/data`,
