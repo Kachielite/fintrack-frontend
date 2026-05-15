@@ -1,4 +1,6 @@
 import React, { useEffect } from "react";
+import { Pressable, View, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -12,7 +14,10 @@ import * as NavigationBar from "expo-navigation-bar";
 import { navigationRef } from "./navigation-ref";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { isAndroid, isIOS26 } from "@/core/common/utils/platform";
-import { useThemeColors, useIsDark } from "@/core/common/hooks/use-theme-colors";
+import {
+  useThemeColors,
+  useIsDark,
+} from "@/core/common/hooks/use-theme-colors";
 import { useTabStore } from "@/core/common/state/tab.state";
 
 // Auth
@@ -47,7 +52,6 @@ import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
 import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
-
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -132,8 +136,12 @@ function TabsIOS26() {
       renderScene={renderScene}
       onIndexChange={setTabIndex}
       tabBarActiveTintColor={colors.primary}
+      tabBarStyle={{ backgroundColor: colors.surface }}
+      translucent={false}
+      disablePageAnimations
       hapticFeedbackEnabled
       scrollEdgeAppearance="opaque"
+      rippleColor="transparent"
     />
   );
 }
@@ -149,10 +157,34 @@ const ANDROID_TABS: {
   icon: IoniconsName;
   iconFocused: IoniconsName;
 }[] = [
-  { name: "Home", label: "Home", component: HomeScreen, icon: "home-outline", iconFocused: "home" },
-  { name: "Transactions", label: "Transactions", component: TransactionsScreen, icon: "card-outline", iconFocused: "card" },
-  { name: "Budget", label: "Budget", component: BudgetScreen, icon: "pie-chart-outline", iconFocused: "pie-chart" },
-  { name: "Profile", label: "Profile", component: ProfileScreen, icon: "person-outline", iconFocused: "person" },
+  {
+    name: "Home",
+    label: "Home",
+    component: HomeScreen,
+    icon: "home-outline",
+    iconFocused: "home",
+  },
+  {
+    name: "Transactions",
+    label: "Transactions",
+    component: TransactionsScreen,
+    icon: "card-outline",
+    iconFocused: "card",
+  },
+  {
+    name: "Budget",
+    label: "Budget",
+    component: BudgetScreen,
+    icon: "pie-chart-outline",
+    iconFocused: "pie-chart",
+  },
+  {
+    name: "Profile",
+    label: "Profile",
+    component: ProfileScreen,
+    icon: "person-outline",
+    iconFocused: "person",
+  },
 ];
 
 const BottomTab = createBottomTabNavigator();
@@ -160,22 +192,88 @@ const BottomTab = createBottomTabNavigator();
 function TabsCrossPlatform() {
   const colors = useThemeColors();
 
+  // Custom tab bar to completely control press feedback on iOS and Android.
+  // Using a custom bar avoids platform-specific overlays applied by the default bar.
+  function MyTabBar({ state, _descriptors, navigation }: any) {
+    return (
+      <SafeAreaView style={{ backgroundColor: colors.surface }}>
+        <View
+          style={{
+            flexDirection: "row",
+            borderTopColor: colors.border,
+            borderTopWidth: 1,
+            backgroundColor: colors.surface,
+            overflow: "hidden",
+          }}
+        >
+          {state.routes.map((route: any, index: number) => {
+            const focused = state.index === index;
+            const tab = ANDROID_TABS.find((t) => t.name === route.name);
+            const iconName = focused ? tab!.iconFocused : tab!.icon;
+            const color = focused ? colors.primary : colors.textSubtle;
+
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
+
+            const onLongPress = () =>
+              navigation.emit({ type: "tabLongPress", target: route.key });
+
+            return (
+              <Pressable
+                key={route.key}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                android_ripple={null}
+                accessibilityRole="button"
+                accessibilityState={focused ? { selected: true } : {}}
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 8,
+                }}
+              >
+                <Ionicons name={iconName} size={22} color={color} />
+                <Text style={{ marginTop: 4, fontSize: 12, color }}>
+                  {tab?.label ?? route.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <BottomTab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={() => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSubtle,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarIcon: ({ focused, color, size }) => {
-          const tab = ANDROID_TABS.find((t) => t.name === route.name);
-          const iconName = focused ? tab!.iconFocused : tab!.icon;
-          return <Ionicons name={iconName} size={size} color={color} />;
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          overflow: "hidden",
         },
       })}
+      tabBar={(props) => <MyTabBar {...props} />}
     >
       {ANDROID_TABS.map((tab) => (
-        <BottomTab.Screen key={tab.name} name={tab.name} component={tab.component} options={{ title: tab.label }} />
+        <BottomTab.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.component}
+          options={{ title: tab.label }}
+        />
       ))}
     </BottomTab.Navigator>
   );
@@ -304,7 +402,11 @@ function MainStack() {
         component={EditGoalScreen}
         options={modalOptions}
       />
-      <Stack.Screen name="Insights" component={InsightsScreen} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Insights"
+        component={InsightsScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="CurrencyBreakdown" component={ExchangeRatesScreen} />
       <Stack.Screen
         name="EmailConnections"

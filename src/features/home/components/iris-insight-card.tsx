@@ -21,12 +21,14 @@ export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardP
   if (!insight) return null;
 
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={() => navigation.navigate("Insights")}
+      style={({ pressed }) => [
         styles.card,
         {
           backgroundColor: colors.primaryLight,
           borderColor: colors.primary + "33",
+          opacity: pressed ? 0.85 : 1,
         },
       ]}
     >
@@ -57,7 +59,7 @@ export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardP
         </Text>
         <Ionicons name="chevron-forward" size={13} color={colors.primary} />
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 

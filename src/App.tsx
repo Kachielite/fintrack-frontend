@@ -6,6 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import Navigation from "@/core/navigation";
 import { useThemeStore } from "@/core/common/state/theme.state";
 import useLoadFonts from "@/core/common/hooks/use-load-fonts";
+import { useTransactionSyncWatcher } from "@/features/notifications/hooks/use-notifications";
 
 // Keep the OS splash screen visible until fonts are ready.
 // Auth state is hydrated synchronously from MMKV — no async wait needed.
@@ -17,6 +18,13 @@ const queryClient = new QueryClient({
     mutations: { retry: 0 },
   },
 });
+
+// Renders null but watches for sync_complete notifications to invalidate
+// transaction queries automatically.
+function SyncWatcher() {
+  useTransactionSyncWatcher();
+  return null;
+}
 
 export default function App() {
   const { loaded } = useLoadFonts();
@@ -35,6 +43,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
+        <SyncWatcher />
         <Navigation />
         <Toast />
       </QueryClientProvider>

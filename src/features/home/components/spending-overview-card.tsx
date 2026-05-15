@@ -110,12 +110,14 @@ export default function SpendingOverviewCard({
             </View>
           </View>
 
-          <View
-            style={[
+          <Pressable
+            onPress={() => setSheetOpen(true)}
+            style={({ pressed }) => [
               styles.footer,
               {
                 borderTopColor: colors.border,
                 backgroundColor: colors.surface2,
+                opacity: pressed ? 0.75 : 1,
               },
             ]}
           >
@@ -142,10 +144,7 @@ export default function SpendingOverviewCard({
                 </Text>
               </View>
             )}
-            <Pressable
-              onPress={() => setSheetOpen(true)}
-              style={styles.currencyLink}
-            >
+            <View style={styles.currencyLink}>
               <Text
                 style={[
                   styles.currencyLinkText,
@@ -159,8 +158,8 @@ export default function SpendingOverviewCard({
                 size={12}
                 color={colors.primary}
               />
-            </Pressable>
-          </View>
+            </View>
+          </Pressable>
         </>
       )}
 
