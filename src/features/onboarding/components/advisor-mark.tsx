@@ -7,8 +7,8 @@ export default function AdvisorMark() {
   const colors = useThemeColors();
   return (
     <View style={styles.row}>
-      <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
-        <Text style={[styles.initial, { color: colors.primary, fontFamily: FONTS.bold }]}>
+      <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.initial, { color: colors.onPrimary, fontFamily: FONTS.bold }]}>
           I
         </Text>
       </View>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Linking } from "react-native";
+import { View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
@@ -11,23 +11,23 @@ import { useConnectGmail } from "@/features/email-connection/hooks/use-connect-g
 const SETUP_ITEMS = [
   {
     icon: "folder-outline" as const,
-    title: "Creates a label",
-    desc: 'A "Bank Transactions" label is added to your Gmail sidebar.',
+    title: "A private folder, just for bank emails",
+    desc: "We create a Bank Transactions folder in your Gmail. Your bank alerts go there automatically.",
   },
   {
     icon: "filter-outline" as const,
-    title: "Sets up a filter",
-    desc: "Bank alert emails are automatically routed to the label as they arrive.",
+    title: "New alerts land there instantly",
+    desc: "Every transaction email gets filed the moment it arrives, so nothing gets missed.",
   },
   {
     icon: "time-outline" as const,
-    title: "Imports past emails",
-    desc: "Existing bank emails in your inbox are labelled so your history is ready immediately.",
+    title: "Your history is ready from day one",
+    desc: "We pull in your existing bank emails so your spending history is complete right away.",
   },
   {
     icon: "lock-closed-outline" as const,
-    title: "We only read this label",
-    desc: "FinTrack never accesses the rest of your inbox — only the Bank Transactions label.",
+    title: "That folder is all we ever see",
+    desc: "We can't read your other emails, search your inbox, or access anything outside that one folder.",
   },
 ];
 
@@ -85,7 +85,7 @@ export default function OnboardingGmailScreen() {
           marginBottom: SPACING.md,
         }}
       >
-        Connect your Gmail
+        Your bank emails, organised automatically
       </Text>
 
       <Text
@@ -97,12 +97,7 @@ export default function OnboardingGmailScreen() {
           marginBottom: SPACING.xxxl,
         }}
       >
-        FinTrack will automatically set up a{" "}
-        <Text style={{ fontFamily: FONTS.semiBold, color: colors.textPrimary }}>
-          Bank Transactions
-        </Text>{" "}
-        label in your Gmail and route your bank alert emails there. You stay in
-        control — we only ever read from that label.
+        Connect once and we handle everything automatically. Your bank emails keep arriving in your inbox exactly as normal. We just quietly organise them in the background.
       </Text>
 
       {/* What we set up */}
@@ -213,31 +208,17 @@ export default function OnboardingGmailScreen() {
       )}
 
       {/* Privacy note */}
-      <Pressable
-        onPress={() =>
-          Linking.openURL("https://developers.google.com/gmail/api/auth/scopes")
-        }
+      <Text
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 4,
+          fontFamily: FONTS.regular,
+          fontSize: FONT_SIZE.caption,
+          color: colors.textSubtle,
+          textAlign: "center",
           marginTop: SPACING.lg,
         }}
       >
-        <Ionicons name="shield-checkmark-outline" size={13} color={colors.textSubtle} />
-        <Text
-          style={{
-            fontFamily: FONTS.regular,
-            fontSize: FONT_SIZE.caption,
-            color: colors.textSubtle,
-          }}
-        >
-          We use the{" "}
-          <Text style={{ textDecorationLine: "underline" }}>gmail.modify</Text>{" "}
-          scope. View what this means.
-        </Text>
-      </Pressable>
+        Gmail access is limited to the Bank Transactions folder only. You can disconnect at any time in Settings.
+      </Text>
     </ScreenContainer>
   );
 }

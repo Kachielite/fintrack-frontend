@@ -37,7 +37,7 @@ export default function OnboardingGoalScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.progressRow}>
-        <OnboardingProgressBar step={3} total={3} />
+        <OnboardingProgressBar step={2} total={2} />
       </View>
 
       <ScrollView

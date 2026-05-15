@@ -202,6 +202,16 @@ function UnauthenticatedStack() {
   return (
     <UnauthStack.Navigator screenOptions={{ headerShown: false }}>
       <UnauthStack.Screen name="Auth" component={AuthScreen} />
+      <UnauthStack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{ headerShown: true, title: "Privacy Policy" }}
+      />
+      <UnauthStack.Screen
+        name="TermsOfService"
+        component={TermsOfServiceScreen}
+        options={{ headerShown: true, title: "Terms of Service" }}
+      />
     </UnauthStack.Navigator>
   );
 }
