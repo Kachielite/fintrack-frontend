@@ -2,7 +2,6 @@ import { TransactionDto, TransactionSummaryDto } from "./transactions.dto";
 import {
   Transaction,
   TransactionSummary,
-  CategoryType,
   TransactionType,
   TransactionStatus,
 } from "./transactions.interface";
@@ -11,7 +10,7 @@ export function mapTransactionFromDto(dto: TransactionDto): Transaction {
   return {
     id: dto.id,
     merchant: dto.merchant,
-    category: dto.category as CategoryType,
+    category: dto.category,
     transactionType: dto.transactionType as TransactionType,
     amount: dto.amount,
     currency: dto.currency,
@@ -21,6 +20,8 @@ export function mapTransactionFromDto(dto: TransactionDto): Transaction {
     transactionDate: new Date(dto.transactionDate),
     status: dto.status as TransactionStatus,
     bankId: dto.bankId,
+    bankName: dto.bankName,
+    bankShortCode: dto.bankShortCode,
     reference: dto.reference,
     balance: dto.balance,
     originalMerchant: dto.originalMerchant,

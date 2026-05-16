@@ -4,28 +4,7 @@ export type TransactionStatus =
   | "review"
   | "corrected";
 export type TransactionType = "debit" | "credit";
-export type CategoryType =
-  | "peer_to_peer_transfer"
-  | "business_payment"
-  | "subscriptions"
-  | "entertainment_leisure"
-  | "mobile_internet"
-  | "utilities"
-  | "groceries"
-  | "retail_ecommerce"
-  | "dining_food_delivery"
-  | "transport"
-  | "fuel_auto"
-  | "travel"
-  | "bank_charges"
-  | "currency_conversion"
-  | "salary_wages"
-  | "refunds_reimbursements"
-  | "healthcare"
-  | "education"
-  | "charity_donations"
-  | "cash_withdrawal"
-  | "uncategorized";
+export type CategoryType = string;
 
 export interface Transaction {
   id: number;
@@ -40,6 +19,8 @@ export interface Transaction {
   transactionDate: Date;
   status: TransactionStatus;
   bankId: number | null;
+  bankName?: string | null;
+  bankShortCode?: string | null;
   reference: string | null;
   balance: number | null;
   originalMerchant: string | null;

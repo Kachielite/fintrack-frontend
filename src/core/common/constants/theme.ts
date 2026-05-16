@@ -66,7 +66,7 @@ export const DARK_COLORS: ThemeColors = {
 };
 
 // Category colours are the same in both modes — used for chip/badge fills
-export const CATEGORY_COLORS = {
+export const CATEGORY_COLORS: Record<string, string> = {
   peer_to_peer_transfer: "#5AADA0",
   business_payment: "#5A84B8",
   subscriptions: "#8A6EB0",
@@ -88,7 +88,15 @@ export const CATEGORY_COLORS = {
   charity_donations: "#D45AB0",
   cash_withdrawal: "#9A8A5A",
   uncategorized: "#9A9A8A",
-} as const;
+  investment: "#4A90A4",
+  savings: "#3A8C6E",
+  rent_housing: "#7A6AA0",
+  family_support: "#D4845A",
+  beauty_personal_care: "#D45A8A",
+  gifts_social: "#D4A05A",
+};
+
+export const FALLBACK_CATEGORY_COLOR = "#9A9A8A";
 
 export const FONTS = {
   regular: "PlusJakartaSans_400Regular",

@@ -15,11 +15,13 @@ import BudgetList from "./components/budget-list";
 import BudgetGoalCard from "./components/budget-goal-card";
 import BudgetAIGoalCard from "./components/budget-ai-goal-card";
 import BudgetCategorySheet from "./components/budget-category-sheet";
+import AddBudgetSheet from "./components/add-budget-sheet";
 
 export default function BudgetsScreen() {
   const colors = useThemeColors();
 
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [autoGenerateFired, setAutoGenerateFired] = useState(false);
 
@@ -56,7 +58,7 @@ export default function BudgetsScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
-      <BudgetHeader />
+      <BudgetHeader onAdd={() => setAddSheetOpen(true)} />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -107,6 +109,11 @@ export default function BudgetsScreen() {
           budget={selectedBudget}
         />
       )}
+
+      <AddBudgetSheet
+        visible={addSheetOpen}
+        onClose={() => setAddSheetOpen(false)}
+      />
     </SafeAreaView>
   );
 }

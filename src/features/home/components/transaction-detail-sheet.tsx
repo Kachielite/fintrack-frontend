@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Modal,
   View,
@@ -8,20 +8,29 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
-import { FONTS, FONT_SIZE, SPACING, RADIUS, CATEGORY_COLORS } from "@/core/common/constants/theme";
+import {
+  FONTS,
+  FONT_SIZE,
+  SPACING,
+  RADIUS,
+  CATEGORY_COLORS,
+  FALLBACK_CATEGORY_COLOR,
+} from "@/core/common/constants/theme";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
-import { Transaction, CategoryType } from "@/features/transactions/transactions.interface";
-import { CATEGORY_LABELS, CATEGORY_ICON_NAMES, ALL_CATEGORIES } from "@/features/transactions/transactions.constants";
+import { Transaction } from "@/features/transactions/transactions.interface";
+import { CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
 import { TransactionService } from "@/features/transactions/transactions.service";
+import { useCategories, getCategoryLabel } from "@/features/categories/hooks/use-categories";
 import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate, formatTime } from "@/core/common/utils/date";
 
-const SCREEN_HEIGHT = Dimensions.get("window").height;
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface Props {
   visible: boolean;
@@ -34,33 +43,116 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
+  const { data: categories = [] } = useCategories();
   const isReview = transaction.status === "unverified";
-  const [pickedCat, setPickedCat] = useState<CategoryType>(transaction.category);
+  const [savedCategory, setSavedCategory] = useState<string>(transaction.category);
+  const [pickedCat, setPickedCat] = useState<string>(transaction.category);
   const [reviewDone, setReviewDone] = useState(false);
+  const [catSheetOpen, setCatSheetOpen] = useState(false);
+
+  const catSheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const showReviewBanner = isReview && !reviewDone;
 
   const mutation = useMutation({
-    mutationFn: (category: CategoryType) =>
+    mutationFn: (category: string) =>
       TransactionService.correctTransaction(transaction.id, { category }),
-    onSuccess: () => {
+    onSuccess: (_, category) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
       setReviewDone(true);
+      setSavedCategory(category);
+      dismissCatSheet();
     },
   });
 
   const isCredit = transaction.transactionType === "credit";
   const showRef = transaction.currency !== transaction.refCurrency;
 
-  const catColor = CATEGORY_COLORS[pickedCat] ?? colors.textSubtle;
-  const iconName = CATEGORY_ICON_NAMES[pickedCat] ?? "ellipsis-horizontal-outline";
+  const catColor = CATEGORY_COLORS[savedCategory] ?? FALLBACK_CATEGORY_COLOR;
+  const iconName = (CATEGORY_ICON_NAMES[savedCategory] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"];
+  const displayCategoryLabel = getCategoryLabel(savedCategory, categories);
 
-  const detailRows: [string, string][] = [
-    ["Category", CATEGORY_LABELS[transaction.category] ?? transaction.category],
+  const otherRows: [string, string][] = [
     ["Currency", transaction.currency],
     ["Date", formatDate(transaction.transactionDate)],
     ["Time", formatTime(transaction.transactionDate)],
   ];
+  if (transaction.bankName) otherRows.unshift(["Bank", transaction.bankName]);
+  if (transaction.reference) otherRows.push(["Reference", transaction.reference]);
+
+  function openCatSheet() {
+    setPickedCat(savedCategory);
+    setCatSheetOpen(true);
+    Animated.spring(catSheetY, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 65,
+      friction: 11,
+    }).start();
+  }
+
+  function cancelCatSheet() {
+    Animated.timing(catSheetY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => {
+      setPickedCat(savedCategory);
+      setCatSheetOpen(false);
+    });
+  }
+
+  function dismissCatSheet() {
+    Animated.timing(catSheetY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => {
+      setCatSheetOpen(false);
+    });
+  }
+
+  const saveDisabled =
+    mutation.isPending || (!showReviewBanner && pickedCat === savedCategory);
+
+  function renderCategoryList() {
+    return categories.map((cat, i) => {
+      const active = pickedCat === cat.slug;
+      const tileColor = CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
+      const catIcon = (CATEGORY_ICON_NAMES[cat.slug] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"];
+      const isLast = i === categories.length - 1;
+      return (
+        <Pressable
+          key={cat.slug}
+          onPress={() => setPickedCat(cat.slug)}
+          style={[
+            styles.catListItem,
+            {
+              backgroundColor: active ? tileColor + "14" : "transparent",
+              borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
+          <View style={[styles.catListIcon, { backgroundColor: tileColor + "22" }]}>
+            <Ionicons name={catIcon} size={17} color={tileColor} />
+          </View>
+          <Text
+            style={[
+              styles.catListName,
+              {
+                color: active ? tileColor : colors.textPrimary,
+                fontFamily: active ? FONTS.semiBold : FONTS.regular,
+              },
+            ]}
+          >
+            {cat.name}
+          </Text>
+          {active && <Ionicons name="checkmark-circle" size={18} color={tileColor} />}
+        </Pressable>
+      );
+    });
+  }
 
   return (
     <Modal
@@ -70,22 +162,18 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
       onRequestClose={onClose}
       statusBarTranslucent
     >
+      {/* ── Detail sheet ──────────────────────────────────────── */}
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
         <View
           style={[
             styles.sheet,
-            {
-              backgroundColor: colors.surface,
-              paddingBottom: insets.bottom + SPACING.lg,
-            },
+            { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg },
           ]}
         >
-          {/* Drag handle */}
           <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
 
-          {/* Header row — rendered before ScrollView so it's never covered */}
           <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
               Transaction
@@ -104,12 +192,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
             contentContainerStyle={[styles.body, { paddingBottom: SPACING.lg }]}
             showsVerticalScrollIndicator={false}
           >
-            {/* Icon + amount header */}
+            {/* Hero */}
             <View style={styles.headerCenter}>
               <View style={[styles.iconWrap, { backgroundColor: catColor + "22" }]}>
                 <Ionicons name={iconName} size={28} color={catColor} />
               </View>
-
               <Text
                 style={[
                   styles.amount,
@@ -118,17 +205,14 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               >
                 {formatTransactionAmount(transaction.amount, transaction.currency)}
               </Text>
-
               {showRef && (
                 <Text style={[styles.refAmount, { color: colors.textSubtle, fontFamily: FONTS.mono }]}>
                   ≈ {formatTransactionAmount(transaction.refAmount, transaction.refCurrency)}
                 </Text>
               )}
-
               <Text style={[styles.merchant, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
                 {transaction.merchant}
               </Text>
-
               <Text style={[styles.dateLine, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
                 {formatDate(transaction.transactionDate)} · {formatTime(transaction.transactionDate)}
               </Text>
@@ -146,44 +230,27 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                   NEEDS A QUICK LOOK
                 </Text>
                 <Text style={[styles.reviewBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
-                  We weren't sure how to categorise this one. Pick the closest fit:
+                  We weren&apos;t sure how to categorise this one.
                 </Text>
-
-                <View style={styles.categoryGrid}>
-                  {ALL_CATEGORIES.map((cat) => {
-                    const active = pickedCat === cat;
-                    const catColor = CATEGORY_COLORS[cat] ?? colors.textSubtle;
-                    const catIcon = (CATEGORY_ICON_NAMES[cat] as React.ComponentProps<typeof Ionicons>["name"]) ?? "ellipsis-horizontal-outline";
-                    return (
-                      <Pressable
-                        key={cat}
-                        onPress={() => setPickedCat(cat)}
-                        style={[
-                          styles.categoryTile,
-                          {
-                            backgroundColor: active ? catColor + "18" : colors.surface,
-                            borderColor: active ? catColor : colors.border,
-                          },
-                        ]}
-                      >
-                        <Ionicons name={catIcon} size={18} color={active ? catColor : colors.textSubtle} />
-                        <Text
-                          style={[
-                            styles.categoryTileLabel,
-                            {
-                              color: active ? catColor : colors.textSecondary,
-                              fontFamily: active ? FONTS.semiBold : FONTS.regular,
-                            },
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {CATEGORY_LABELS[cat]}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
+                <Pressable
+                  onPress={openCatSheet}
+                  style={[
+                    styles.reviewPickerBtn,
+                    { backgroundColor: colors.warning + "22", borderColor: colors.warning + "55" },
+                  ]}
+                >
+                  <View style={[styles.catListIcon, { backgroundColor: (CATEGORY_COLORS[pickedCat] ?? FALLBACK_CATEGORY_COLOR) + "30" }]}>
+                    <Ionicons
+                      name={(CATEGORY_ICON_NAMES[pickedCat] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"]}
+                      size={16}
+                      color={CATEGORY_COLORS[pickedCat] ?? FALLBACK_CATEGORY_COLOR}
+                    />
+                  </View>
+                  <Text style={[styles.reviewPickerLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+                    {getCategoryLabel(pickedCat, categories)}
+                  </Text>
+                  <Ionicons name="chevron-down-outline" size={15} color={colors.textSubtle} />
+                </Pressable>
                 <Pressable
                   onPress={() => mutation.mutate(pickedCat)}
                   disabled={mutation.isPending}
@@ -203,14 +270,38 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               </View>
             )}
 
-            {/* Detail rows */}
+            {/* Detail card */}
             <View style={[styles.detailCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {detailRows.map(([label, value], i) => (
+              {/* Category row — full row tappable */}
+              <Pressable
+                onPress={openCatSheet}
+                style={[
+                  styles.detailRow,
+                  otherRows.length > 0 && {
+                    borderBottomWidth: StyleSheet.hairlineWidth,
+                    borderBottomColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.detailLabel, { color: colors.textSubtle, fontFamily: FONTS.semiBold }]}>
+                  Category
+                </Text>
+                <View style={styles.categoryRowValue}>
+                  <Text style={[styles.detailValue, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+                    {displayCategoryLabel}
+                  </Text>
+                  <View style={[styles.editIconBtn, { backgroundColor: colors.primary + "20" }]}>
+                    <Ionicons name="pencil-outline" size={13} color={colors.primary} />
+                  </View>
+                </View>
+              </Pressable>
+
+              {otherRows.map(([label, value], i) => (
                 <View
                   key={label}
                   style={[
                     styles.detailRow,
-                    i < detailRows.length - 1 && {
+                    i < otherRows.length - 1 && {
                       borderBottomWidth: StyleSheet.hairlineWidth,
                       borderBottomColor: colors.border,
                     },
@@ -226,7 +317,6 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               ))}
             </View>
 
-            {/* Close CTA */}
             <Pressable
               onPress={onClose}
               style={[styles.cta, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -238,6 +328,70 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
           </ScrollView>
         </View>
       </View>
+
+      {/* ── Category picker (overlay inside same Modal) ───────── */}
+      {catSheetOpen && (
+        <View style={[StyleSheet.absoluteFillObject, styles.overlay]}>
+          <Pressable style={styles.backdrop} onPress={cancelCatSheet} />
+          <Animated.View
+            style={[
+              styles.catSheet,
+              {
+                backgroundColor: colors.surface,
+                paddingBottom: insets.bottom + SPACING.lg,
+                transform: [{ translateY: catSheetY }],
+              },
+            ]}
+          >
+            <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
+
+            <View style={styles.catSheetHeader}>
+              <Text style={[styles.catSheetTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+                Select Category
+              </Text>
+              <Pressable
+                onPress={cancelCatSheet}
+                hitSlop={12}
+                style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.catListContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={[styles.catListContainer, { borderColor: colors.border }]}>
+                {renderCategoryList()}
+              </View>
+            </ScrollView>
+
+            <View style={[styles.catSheetFooter, { paddingHorizontal: SPACING.xl }]}>
+              <Pressable
+                onPress={() => mutation.mutate(pickedCat)}
+                disabled={saveDisabled}
+                style={[
+                  styles.confirmBtn,
+                  {
+                    backgroundColor: showReviewBanner ? colors.warning : colors.primary,
+                    opacity: saveDisabled ? 0.5 : 1,
+                  },
+                ]}
+              >
+                {mutation.isPending ? (
+                  <ActivityIndicator size="small" color={colors.surface} />
+                ) : (
+                  <Text style={[styles.confirmText, { color: colors.surface, fontFamily: FONTS.semiBold }]}>
+                    {showReviewBanner ? "Confirm category" : "Save category"}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+      )}
     </Modal>
   );
 }
@@ -253,6 +407,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: RADIUS.xxl,
     borderTopRightRadius: RADIUS.xxl,
     maxHeight: SCREEN_HEIGHT * 0.88,
+  },
+  catSheet: {
+    borderTopLeftRadius: RADIUS.xxl,
+    borderTopRightRadius: RADIUS.xxl,
+    height: SCREEN_HEIGHT * 0.75,
   },
   handle: {
     width: 36,
@@ -271,6 +430,14 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
   },
   headerTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
+  catSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  catSheetTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
   closeBtn: {
     width: 34,
     height: 34,
@@ -278,16 +445,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  body: {
-    paddingHorizontal: SPACING.xl,
-    gap: SPACING.lg,
-  },
-  // Amount header
-  headerCenter: {
-    alignItems: "center",
-    paddingVertical: SPACING.sm,
-    gap: 6,
-  },
+  body: { paddingHorizontal: SPACING.xl, gap: SPACING.lg },
+  headerCenter: { alignItems: "center", paddingVertical: SPACING.sm, gap: 6 },
   iconWrap: {
     width: 56,
     height: 56,
@@ -300,7 +459,6 @@ const styles = StyleSheet.create({
   refAmount: { fontSize: 13 },
   merchant: { fontSize: 16, letterSpacing: -0.3, marginTop: 4 },
   dateLine: { fontSize: 13, marginTop: 2 },
-  // Review
   reviewCard: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,
@@ -309,27 +467,44 @@ const styles = StyleSheet.create({
   },
   reviewLabel: { fontSize: 11, letterSpacing: 0.6 },
   reviewBody: { fontSize: 14, lineHeight: 20 },
-  categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  categoryTile: {
-    width: "22%",
-    flex: 1,
+  reviewPickerBtn: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: 4,
+    gap: SPACING.sm,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    minWidth: 64,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
   },
-  categoryTileLabel: { fontSize: 10, textAlign: "center" },
+  reviewPickerLabel: { flex: 1, fontSize: 14 },
+  catListContent: { paddingHorizontal: SPACING.xl, paddingBottom: SPACING.base },
+  catListContainer: {
+    borderRadius: RADIUS.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: "hidden",
+  },
+  catListItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 11,
+    paddingHorizontal: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  catListIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: RADIUS.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  catListName: { flex: 1, fontSize: 14 },
+  catSheetFooter: { paddingTop: SPACING.md },
   confirmBtn: {
     borderRadius: RADIUS.xl,
-    paddingVertical: SPACING.sm + 2,
+    paddingVertical: SPACING.md,
     alignItems: "center",
-    marginTop: SPACING.xs,
   },
   confirmText: { fontSize: 14 },
-  // Detail rows
   detailCard: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,
@@ -344,7 +519,18 @@ const styles = StyleSheet.create({
   },
   detailLabel: { fontSize: 13 },
   detailValue: { fontSize: 14 },
-  // Close CTA
+  categoryRowValue: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  editIconBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 99,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   cta: {
     borderRadius: RADIUS.xl,
     paddingVertical: SPACING.md + 2,

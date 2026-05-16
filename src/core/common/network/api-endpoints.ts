@@ -51,6 +51,9 @@ export const API_ENDPOINTS = {
   INSIGHT_READ: (id: number) => `/insights/${id}/read`,
   INSIGHTS_GENERATE: "/insights/generate",
 
+  // Categories
+  CATEGORIES: "/categories",
+
   // Notifications
   NOTIFICATIONS: "/notifications",
   NOTIFICATION_UNREAD_COUNT: "/notifications/unread-count",
