@@ -16,6 +16,7 @@ const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID ?? "";
 export function useOnesignal(isAuthenticated: boolean) {
   // Initialise SDK and request permission once on mount.
   React.useEffect(() => {
+    if (!ONESIGNAL_APP_ID) return;
     OneSignal.initialize(ONESIGNAL_APP_ID);
     OneSignal.Notifications.requestPermission(true);
   }, []);
