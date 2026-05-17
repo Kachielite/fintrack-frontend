@@ -34,11 +34,21 @@ function buildAssessment(
   const totalBudgets = budgets.length;
 
   const recentMonths = monthlyTrend.slice(-3).filter((m) => m.income > 0 || m.spend > 0);
+  const hasData = recentMonths.length > 0 || totalBudgets > 0;
   const avgNet =
     recentMonths.length > 0
       ? recentMonths.reduce((s, m) => s + (m.income - m.spend), 0) / recentMonths.length
       : 0;
   const isNetPositive = avgNet > 0;
+
+  // No transactions and no budgets — nothing to assess yet
+  if (!hasData) {
+    return {
+      onTrack: true,
+      headline: "Getting started",
+      message: "Sync your bank emails so Iris can track your progress toward this goal. Once you have spending history, you'll see a real assessment here.",
+    };
+  }
 
   if (goalType === "save") {
     if (overBudget > 0) {
@@ -117,10 +127,17 @@ function buildAssessment(
       message: `You're running a positive monthly net and staying within your budget limits — a solid foundation for reaching your financial goal.`,
     };
   }
+  if (overBudget > 0) {
+    return {
+      onTrack: false,
+      headline: "Needs attention",
+      message: `You're over budget in ${overBudget} categor${overBudget > 1 ? "ies" : "y"} this month. Cutting back there will help keep you on track toward your goal.`,
+    };
+  }
   return {
     onTrack: false,
-    headline: "Needs attention",
-    message: `Some spending categories are exceeding their limits, which may slow progress toward your goal. Review your highest-spend areas and adjust limits where needed.`,
+    headline: "Room to improve",
+    message: `Your spending is close to or exceeding your income this month. Setting budget limits on your top categories will give Iris more to work with and help you make progress.`,
   };
 }
 

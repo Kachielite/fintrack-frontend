@@ -15,6 +15,15 @@ function buildMessage(
   refCurrency: string,
 ): { title: string; body: string } {
   const sym = currencySymbol(refCurrency);
+
+  const hasSpend = categorySpend.some((c) => c.total > 0);
+  if (!hasSpend && budgets.length === 0) {
+    return {
+      title: "Ready when you are",
+      body: "Sync your bank emails and Iris will analyse your spending, flag unbudgeted categories, and help you set limits that actually fit your habits.",
+    };
+  }
+
   const budgetedCats = new Set(budgets.map((b) => b.category));
 
   const unbudgeted = categorySpend

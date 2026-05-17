@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   // Banks
   BANKS: "/banks",
   BANK_DETAIL: (id: number) => `/banks/${id}`,
+  BANKS_REPORT_SENDER: "/banks/report-sender",
 
   // Email connections
   EMAIL_CONNECTIONS: "/email-connections",

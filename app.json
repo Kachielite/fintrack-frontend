@@ -10,10 +10,11 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#F5EFE6",
       "dark": {
         "image": "./assets/splash-dark.png",
+        "resizeMode": "cover",
         "backgroundColor": "#1C1916"
       }
     },
@@ -39,6 +40,19 @@
     },
     "plugins": [
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#F5EFE6",
+          "dark": {
+            "image": "./assets/splash-dark.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#1C1916"
+          }
+        }
+      ],
       "expo-apple-authentication",
       [
         "@react-native-google-signin/google-signin",

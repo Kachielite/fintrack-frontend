@@ -9,6 +9,9 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +26,7 @@ import { useProfile } from "@/features/user/hooks/use-profile";
 import { useDeleteAccount } from "@/features/user/hooks/use-delete-account";
 import { useAuthStore } from "@/features/auth/auth.state";
 import { UserService } from "@/features/user/user.service";
+import { BankService } from "@/features/user/bank.service";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import GlassCard from "@/core/common/components/GlassCard";
 import SectionHeader from "@/core/common/components/SectionHeader";
@@ -306,6 +310,119 @@ function PlansSheet({ visible, currentTier, onClose }: { visible: boolean; curre
   );
 }
 
+// ─── Report bank sender sheet ──────────────────────────────────────────────────
+
+function ReportSenderSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
+  const [senderEmail, setSenderEmail] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () => BankService.reportSender(senderEmail.trim(), bankName.trim() || undefined),
+    onSuccess: () => setSubmitted(true),
+    onError: () => Alert.alert("Error", "Something went wrong. Please try again."),
+  });
+
+  function handleClose() {
+    setSenderEmail("");
+    setBankName("");
+    setSubmitted(false);
+    onClose();
+  }
+
+  const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail.trim());
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose} statusBarTranslucent>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <View style={sheetStyles.overlay}>
+          <Pressable style={sheetStyles.backdrop} onPress={handleClose} />
+          <View style={[sheetStyles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}>
+            <View style={[sheetStyles.handle, { backgroundColor: colors.borderStrong }]} />
+            <View style={sheetStyles.header}>
+              <Text style={[sheetStyles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+                Report a bank sender
+              </Text>
+              <Pressable onPress={handleClose} hitSlop={12} style={[sheetStyles.closeBtn, { backgroundColor: colors.surface2 }]}>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            {submitted ? (
+              <View style={reportStyles.successWrap}>
+                <View style={[reportStyles.successIcon, { backgroundColor: colors.primaryLight }]}>
+                  <Ionicons name="checkmark" size={28} color={colors.primary} />
+                </View>
+                <Text style={[reportStyles.successTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+                  Thanks for reporting!
+                </Text>
+                <Text style={[reportStyles.successBody, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+                  We've added this sender to our knowledge base. Future emails from this address will be detected automatically for all Vela users.
+                </Text>
+                <Pressable onPress={handleClose} style={[reportStyles.doneBtn, { backgroundColor: colors.primary }]}>
+                  <Text style={[reportStyles.doneBtnText, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>Done</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View style={reportStyles.form}>
+                <Text style={[reportStyles.desc, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+                  If your bank's transaction emails aren't being picked up, paste the sender address below. This helps all Vela users get better coverage.
+                </Text>
+
+                <View style={reportStyles.fieldGroup}>
+                  <Text style={[reportStyles.label, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                    Sender email address
+                  </Text>
+                  <TextInput
+                    value={senderEmail}
+                    onChangeText={setSenderEmail}
+                    placeholder="e.g. alerts@yourbank.com"
+                    placeholderTextColor={colors.textSubtle}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoCorrect={false}
+                    style={[reportStyles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.textPrimary, fontFamily: FONTS.regular }]}
+                  />
+                </View>
+
+                <View style={reportStyles.fieldGroup}>
+                  <Text style={[reportStyles.label, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                    Bank name <Text style={{ color: colors.textSubtle }}>(optional)</Text>
+                  </Text>
+                  <TextInput
+                    value={bankName}
+                    onChangeText={setBankName}
+                    placeholder="e.g. Zenith Bank"
+                    placeholderTextColor={colors.textSubtle}
+                    autoCorrect={false}
+                    style={[reportStyles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.textPrimary, fontFamily: FONTS.regular }]}
+                  />
+                </View>
+
+                <Pressable
+                  onPress={() => mutation.mutate()}
+                  disabled={!isValid || mutation.isPending}
+                  style={[reportStyles.submitBtn, { backgroundColor: isValid ? colors.primary : colors.surface2 }]}
+                >
+                  {mutation.isPending ? (
+                    <ActivityIndicator color={colors.onPrimary} size="small" />
+                  ) : (
+                    <Text style={[reportStyles.submitText, { color: isValid ? colors.onPrimary : colors.textSubtle, fontFamily: FONTS.semiBold }]}>
+                      Submit
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            )}
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 // ─── Main screen ───────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
@@ -321,6 +438,7 @@ export default function ProfileScreen() {
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
   const [connectionsOpen, setConnectionsOpen] = useState(false);
+  const [reportSenderOpen, setReportSenderOpen] = useState(false);
 
   const updateCurrencyMutation = useMutation({
     mutationFn: (ref_currency: string) => UserService.updateProfile({ ref_currency: ref_currency as "NGN" | "USD" | "GBP" | "EUR" | "GHS" | "KES" | "ZAR" }),
@@ -378,16 +496,15 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "left", "right"]}>
+      <Text style={[styles.pageTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+        Profile
+      </Text>
+
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Page title */}
-        <Text style={[styles.pageTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
-          Profile
-        </Text>
-
         {/* Avatar card */}
         <GlassCard style={styles.card}>
           <View style={styles.avatarRow}>
@@ -452,6 +569,13 @@ export default function ProfileScreen() {
               label="Email connections"
               sub="Manage connected Gmail accounts"
               onPress={() => setConnectionsOpen(true)}
+            />
+            <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
+            <SettingRow
+              icon="add-circle-outline"
+              label="Missing a bank?"
+              sub="Report a sender email we don't recognise yet"
+              onPress={() => setReportSenderOpen(true)}
             />
           </GlassCard>
         </View>
@@ -521,6 +645,11 @@ export default function ProfileScreen() {
         visible={connectionsOpen}
         onClose={() => setConnectionsOpen(false)}
       />
+
+      <ReportSenderSheet
+        visible={reportSenderOpen}
+        onClose={() => setReportSenderOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -537,8 +666,8 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.h1,
     letterSpacing: -0.6,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.lg,
-    paddingHorizontal: 4,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.base + 4,
   },
   card: { marginBottom: SPACING.lg },
   section: { marginBottom: SPACING.lg },
@@ -626,6 +755,55 @@ const sheetStyles = StyleSheet.create({
   symbol: { fontSize: 15 },
   currencyCode: { fontSize: 15, letterSpacing: -0.2 },
   currencyName: { fontSize: 12, marginTop: 1 },
+});
+
+const reportStyles = StyleSheet.create({
+  form: { paddingHorizontal: SPACING.xl, paddingTop: SPACING.xs, gap: SPACING.lg },
+  desc: { fontSize: 13, lineHeight: 20 },
+  fieldGroup: { gap: SPACING.xs },
+  label: { fontSize: 13, letterSpacing: -0.1 },
+  input: {
+    borderWidth: 1,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm + 2,
+    fontSize: 14,
+    height: 46,
+  },
+  submitBtn: {
+    height: 50,
+    borderRadius: RADIUS.xl,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: SPACING.xs,
+  },
+  submitText: { fontSize: 15 },
+  successWrap: {
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
+    alignItems: "center",
+    gap: SPACING.md,
+  },
+  successIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: SPACING.sm,
+  },
+  successTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.3, textAlign: "center" },
+  successBody: { fontSize: 14, lineHeight: 21, textAlign: "center" },
+  doneBtn: {
+    marginTop: SPACING.sm,
+    height: 50,
+    width: "100%",
+    borderRadius: RADIUS.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  doneBtnText: { fontSize: 15 },
 });
 
 const planStyles = StyleSheet.create({

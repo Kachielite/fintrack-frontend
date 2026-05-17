@@ -25,8 +25,8 @@ export default function RecentTransactionsCard({
   const navigation = useNavigation<any>();
   const [selected, setSelected] = useState<Transaction | null>(null);
 
-  const items = transactions?.data.slice(0, 4) ?? [];
-  const hasMore = (transactions?.total ?? 0) > 4;
+  const items = transactions?.data.slice(0, 8) ?? [];
+  const hasMore = (transactions?.total ?? 0) > 8;
 
   return (
     <>
