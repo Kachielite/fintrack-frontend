@@ -1,32 +1,39 @@
 import React from "react";
-import { Platform } from "react-native";
-import { OneSignal, NotificationClickEvent } from "react-native-onesignal";
+import { Platform, TurboModuleRegistry } from "react-native";
 import { navigationRef } from "@/core/navigation/navigation-ref";
 import { NotificationsService } from "../notifications.service";
 
 const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID ?? "";
 
-/**
- * Initialises OneSignal, requests permission, registers the device token with
- * the backend whenever the user is authenticated, and handles deep-link
- * navigation when the user taps a push notification.
- *
- * Mount once at the app root and pass `isAuthenticated` from your auth state.
- */
+// TurboModuleRegistry.get() returns null instead of throwing when the native
+// module is missing. We check this BEFORE requiring the JS wrapper so we never
+// reach onesignal's own getEnforcing() calls (which crash the app).
+function isOneSignalAvailable(): boolean {
+  try {
+    return TurboModuleRegistry.get("OneSignal") !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function useOnesignal(isAuthenticated: boolean) {
-  // Initialise SDK and request permission once on mount.
   React.useEffect(() => {
-    if (!ONESIGNAL_APP_ID) return;
-    OneSignal.initialize(ONESIGNAL_APP_ID);
-    OneSignal.Notifications.requestPermission(true);
+    if (!ONESIGNAL_APP_ID || !isOneSignalAvailable()) return;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { OneSignal } = require("react-native-onesignal");
+      OneSignal.initialize(ONESIGNAL_APP_ID);
+      OneSignal.Notifications.requestPermission(true);
+    } catch {}
   }, []);
 
-  // Register (or refresh) the device token whenever the user logs in.
   React.useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !isOneSignalAvailable()) return;
 
     const register = async () => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { OneSignal } = require("react-native-onesignal");
         const playerId = await OneSignal.User.pushSubscription.getIdAsync();
         if (playerId) {
           const platform = Platform.OS === "ios" ? "ios" : "android";
@@ -40,31 +47,40 @@ export function useOnesignal(isAuthenticated: boolean) {
     register();
   }, [isAuthenticated]);
 
-  // Navigate to the relevant screen when the user taps a notification.
   React.useEffect(() => {
-    const handler = (event: NotificationClickEvent) => {
-      const data = event.notification.additionalData as
-        | { type?: string }
-        | undefined;
+    if (!isOneSignalAvailable()) return;
 
-      if (!data?.type || !navigationRef.isReady()) return;
+    let cleanup: (() => void) | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { OneSignal } = require("react-native-onesignal");
 
-      const nav = navigationRef as any;
+      const handler = (event: import("react-native-onesignal").NotificationClickEvent) => {
+        const data = event.notification.additionalData as
+          | { type?: string }
+          | undefined;
 
-      switch (data.type) {
-        case "sync_complete":
-        case "sync_failed":
-          nav.navigate("Notifications");
-          break;
-        case "insight_generated":
-          nav.navigate("Insights");
-          break;
-        default:
-          nav.navigate("Notifications");
-      }
-    };
+        if (!data?.type || !navigationRef.isReady()) return;
 
-    OneSignal.Notifications.addEventListener("click", handler);
-    return () => OneSignal.Notifications.removeEventListener("click", handler);
+        const nav = navigationRef as any;
+
+        switch (data.type) {
+          case "sync_complete":
+          case "sync_failed":
+            nav.navigate("Notifications");
+            break;
+          case "insight_generated":
+            nav.navigate("Insights");
+            break;
+          default:
+            nav.navigate("Notifications");
+        }
+      };
+
+      OneSignal.Notifications.addEventListener("click", handler);
+      cleanup = () => OneSignal.Notifications.removeEventListener("click", handler);
+    } catch {}
+
+    return cleanup;
   }, []);
 }
