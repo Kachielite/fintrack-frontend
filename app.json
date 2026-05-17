@@ -66,7 +66,7 @@
         { "kotlinVersion": "1.9.25" }
       ],
       [
-        "react-native-onesignal",
+        "onesignal-expo-plugin",
         { "mode": "production" }
       ]
     ]
