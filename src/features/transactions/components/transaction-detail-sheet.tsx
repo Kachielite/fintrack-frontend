@@ -9,6 +9,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Animated,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -49,25 +50,35 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
 
   const isReview = transaction.status === "unverified";
   const [savedCategory, setSavedCategory] = useState<string>(transaction.category);
-  const [pickedCat, setPickedCat] = useState<string>(transaction.category);
+  const [savedMerchant, setSavedMerchant] = useState<string>(transaction.merchant);
   const [reviewDone, setReviewDone] = useState(false);
   const [confirmedCategory, setConfirmedCategory] = useState<string | null>(null);
   const [similarDismissed, setSimilarDismissed] = useState(false);
-  const [catSheetOpen, setCatSheetOpen] = useState(false);
 
-  const catSheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  // Combined edit sheet state
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
+  const [editMerchantDraft, setEditMerchantDraft] = useState<string>(transaction.merchant);
+  const [editCatDraft, setEditCatDraft] = useState<string>(transaction.category);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const editSheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const showReviewBanner = isReview && !reviewDone;
 
-  const mutation = useMutation({
-    mutationFn: (category: string) =>
-      TransactionService.correctTransaction(transaction.id, { category }),
-    onSuccess: (_, category) => {
+  const saveMutation = useMutation({
+    mutationFn: (payload: { merchant?: string; category?: string }) =>
+      TransactionService.correctTransaction(transaction.id, payload),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      setReviewDone(true);
-      setSavedCategory(category);
-      setConfirmedCategory(category);
-      dismissCatSheet();
+      if (payload.merchant) setSavedMerchant(payload.merchant);
+      if (payload.category) {
+        const prevCategory = savedCategory;
+        setSavedCategory(payload.category);
+        setReviewDone(true);
+        if (payload.category !== prevCategory) {
+          setConfirmedCategory(payload.category);
+        }
+      }
+      dismissEditSheet();
     },
   });
 
@@ -105,10 +116,12 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   if (transaction.bankName) otherRows.unshift(["Bank", transaction.bankName]);
   if (transaction.reference) otherRows.push(["Reference", transaction.reference]);
 
-  function openCatSheet() {
-    setPickedCat(savedCategory);
-    setCatSheetOpen(true);
-    Animated.spring(catSheetY, {
+  function openEditSheet() {
+    setEditMerchantDraft(savedMerchant);
+    setEditCatDraft(savedCategory);
+    setCatDropdownOpen(false);
+    setEditSheetOpen(true);
+    Animated.spring(editSheetY, {
       toValue: 0,
       useNativeDriver: true,
       tension: 65,
@@ -116,40 +129,35 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     }).start();
   }
 
-  function cancelCatSheet() {
-    Animated.timing(catSheetY, {
+  function dismissEditSheet() {
+    Animated.timing(editSheetY, {
       toValue: SCREEN_HEIGHT,
       duration: 220,
       useNativeDriver: true,
-    }).start(() => {
-      setPickedCat(savedCategory);
-      setCatSheetOpen(false);
-    });
+    }).start(() => setEditSheetOpen(false));
   }
 
-  function dismissCatSheet() {
-    Animated.timing(catSheetY, {
-      toValue: SCREEN_HEIGHT,
-      duration: 220,
-      useNativeDriver: true,
-    }).start(() => {
-      setCatSheetOpen(false);
-    });
-  }
+  const merchantChanged = editMerchantDraft.trim() !== savedMerchant && editMerchantDraft.trim().length > 0;
+  const categoryChanged = editCatDraft !== savedCategory;
+  const editSaveDisabled = saveMutation.isPending || (!merchantChanged && !categoryChanged);
 
-  const saveDisabled =
-    mutation.isPending || (!showReviewBanner && pickedCat === savedCategory);
+  function handleEditSave() {
+    const payload: { merchant?: string; category?: string } = {};
+    if (merchantChanged) payload.merchant = editMerchantDraft.trim();
+    if (categoryChanged) payload.category = editCatDraft;
+    saveMutation.mutate(payload);
+  }
 
   function renderCategoryList() {
     return categories.map((cat, i) => {
-      const active = pickedCat === cat.slug;
+      const active = editCatDraft === cat.slug;
       const tileColor = CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
       const tileIcon = getCategoryIconName(cat.slug) as React.ComponentProps<typeof Ionicons>["name"];
       const isLast = i === categories.length - 1;
       return (
         <Pressable
           key={cat.slug}
-          onPress={() => setPickedCat(cat.slug)}
+          onPress={() => setEditCatDraft(cat.slug)}
           style={[
             styles.catListItem,
             {
@@ -203,13 +211,22 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
             <Text style={[styles.headerTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
               Transaction
             </Text>
-            <Pressable
-              onPress={onClose}
-              hitSlop={12}
-              style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
-            >
-              <Ionicons name="close" size={18} color={colors.textSecondary} />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={openEditSheet}
+                hitSlop={12}
+                style={[styles.iconBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="pencil-outline" size={17} color={colors.textSecondary} />
+              </Pressable>
+              <Pressable
+                onPress={onClose}
+                hitSlop={12}
+                style={[styles.iconBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
           </View>
 
           <ScrollView
@@ -236,7 +253,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 </Text>
               )}
               <Text style={[styles.merchant, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
-                {transaction.merchant}
+                {savedMerchant}
               </Text>
               <Text style={[styles.dateLine, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
                 {formatDate(transaction.transactionDate)} · {formatTime(transaction.transactionDate)}
@@ -255,42 +272,18 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                   NEEDS A QUICK LOOK
                 </Text>
                 <Text style={[styles.reviewBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
-                  We weren&apos;t sure how to categorise this one.
+                  We weren&apos;t sure how to categorise this one. Tap edit to confirm or change.
                 </Text>
                 <Pressable
-                  onPress={openCatSheet}
-                  style={[
-                    styles.reviewPickerBtn,
-                    { backgroundColor: colors.warning + "22", borderColor: colors.warning + "55" },
-                  ]}
-                >
-                  <View style={[styles.catListIcon, { backgroundColor: (CATEGORY_COLORS[pickedCat] ?? FALLBACK_CATEGORY_COLOR) + "30" }]}>
-                    <Ionicons
-                      name={getCategoryIconName(pickedCat) as React.ComponentProps<typeof Ionicons>["name"]}
-                      size={16}
-                      color={CATEGORY_COLORS[pickedCat] ?? FALLBACK_CATEGORY_COLOR}
-                    />
-                  </View>
-                  <Text style={[styles.reviewPickerLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
-                    {getCategoryLabel(pickedCat, categories)}
-                  </Text>
-                  <Ionicons name="chevron-down-outline" size={15} color={colors.textSubtle} />
-                </Pressable>
-                <Pressable
-                  onPress={() => mutation.mutate(pickedCat)}
-                  disabled={mutation.isPending}
+                  onPress={openEditSheet}
                   style={[
                     styles.confirmBtn,
-                    { backgroundColor: colors.warning, opacity: mutation.isPending ? 0.7 : 1 },
+                    { backgroundColor: colors.warning },
                   ]}
                 >
-                  {mutation.isPending ? (
-                    <ActivityIndicator size="small" color={colors.surface} />
-                  ) : (
-                    <Text style={[styles.confirmText, { color: colors.surface, fontFamily: FONTS.semiBold }]}>
-                      Confirm category
-                    </Text>
-                  )}
+                  <Text style={[styles.confirmText, { color: colors.surface, fontFamily: FONTS.semiBold }]}>
+                    Review &amp; confirm
+                  </Text>
                 </Pressable>
               </View>
             )}
@@ -306,7 +299,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 </View>
                 <Text style={[styles.similarBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
                   {similarTransactions.length} other{" "}
-                  <Text style={{ fontFamily: FONTS.semiBold }}>{transaction.merchant}</Text>{" "}
+                  <Text style={{ fontFamily: FONTS.semiBold }}>{savedMerchant}</Text>{" "}
                   {similarTransactions.length === 1 ? "expense has" : "expenses have"} a different
                   category. Apply{" "}
                   <Text style={{ fontFamily: FONTS.semiBold }}>
@@ -345,9 +338,26 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
 
             {/* Detail card */}
             <View style={[styles.detailCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {/* Category row — full row tappable */}
-              <Pressable
-                onPress={openCatSheet}
+              {/* Category row */}
+              <View
+                style={[
+                  styles.detailRow,
+                  {
+                    borderBottomWidth: StyleSheet.hairlineWidth,
+                    borderBottomColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.detailLabel, { color: colors.textSubtle, fontFamily: FONTS.semiBold }]}>
+                  Category
+                </Text>
+                <Text style={[styles.detailValue, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+                  {displayCategoryLabel}
+                </Text>
+              </View>
+
+              {/* Merchant row */}
+              <View
                 style={[
                   styles.detailRow,
                   otherRows.length > 0 && {
@@ -357,17 +367,15 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 ]}
               >
                 <Text style={[styles.detailLabel, { color: colors.textSubtle, fontFamily: FONTS.semiBold }]}>
-                  Category
+                  Merchant
                 </Text>
-                <View style={styles.categoryRowValue}>
-                  <Text style={[styles.detailValue, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
-                    {displayCategoryLabel}
-                  </Text>
-                  <View style={[styles.editIconBtn, { backgroundColor: colors.primary + "20" }]}>
-                    <Ionicons name="pencil-outline" size={13} color={colors.primary} />
-                  </View>
-                </View>
-              </Pressable>
+                <Text
+                  style={[styles.detailValue, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}
+                  numberOfLines={1}
+                >
+                  {savedMerchant}
+                </Text>
+              </View>
 
               {otherRows.map(([label, value], i) => (
                 <View
@@ -402,62 +410,113 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
         </View>
       </View>
 
-      {/* ── Category picker (overlay inside same Modal) ───────── */}
-      {catSheetOpen && (
+      {/* ── Combined edit sheet ──────────────────────────────── */}
+      {editSheetOpen && (
         <View style={[StyleSheet.absoluteFillObject, styles.overlay]}>
-          <Pressable style={styles.backdrop} onPress={cancelCatSheet} />
+          <Pressable style={styles.backdrop} onPress={dismissEditSheet} />
           <Animated.View
             style={[
-              styles.catSheet,
+              styles.editSheet,
               {
                 backgroundColor: colors.surface,
                 paddingBottom: insets.bottom + SPACING.lg,
-                transform: [{ translateY: catSheetY }],
+                transform: [{ translateY: editSheetY }],
               },
             ]}
           >
             <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
 
-            <View style={styles.catSheetHeader}>
-              <Text style={[styles.catSheetTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
-                Select Category
+            <View style={styles.editSheetHeader}>
+              <Text style={[styles.editSheetTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+                Edit Transaction
               </Text>
               <Pressable
-                onPress={cancelCatSheet}
+                onPress={dismissEditSheet}
                 hitSlop={12}
-                style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
+                style={[styles.iconBtn, { backgroundColor: colors.surface2 }]}
               >
                 <Ionicons name="close" size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
 
             <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={styles.catListContent}
+              style={{ flexShrink: 1 }}
+              contentContainerStyle={styles.editSheetBody}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
-              <View style={[styles.catListContainer, { borderColor: colors.border }]}>
-                {renderCategoryList()}
+              {/* Merchant name input */}
+              <TextInput
+                value={editMerchantDraft}
+                onChangeText={setEditMerchantDraft}
+                placeholder="Merchant name"
+                placeholderTextColor={colors.textSubtle}
+                style={[
+                  styles.merchantInput,
+                  {
+                    color: colors.textPrimary,
+                    borderColor: colors.border,
+                    backgroundColor: colors.surface2,
+                    fontFamily: FONTS.regular,
+                  },
+                ]}
+                returnKeyType="done"
+              />
+
+              {/* Category picker — collapsible dropdown */}
+              <View style={[styles.dropdown, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+                <Pressable
+                  onPress={() => setCatDropdownOpen((o) => !o)}
+                  style={styles.dropdownHeader}
+                >
+                  <Text style={[styles.dropdownLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+                    Category
+                  </Text>
+                  <View style={styles.dropdownRight}>
+                    <Text
+                      style={[
+                        styles.dropdownValue,
+                        {
+                          color: categoryChanged ? colors.primary : colors.textSubtle,
+                          fontFamily: categoryChanged ? FONTS.semiBold : FONTS.regular,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {getCategoryLabel(editCatDraft, categories)}
+                    </Text>
+                    <Ionicons
+                      name={catDropdownOpen ? "chevron-up-outline" : "chevron-down-outline"}
+                      size={16}
+                      color={colors.textSubtle}
+                    />
+                  </View>
+                </Pressable>
+                {catDropdownOpen && (
+                  <View style={[styles.dropdownBody, { borderTopColor: colors.border }]}>
+                    {renderCategoryList()}
+                  </View>
+                )}
               </View>
             </ScrollView>
 
-            <View style={[styles.catSheetFooter, { paddingHorizontal: SPACING.xl }]}>
+            <View style={[styles.editSheetFooter, { paddingHorizontal: SPACING.xl }]}>
               <Pressable
-                onPress={() => mutation.mutate(pickedCat)}
-                disabled={saveDisabled}
+                onPress={handleEditSave}
+                disabled={editSaveDisabled}
                 style={[
                   styles.confirmBtn,
                   {
-                    backgroundColor: showReviewBanner ? colors.warning : colors.primary,
-                    opacity: saveDisabled ? 0.5 : 1,
+                    backgroundColor: colors.primary,
+                    opacity: editSaveDisabled ? 0.5 : 1,
                   },
                 ]}
               >
-                {mutation.isPending ? (
+                {saveMutation.isPending ? (
                   <ActivityIndicator size="small" color={colors.surface} />
                 ) : (
                   <Text style={[styles.confirmText, { color: colors.surface, fontFamily: FONTS.semiBold }]}>
-                    {showReviewBanner ? "Confirm category" : "Save category"}
+                    Save changes
                   </Text>
                 )}
               </Pressable>
@@ -481,10 +540,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: RADIUS.xxl,
     maxHeight: SCREEN_HEIGHT * 0.88,
   },
-  catSheet: {
+  editSheet: {
     borderTopLeftRadius: RADIUS.xxl,
     borderTopRightRadius: RADIUS.xxl,
-    height: SCREEN_HEIGHT * 0.75,
+    maxHeight: SCREEN_HEIGHT * 0.88,
   },
   handle: {
     width: 36,
@@ -503,21 +562,60 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
   },
   headerTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
-  catSheetHeader: {
+  headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
+    gap: SPACING.sm,
   },
-  catSheetTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
-  closeBtn: {
+  iconBtn: {
     width: 34,
     height: 34,
     borderRadius: 99,
     alignItems: "center",
     justifyContent: "center",
   },
+  editSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  editSheetTitle: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
+  editSheetBody: {
+    paddingHorizontal: SPACING.xl,
+    paddingBottom: SPACING.base,
+    gap: SPACING.sm,
+  },
+  editSheetFooter: { paddingTop: SPACING.md },
+  merchantInput: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.base,
+    fontSize: FONT_SIZE.body,
+  },
+  dropdown: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  dropdownHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SPACING.base,
+    paddingVertical: SPACING.md + 2,
+  },
+  dropdownLabel: { fontSize: 15 },
+  dropdownRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.xs,
+    maxWidth: "55%",
+  },
+  dropdownValue: { fontSize: 14 },
+  dropdownBody: { borderTopWidth: StyleSheet.hairlineWidth },
   body: { paddingHorizontal: SPACING.xl, gap: SPACING.lg },
   headerCenter: { alignItems: "center", paddingVertical: SPACING.sm, gap: 6 },
   iconWrap: {
@@ -540,17 +638,6 @@ const styles = StyleSheet.create({
   },
   reviewLabel: { fontSize: 11, letterSpacing: 0.6 },
   reviewBody: { fontSize: 14, lineHeight: 20 },
-  reviewPickerBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-  },
-  reviewPickerLabel: { flex: 1, fontSize: 14 },
-  catListContent: { paddingHorizontal: SPACING.xl, paddingBottom: SPACING.base },
   catListContainer: {
     borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,
@@ -571,7 +658,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   catListName: { flex: 1, fontSize: 14 },
-  catSheetFooter: { paddingTop: SPACING.md },
   confirmBtn: {
     borderRadius: RADIUS.xl,
     paddingVertical: SPACING.md,
@@ -592,18 +678,6 @@ const styles = StyleSheet.create({
   },
   detailLabel: { fontSize: 13 },
   detailValue: { fontSize: 14 },
-  categoryRowValue: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  editIconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 99,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   cta: {
     borderRadius: RADIUS.xl,
     paddingVertical: SPACING.md + 2,

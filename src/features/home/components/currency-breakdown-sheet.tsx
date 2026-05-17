@@ -15,11 +15,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
-import { TransactionSummary } from "@/features/transactions/transactions.interface";
+import { Transaction, TransactionSummary } from "@/features/transactions/transactions.interface";
 import { currencySymbol } from "@/core/common/utils/currency";
 import { useTransactionsInfinite } from "@/features/transactions/hooks/use-transactions-infinite";
 import TransactionRow from "@/core/common/components/TransactionRow";
 import EmptyState from "@/core/common/components/EmptyState";
+import TransactionDetailSheet from "./transaction-detail-sheet";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -35,6 +36,7 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
   const [active, setActive] = useState(
     summary.byCurrency[0]?.currency ?? summary.refCurrency,
   );
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const row = summary.byCurrency.find((r) => r.currency === active);
   const spend = row?.spend ?? 0;
@@ -252,7 +254,7 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
                       },
                     ]}
                   >
-                    <TransactionRow transaction={tx} />
+                    <TransactionRow transaction={tx} onPress={() => setSelectedTx(tx)} />
                   </View>
                 ))}
                 {isFetchingNextPage && (
@@ -267,6 +269,14 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
           </ScrollView>
         </View>
       </View>
+
+      {selectedTx && (
+        <TransactionDetailSheet
+          visible={!!selectedTx}
+          onClose={() => setSelectedTx(null)}
+          transaction={selectedTx}
+        />
+      )}
     </Modal>
   );
 }
