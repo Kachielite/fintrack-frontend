@@ -12,6 +12,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -576,6 +577,18 @@ export default function ProfileScreen() {
               label="Missing a bank?"
               sub="Report a sender email we don't recognise yet"
               onPress={() => setReportSenderOpen(true)}
+            />
+          </GlassCard>
+        </View>
+
+        {/* Support */}
+        <View style={styles.section}>
+          <SectionHeader title="Support" />
+          <GlassCard>
+            <SettingRow
+              icon="mail-outline"
+              label="Contact support"
+              onPress={() => Linking.openURL("mailto:derrick.madumere@gmail.com")}
             />
           </GlassCard>
         </View>

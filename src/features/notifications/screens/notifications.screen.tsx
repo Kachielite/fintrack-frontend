@@ -2,7 +2,7 @@ import React from "react";
 import {
   View,
   Text,
-  FlatList,
+  SectionList,
   Pressable,
   StyleSheet,
   ActivityIndicator,
@@ -19,17 +19,74 @@ const ICON_MAP: Record<string, { name: string; color: string }> = {
   sync_complete: { name: "checkmark-circle", color: "#22c55e" },
   sync_skipped: { name: "ellipsis-horizontal-circle", color: "#94a3b8" },
   sync_failed: { name: "close-circle", color: "#ef4444" },
+  insight_generated: { name: "sparkles", color: "#a78bfa" },
+  budget_warning: { name: "warning", color: "#f59e0b" },
+  budget_exceeded: { name: "alert-circle", color: "#ef4444" },
 };
+
+interface Section {
+  title: string;
+  data: AppNotification[];
+}
+
+function groupNotifications(items: AppNotification[]): Section[] {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfWeek.getDate() - 6);
+
+  const buckets: Record<string, AppNotification[]> = {
+    Today: [],
+    Yesterday: [],
+    "This week": [],
+    Earlier: [],
+  };
+
+  for (const item of items) {
+    const d = new Date(item.createdAt);
+    if (d >= startOfToday) {
+      buckets["Today"].push(item);
+    } else if (d >= startOfYesterday) {
+      buckets["Yesterday"].push(item);
+    } else if (d >= startOfWeek) {
+      buckets["This week"].push(item);
+    } else {
+      buckets["Earlier"].push(item);
+    }
+  }
+
+  return (Object.entries(buckets) as [string, AppNotification[]][])
+    .filter(([, data]) => data.length > 0)
+    .map(([title, data]) => ({ title, data }));
+}
+
+function getDestination(type: string): string | null {
+  switch (type) {
+    case "insight_generated": return "Insights";
+    case "budget_warning":
+    case "budget_exceeded": return "Budget";
+    default: return null;
+  }
+}
 
 function NotificationRow({ item }: { item: AppNotification }) {
   const colors = useThemeColors();
+  const navigation = useNavigation<any>();
   const { mutate: markRead } = useMarkRead();
   const icon = ICON_MAP[item.type] ?? { name: "notifications", color: colors.primary };
   const isUnread = item.readAt === null;
+  const destination = getDestination(item.type);
+
+  const handlePress = () => {
+    if (isUnread) markRead(item.id);
+    if (destination) navigation.navigate(destination);
+  };
 
   return (
     <Pressable
-      onPress={() => { if (isUnread) markRead(item.id); }}
+      onPress={handlePress}
       style={[
         styles.row,
         {
@@ -73,11 +130,24 @@ function NotificationRow({ item }: { item: AppNotification }) {
   );
 }
 
+function SectionHeader({ title }: { title: string }) {
+  const colors = useThemeColors();
+  return (
+    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+      <Text style={[styles.sectionTitle, { color: colors.textSubtle, fontFamily: FONTS.semiBold }]}>
+        {title}
+      </Text>
+    </View>
+  );
+}
+
 export default function NotificationsScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { data, isLoading } = useNotifications();
   const { mutate: markAllRead } = useMarkAllRead();
+
+  const sections = React.useMemo(() => groupNotifications(data ?? []), [data]);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -107,12 +177,14 @@ export default function NotificationsScreen() {
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={data}
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => <NotificationRow item={item} />}
+          renderSectionHeader={({ section }) => <SectionHeader title={section.title} />}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={false}
         />
       )}
     </SafeAreaView>
@@ -158,6 +230,16 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 15 },
   list: { paddingBottom: SPACING.xxl },
+  sectionHeader: {
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.base,
+    paddingBottom: SPACING.xs,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
