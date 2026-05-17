@@ -92,7 +92,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
   function handleRevoke() {
     Alert.alert(
       "Remove connection",
-      `This will revoke Gmail access and remove ${connection.gmailAddress} from FinTrack. Your existing transactions will remain.`,
+      `This will revoke Gmail access and remove ${connection.gmailAddress} from Vela. Your existing transactions will remain.`,
       [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => deleteConnectionMutation.mutate() },
@@ -286,7 +286,7 @@ export default function EmailConnectionsSheet({ visible, onClose }: Props) {
             <View style={[sheet.infoRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
               <Text style={[sheet.infoText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-                FinTrack has read-only access to your selected Gmail label. We never store your full emails.
+                Vela has read-only access to your selected Gmail label. We never store your full emails.
               </Text>
             </View>
           </ScrollView>

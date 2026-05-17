@@ -673,8 +673,8 @@ export default function InsightsScreen() {
     if (opt?.locked) {
       setFilterOpen(false);
       Alert.alert(
-        "Fintrack Pro",
-        "Extended period analysis (6 months, this year, and all time) is available on Fintrack Pro.",
+        "Vela Pro",
+        "Extended period analysis (6 months, this year, and all time) is available on Vela Pro.",
         [{ text: "OK" }],
       );
       return;

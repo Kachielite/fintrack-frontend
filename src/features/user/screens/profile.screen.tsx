@@ -500,7 +500,7 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Text style={[styles.version, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-          FinTrack · v1.0.0
+          Vela · v1.0.0
         </Text>
       </ScrollView>
 

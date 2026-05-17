@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SPACING } from "@/core/common/constants/theme";
-import { useTabStore } from "@/core/common/state/tab.state";
 import { PaginatedResponse } from "@/core/common/interface/pagination.interface";
 import { Transaction } from "@/features/transactions/transactions.interface";
 import SectionHeader from "@/core/common/components/SectionHeader";
@@ -22,7 +22,7 @@ export default function RecentTransactionsCard({
   isLoading,
 }: RecentTransactionsCardProps) {
   const colors = useThemeColors();
-  const setTabIndex = useTabStore((s) => s.setTabIndex);
+  const navigation = useNavigation<any>();
   const [selected, setSelected] = useState<Transaction | null>(null);
 
   const items = transactions?.data.slice(0, 4) ?? [];
@@ -33,7 +33,7 @@ export default function RecentTransactionsCard({
       <View>
         <SectionHeader
           title="Recent"
-          action={hasMore ? { label: "See all", onPress: () => setTabIndex(1) } : undefined}
+          action={hasMore ? { label: "See all", onPress: () => navigation.navigate("Transactions") } : undefined}
         />
         <GlassCard>
           {isLoading ? (

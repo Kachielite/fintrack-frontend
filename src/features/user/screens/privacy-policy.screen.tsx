@@ -9,7 +9,7 @@ const LAST_UPDATED = "May 2025";
 const SECTIONS = [
   {
     title: "1. Information we collect",
-    body: `FinTrack collects the minimum information needed to deliver its service:\n\n• Email address and name — used for authentication and to personalise your experience.\n• Gmail email content — read-only access to emails in your selected label. We extract transaction data (amount, merchant, currency, date) and store it. We never store the full email body.\n• Transaction data — amounts, merchants, categories, and dates derived from your bank emails.\n• Usage data — in-app actions and feature usage to improve the product. This data is anonymised and aggregated.`,
+    body: `Vela collects the minimum information needed to deliver its service:\n\n• Email address and name — used for authentication and to personalise your experience.\n• Gmail email content — read-only access to emails in your selected label. We extract transaction data (amount, merchant, currency, date) and store it. We never store the full email body.\n• Transaction data — amounts, merchants, categories, and dates derived from your bank emails.\n• Usage data — in-app actions and feature usage to improve the product. This data is anonymised and aggregated.`,
   },
   {
     title: "2. How we use your information",
@@ -17,15 +17,15 @@ const SECTIONS = [
   },
   {
     title: "3. AI and data processing",
-    body: `FinTrack uses OpenAI's API to generate financial insights. Transaction summaries — not your raw emails — are sent to OpenAI for processing. These summaries contain aggregated spending data without personally identifiable payment details.\n\nOpenAI processes this data under their API data usage policies. Data sent via the API is not used to train OpenAI's models.`,
+    body: `Vela uses OpenAI's API to generate financial insights. Transaction summaries — not your raw emails — are sent to OpenAI for processing. These summaries contain aggregated spending data without personally identifiable payment details.\n\nOpenAI processes this data under their API data usage policies. Data sent via the API is not used to train OpenAI's models.`,
   },
   {
     title: "4. Gmail access",
-    body: `We request read-only access to Gmail labels you explicitly select. We do not read, store, or process emails outside the label you configure.\n\nYou can revoke Gmail access at any time via Google Account settings or by disconnecting your account in FinTrack → Profile → Email connections. Revoking access stops new transactions from being imported but does not delete data already processed.`,
+    body: `We request read-only access to Gmail labels you explicitly select. We do not read, store, or process emails outside the label you configure.\n\nYou can revoke Gmail access at any time via Google Account settings or by disconnecting your account in Vela → Profile → Email connections. Revoking access stops new transactions from being imported but does not delete data already processed.`,
   },
   {
     title: "5. Data retention",
-    body: `Your transaction data is retained for as long as your account is active. When you delete your account:\n\n• Your account and profile data are deleted within 30 days.\n• Your raw transaction data is deleted within 30 days.\n• Anonymised, aggregated analytics data (not linked to you) may be retained.\n\nYou can request immediate deletion by contacting us at privacy@fintrack.app.`,
+    body: `Your transaction data is retained for as long as your account is active. When you delete your account:\n\n• Your account and profile data are deleted within 30 days.\n• Your raw transaction data is deleted within 30 days.\n• Anonymised, aggregated analytics data (not linked to you) may be retained.\n\nYou can request immediate deletion by contacting us at privacy@vela.app.`,
   },
   {
     title: "6. Security",
@@ -33,15 +33,15 @@ const SECTIONS = [
   },
   {
     title: "7. Your rights",
-    body: `Depending on your location, you may have the right to:\n\n• Access the personal data we hold about you.\n• Request correction of inaccurate data.\n• Request deletion of your data.\n• Export your data in a portable format.\n• Withdraw consent for processing at any time.\n\nTo exercise any of these rights, contact us at privacy@fintrack.app.`,
+    body: `Depending on your location, you may have the right to:\n\n• Access the personal data we hold about you.\n• Request correction of inaccurate data.\n• Request deletion of your data.\n• Export your data in a portable format.\n• Withdraw consent for processing at any time.\n\nTo exercise any of these rights, contact us at privacy@vela.app.`,
   },
   {
     title: "8. Changes to this policy",
-    body: `We may update this Privacy Policy from time to time. When we make material changes, we will notify you in-app and update the "Last updated" date below. Continued use of FinTrack after changes take effect constitutes acceptance of the revised policy.`,
+    body: `We may update this Privacy Policy from time to time. When we make material changes, we will notify you in-app and update the "Last updated" date below. Continued use of Vela after changes take effect constitutes acceptance of the revised policy.`,
   },
   {
     title: "9. Contact",
-    body: `If you have questions or concerns about this Privacy Policy or how we handle your data, contact us:\n\nEmail: privacy@fintrack.app\n\nWe aim to respond to all requests within 5 business days.`,
+    body: `If you have questions or concerns about this Privacy Policy or how we handle your data, contact us:\n\nEmail: privacy@vela.app\n\nWe aim to respond to all requests within 5 business days.`,
   },
 ];
 
@@ -59,7 +59,7 @@ export default function PrivacyPolicyScreen() {
           Last updated: {LAST_UPDATED}
         </Text>
         <Text style={[styles.intro, { color: colors.textSecondary, fontFamily: FONTS.regular }]}>
-          FinTrack is built on the premise that your financial data belongs to you. This policy explains what we collect, how we use it, and how we protect it.
+          Vela is built on the premise that your financial data belongs to you. This policy explains what we collect, how we use it, and how we protect it.
         </Text>
 
         <View style={{ gap: SPACING.xl }}>

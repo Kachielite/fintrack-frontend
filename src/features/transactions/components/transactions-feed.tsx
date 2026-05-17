@@ -10,39 +10,41 @@ import {
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { SPACING } from "@/core/common/constants/theme";
 import { Transaction } from "../transactions.interface";
-import { isToday, isYesterday } from "@/core/common/utils/date";
+import { dateGroupLabel } from "@/core/common/utils/date";
 import EmptyState from "@/core/common/components/EmptyState";
 import TransactionsDateGroup from "./transactions-date-group";
 import TransactionsSkeleton from "./transactions-skeleton";
 
 interface DateGroup {
-  label: "Today" | "Yesterday" | "Earlier";
+  dateKey: string; // YYYY-MM-DD — used as stable key and sort key
+  label: string;
   data: Transaction[];
 }
 
-function bucketLabel(date: Date): "Today" | "Yesterday" | "Earlier" {
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  return "Earlier";
+function toDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-const BUCKET_ORDER: DateGroup["label"][] = ["Today", "Yesterday", "Earlier"];
-
 function groupByDate(transactions: Transaction[]): DateGroup[] {
-  const map = new Map<DateGroup["label"], Transaction[]>([
-    ["Today", []],
-    ["Yesterday", []],
-    ["Earlier", []],
-  ]);
+  const map = new Map<string, Transaction[]>();
 
   for (const tx of transactions) {
-    const label = bucketLabel(tx.transactionDate);
-    map.get(label)!.push(tx);
+    const key = toDateKey(new Date(tx.transactionDate));
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(tx);
   }
 
-  return BUCKET_ORDER.map((label) => ({ label, data: map.get(label)! })).filter(
-    (g) => g.data.length > 0,
-  );
+  return Array.from(map.entries())
+    .sort(([a], [b]) => b.localeCompare(a)) // newest day first
+    .map(([dateKey, txs]) => ({
+      dateKey,
+      label: dateGroupLabel(txs[0].transactionDate),
+      data: txs.sort(
+        (a, b) =>
+          new Date(b.transactionDate).getTime() -
+          new Date(a.transactionDate).getTime(),
+      ),
+    }));
 }
 
 interface Props {
@@ -85,7 +87,7 @@ export default function TransactionsFeed({
   return (
     <FlatList
       data={groups}
-      keyExtractor={(item) => item.label}
+      keyExtractor={(item) => item.dateKey}
       renderItem={renderItem}
       contentContainerStyle={
         groups.length === 0 ? styles.centered : styles.list

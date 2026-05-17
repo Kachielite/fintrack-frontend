@@ -173,8 +173,8 @@ export default function OnboardingResultsScreen() {
           ]}
         >
           {hasTransactions
-            ? "FinTrack has read, categorised, and organised your spending history. Ready to see the big picture?"
-            : "Connect your Gmail label any time to let FinTrack organise your bank emails automatically."}
+            ? "Vela has read, categorised, and organised your spending history. Ready to see the big picture?"
+            : "Connect your Gmail label any time to let Vela organise your bank emails automatically."}
         </Text>
 
         {/* CTA */}

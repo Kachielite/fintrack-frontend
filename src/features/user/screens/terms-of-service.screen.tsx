@@ -9,19 +9,19 @@ const LAST_UPDATED = "May 2025";
 const SECTIONS = [
   {
     title: "1. Acceptance of terms",
-    body: `By creating an account or using FinTrack ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.\n\nThese terms apply to all users of FinTrack, including users of our mobile application.`,
+    body: `By creating an account or using Vela ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.\n\nThese terms apply to all users of Vela, including users of our mobile application.`,
   },
   {
     title: "2. Description of service",
-    body: `FinTrack is a personal finance tracking application that:\n\n• Reads bank notification emails from your Gmail account (with your permission) to extract transaction data.\n• Provides AI-powered financial insights, budgeting tools, and spending summaries.\n• Helps you track spending across multiple currencies.\n\nFinTrack is a personal finance tool only. It is not a bank, financial advisor, or investment advisor. Insights provided by Iris are informational and do not constitute professional financial advice.`,
+    body: `Vela is a personal finance tracking application that:\n\n• Reads bank notification emails from your Gmail account (with your permission) to extract transaction data.\n• Provides AI-powered financial insights, budgeting tools, and spending summaries.\n• Helps you track spending across multiple currencies.\n\nVela is a personal finance tool only. It is not a bank, financial advisor, or investment advisor. Insights provided by Iris are informational and do not constitute professional financial advice.`,
   },
   {
     title: "3. Account registration",
-    body: `You must create an account to use FinTrack. You agree to:\n\n• Provide accurate and complete information during registration.\n• Keep your account credentials secure and not share them with others.\n• Notify us immediately of any unauthorised access to your account.\n• Be responsible for all activity that occurs under your account.\n\nYou must be at least 18 years old to create an account.`,
+    body: `You must create an account to use Vela. You agree to:\n\n• Provide accurate and complete information during registration.\n• Keep your account credentials secure and not share them with others.\n• Notify us immediately of any unauthorised access to your account.\n• Be responsible for all activity that occurs under your account.\n\nYou must be at least 18 years old to create an account.`,
   },
   {
     title: "4. Gmail access and permissions",
-    body: `FinTrack requests read-only access to Gmail labels you explicitly select. By granting this access, you authorise FinTrack to:\n\n• Read emails within the selected label.\n• Extract transaction data from those emails.\n• Store the extracted transaction data on our servers.\n\nYou retain full ownership of your Gmail data. FinTrack does not modify, delete, or share your emails. You can revoke access at any time.`,
+    body: `Vela requests read-only access to Gmail labels you explicitly select. By granting this access, you authorise Vela to:\n\n• Read emails within the selected label.\n• Extract transaction data from those emails.\n• Store the extracted transaction data on our servers.\n\nYou retain full ownership of your Gmail data. Vela does not modify, delete, or share your emails. You can revoke access at any time.`,
   },
   {
     title: "5. Acceptable use",
@@ -29,15 +29,15 @@ const SECTIONS = [
   },
   {
     title: "6. Intellectual property",
-    body: `FinTrack and its original content, features, and functionality are owned by FinTrack and are protected by international copyright, trademark, and other intellectual property laws.\n\nYou retain ownership of your personal financial data. By using the Service, you grant FinTrack a limited, non-exclusive licence to process your data solely for the purpose of providing the Service.`,
+    body: `Vela and its original content, features, and functionality are owned by Vela and are protected by international copyright, trademark, and other intellectual property laws.\n\nYou retain ownership of your personal financial data. By using the Service, you grant Vela a limited, non-exclusive licence to process your data solely for the purpose of providing the Service.`,
   },
   {
     title: "7. Disclaimers",
-    body: `The Service is provided "as is" and "as available" without warranties of any kind, express or implied.\n\nFinTrack does not warrant that:\n\n• The Service will be uninterrupted or error-free.\n• Transaction extraction will be 100% accurate — email formats vary and some transactions may be missed or miscategorised.\n• AI insights will be accurate or appropriate for your specific financial situation.\n\nAlways verify important financial decisions with qualified professionals.`,
+    body: `The Service is provided "as is" and "as available" without warranties of any kind, express or implied.\n\nVela does not warrant that:\n\n• The Service will be uninterrupted or error-free.\n• Transaction extraction will be 100% accurate — email formats vary and some transactions may be missed or miscategorised.\n• AI insights will be accurate or appropriate for your specific financial situation.\n\nAlways verify important financial decisions with qualified professionals.`,
   },
   {
     title: "8. Limitation of liability",
-    body: `To the maximum extent permitted by law, FinTrack shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:\n\n• Loss of profits or revenue.\n• Financial decisions made based on FinTrack insights.\n• Data loss or corruption.\n• Unauthorised access to your account.\n\nOur total liability for any claim arising from your use of the Service shall not exceed the amount you paid us in the 12 months preceding the claim.`,
+    body: `To the maximum extent permitted by law, Vela shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:\n\n• Loss of profits or revenue.\n• Financial decisions made based on Vela insights.\n• Data loss or corruption.\n• Unauthorised access to your account.\n\nOur total liability for any claim arising from your use of the Service shall not exceed the amount you paid us in the 12 months preceding the claim.`,
   },
   {
     title: "9. Account termination",
@@ -53,7 +53,7 @@ const SECTIONS = [
   },
   {
     title: "12. Contact",
-    body: `For questions about these Terms of Service, contact us:\n\nEmail: legal@fintrack.app\n\nWe aim to respond to all inquiries within 5 business days.`,
+    body: `For questions about these Terms of Service, contact us:\n\nEmail: legal@vela.app\n\nWe aim to respond to all inquiries within 5 business days.`,
   },
 ];
 
@@ -71,7 +71,7 @@ export default function TermsOfServiceScreen() {
           Last updated: {LAST_UPDATED}
         </Text>
         <Text style={[styles.intro, { color: colors.textSecondary, fontFamily: FONTS.regular }]}>
-          Please read these Terms of Service carefully before using FinTrack. These terms govern your use of our application and services.
+          Please read these Terms of Service carefully before using Vela. These terms govern your use of our application and services.
         </Text>
 
         <View style={{ gap: SPACING.xl }}>
