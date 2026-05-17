@@ -20,6 +20,9 @@ import { useGoogleSignIn } from "../hooks/use-google-sign-in";
 import { useAppleSignIn } from "../hooks/use-apple-sign-in";
 import { useDemoSignIn } from "../hooks/use-demo-sign-in";
 
+const oauthLabel =
+  Platform.OS === "ios" ? "Continue with Apple or Google" : "Continue with Google";
+
 export default function AuthForm() {
   const colors = useThemeColors();
   const { signIn: signInGoogle, isLoading: googleLoading } = useGoogleSignIn();
@@ -28,6 +31,7 @@ export default function AuthForm() {
     useDemoSignIn();
 
   const [demoExpanded, setDemoExpanded] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
@@ -35,37 +39,43 @@ export default function AuthForm() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-      <View style={styles.body}>
-        <AuthLogo />
+        <View style={styles.body}>
+          <AuthLogo />
 
-        {/* Primary OAuth buttons */}
-        <View style={styles.buttons}>
-          <GoogleSignInButton
-            onPress={() => signInGoogle()}
-            isLoading={googleLoading}
-          />
-          <AppleSignInButton
-            onPress={() => signInApple()}
-            isLoading={appleLoading}
-          />
-        </View>
+          {/* ── OAuth mode ─────────────────────────────────────── */}
+          {!demoExpanded && (
+            <>
+              <View
+                style={{ opacity: agreed ? 1 : 0.4 }}
+                pointerEvents={agreed ? "auto" : "none"}
+              >
+                <View style={styles.buttons}>
+                  <GoogleSignInButton onPress={() => signInGoogle()} isLoading={googleLoading} />
+                  <AppleSignInButton onPress={() => signInApple()} isLoading={appleLoading} />
+                </View>
+              </View>
 
-        {/* Demo / reviewer login */}
-        <View style={styles.demoSection}>
-          <Pressable
-            onPress={() => setDemoExpanded((v) => !v)}
-            style={styles.demoToggle}
-            hitSlop={8}
-          >
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.demoToggleText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-              {demoExpanded ? "hide demo" : "demo / reviewer login"}
-            </Text>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-          </Pressable>
+              {/* T&C sits right under OAuth buttons */}
+              <AuthFooter agreed={agreed} onToggle={() => setAgreed((v) => !v)} />
 
+              {/* Toggle to password mode */}
+              <Pressable
+                onPress={() => setDemoExpanded(true)}
+                style={styles.dividerRow}
+                hitSlop={8}
+              >
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+                <Text style={[styles.dividerText, { color: colors.textSubtle, fontFamily: FONTS.regular, marginTop: SPACING.xxxl }]}>
+                  sign in with password
+                </Text>
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              </Pressable>
+            </>
+          )}
+
+          {/* ── Password mode ──────────────────────────────────── */}
           {demoExpanded && (
-            <View style={styles.demoForm}>
+            <View style={styles.passwordForm}>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -101,35 +111,45 @@ export default function AuthForm() {
               />
               <Pressable
                 onPress={() => signInDemo()}
-                disabled={demoLoading}
+                disabled={demoLoading || !agreed}
                 style={[
-                  styles.demoSignInBtn,
+                  styles.signInBtn,
                   {
-                    backgroundColor: colors.surface2,
-                    borderColor: colors.border,
-                    opacity: demoLoading ? 0.6 : 1,
+                    backgroundColor: agreed ? colors.primary : colors.surface2,
+                    borderColor: agreed ? colors.primary : colors.border,
+                    opacity: demoLoading ? 0.7 : !agreed ? 0.4 : 1,
                   },
                 ]}
               >
                 {demoLoading ? (
-                  <ActivityIndicator size="small" color={colors.textSecondary} />
+                  <ActivityIndicator size="small" color={agreed ? colors.onPrimary : colors.textSecondary} />
                 ) : (
-                  <Text
-                    style={[
-                      styles.demoSignInText,
-                      { color: colors.textSecondary, fontFamily: FONTS.semiBold },
-                    ]}
-                  >
+                  <Text style={[styles.signInText, { color: agreed ? colors.onPrimary : colors.textSecondary, fontFamily: FONTS.semiBold }]}>
                     Sign in
                   </Text>
                 )}
               </Pressable>
+
+              {/* Extra gap before T&C */}
+              <View style={{ marginTop: SPACING.sm }}>
+                <AuthFooter agreed={agreed} onToggle={() => setAgreed((v) => !v)} />
+              </View>
+
+              {/* Switch back to OAuth — replaces "hide" */}
+              <Pressable
+                onPress={() => setDemoExpanded(false)}
+                style={[styles.dividerRow, { marginTop: SPACING.xxxl }]}
+                hitSlop={8}
+              >
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+                <Text style={[styles.dividerText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+                  {oauthLabel}
+                </Text>
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              </Pressable>
             </View>
           )}
         </View>
-      </View>
-
-      <AuthFooter />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -143,19 +163,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xxl,
     gap: SPACING.lg,
   },
-  buttons: { gap: SPACING.sm + 2 },
+  buttons: { gap: SPACING.md + 2 },
 
-  // Demo section
-  demoSection: { gap: SPACING.sm },
-  demoToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-  },
-  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
-  demoToggleText: { fontSize: 11, letterSpacing: 0.3 },
-
-  demoForm: { gap: SPACING.sm },
+  passwordForm: { gap: SPACING.lg },
   input: {
     height: 46,
     borderRadius: RADIUS.md,
@@ -163,12 +173,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.base,
     fontSize: FONT_SIZE.body - 1,
   },
-  demoSignInBtn: {
+  signInBtn: {
     height: 46,
     borderRadius: RADIUS.md,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  demoSignInText: { fontSize: FONT_SIZE.body - 1 },
+  signInText: { fontSize: FONT_SIZE.body - 1 },
+
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+  },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  dividerText: { fontSize: 11, letterSpacing: 0.3 },
 });

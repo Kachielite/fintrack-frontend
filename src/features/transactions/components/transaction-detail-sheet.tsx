@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Animated,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -137,15 +139,14 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     }).start(() => setEditSheetOpen(false));
   }
 
-  const merchantChanged = editMerchantDraft.trim() !== savedMerchant && editMerchantDraft.trim().length > 0;
   const categoryChanged = editCatDraft !== savedCategory;
-  const editSaveDisabled = saveMutation.isPending || (!merchantChanged && !categoryChanged);
+  const editSaveDisabled = saveMutation.isPending || editMerchantDraft.trim().length === 0;
 
   function handleEditSave() {
-    const payload: { merchant?: string; category?: string } = {};
-    if (merchantChanged) payload.merchant = editMerchantDraft.trim();
-    if (categoryChanged) payload.category = editCatDraft;
-    saveMutation.mutate(payload);
+    saveMutation.mutate({
+      merchant: editMerchantDraft.trim(),
+      category: editCatDraft,
+    });
   }
 
   function renderCategoryList() {
@@ -412,7 +413,10 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
 
       {/* ── Combined edit sheet ──────────────────────────────── */}
       {editSheetOpen && (
-        <View style={[StyleSheet.absoluteFillObject, styles.overlay]}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={[StyleSheet.absoluteFillObject, styles.overlay]}
+        >
           <Pressable style={styles.backdrop} onPress={dismissEditSheet} />
           <Animated.View
             style={[
@@ -522,7 +526,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               </Pressable>
             </View>
           </Animated.View>
-        </View>
+        </KeyboardAvoidingView>
       )}
     </Modal>
   );

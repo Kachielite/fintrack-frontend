@@ -1,16 +1,27 @@
 import React from "react";
-import { Platform, TurboModuleRegistry } from "react-native";
+import { Platform } from "react-native";
 import { navigationRef } from "@/core/navigation/navigation-ref";
 import { NotificationsService } from "../notifications.service";
 
 const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID ?? "";
 
-// TurboModuleRegistry.get() returns null instead of throwing when the native
-// module is missing. We check this BEFORE requiring the JS wrapper so we never
-// reach onesignal's own getEnforcing() calls (which crash the app).
-function isOneSignalAvailable(): boolean {
+/**
+ * Check at the C++ TurboModule level whether the OneSignal native module is
+ * compiled into this binary.
+ *
+ * Why __turboModuleProxy instead of TurboModuleRegistry.get():
+ * TurboModuleRegistry.get() falls back to NativeModules[name] which, under the
+ * New-Arch interop layer, can return a JS proxy object even when the native
+ * module is absent — causing isAvailable() to return true and then
+ * getEnforcing() (called inside onesignal's dist/index.js at module level)
+ * to throw uncaught. Going directly to __turboModuleProxy skips that fallback
+ * and gives a definitive answer.
+ */
+function isOneSignalNativeAvailable(): boolean {
   try {
-    return TurboModuleRegistry.get("OneSignal") !== null;
+    const proxy = (global as any).__turboModuleProxy;
+    if (proxy == null) return false;
+    return proxy.get("OneSignal") !== null;
   } catch {
     return false;
   }
@@ -18,17 +29,18 @@ function isOneSignalAvailable(): boolean {
 
 export function useOnesignal(isAuthenticated: boolean) {
   React.useEffect(() => {
-    if (!ONESIGNAL_APP_ID || !isOneSignalAvailable()) return;
+    if (!ONESIGNAL_APP_ID || !isOneSignalNativeAvailable()) return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { OneSignal } = require("react-native-onesignal");
       OneSignal.initialize(ONESIGNAL_APP_ID);
-      OneSignal.Notifications.requestPermission(true);
+      // false = don't fallback to Settings if previously denied; true would open Settings prompt
+      OneSignal.Notifications.requestPermission(false);
     } catch {}
   }, []);
 
   React.useEffect(() => {
-    if (!isAuthenticated || !isOneSignalAvailable()) return;
+    if (!isAuthenticated || !isOneSignalNativeAvailable()) return;
 
     const register = async () => {
       try {
@@ -39,16 +51,14 @@ export function useOnesignal(isAuthenticated: boolean) {
           const platform = Platform.OS === "ios" ? "ios" : "android";
           await NotificationsService.registerDeviceToken(playerId, platform);
         }
-      } catch {
-        // Non-critical — push may not be available on simulator/emulator.
-      }
+      } catch {}
     };
 
     register();
   }, [isAuthenticated]);
 
   React.useEffect(() => {
-    if (!isOneSignalAvailable()) return;
+    if (!isOneSignalNativeAvailable()) return;
 
     let cleanup: (() => void) | undefined;
     try {
