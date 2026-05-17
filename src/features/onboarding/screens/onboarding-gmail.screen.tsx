@@ -34,7 +34,7 @@ const SETUP_ITEMS = [
 export default function OnboardingGmailScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
-  const { connectGmail, isConnecting, isSuccess, error } = useConnectGmail();
+  const { connectGmail, isConnecting, isSuccess, alreadyConnected, error } = useConnectGmail();
 
   const handleConnect = () => {
     connectGmail({
@@ -195,7 +195,7 @@ export default function OnboardingGmailScreen() {
               fontSize: FONT_SIZE.body,
             }}
           >
-            Gmail connected successfully
+            {alreadyConnected ? "Already connected — tokens refreshed" : "Gmail connected successfully"}
           </Text>
         </View>
       ) : (

@@ -7,6 +7,8 @@ import Navigation from "@/core/navigation";
 import { useThemeStore } from "@/core/common/state/theme.state";
 import useLoadFonts from "@/core/common/hooks/use-load-fonts";
 import { useTransactionSyncWatcher } from "@/features/notifications/hooks/use-notifications";
+import { useOnesignal } from "@/features/notifications/hooks/use-onesignal";
+import { useAuthStore } from "@/features/auth/auth.state";
 
 // Keep the OS splash screen visible until fonts are ready.
 // Auth state is hydrated synchronously from MMKV — no async wait needed.
@@ -19,10 +21,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Renders null but watches for sync_complete notifications to invalidate
-// transaction queries automatically.
-function SyncWatcher() {
+// Renders null but handles background concerns: query invalidation on sync
+// events and OneSignal push notification setup.
+function AppServices() {
+  const isAuthenticated = useAuthStore((s) => !!s.token);
   useTransactionSyncWatcher();
+  useOnesignal(isAuthenticated);
   return null;
 }
 
@@ -43,7 +47,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <SyncWatcher />
+        <AppServices />
         <Navigation />
         <Toast />
       </QueryClientProvider>

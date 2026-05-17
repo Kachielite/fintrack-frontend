@@ -60,6 +60,8 @@ export const API_ENDPOINTS = {
   NOTIFICATION_UNREAD_COUNT: "/notifications/unread-count",
   NOTIFICATION_READ: (id: number) => `/notifications/${id}/read`,
   NOTIFICATIONS_READ_ALL: "/notifications/read-all",
+  NOTIFICATIONS_DEVICE_TOKEN: "/notifications/device-token",
+  NOTIFICATIONS_DEVICE_TOKEN_DELETE: (playerId: string) => `/notifications/device-token/${encodeURIComponent(playerId)}`,
 
   // Email sync SSE stream (not a standard API call — used directly with XHR)
   EMAIL_CONNECTION_SYNC_STREAM: (id: number) => `/email-connections/${id}/sync-stream`,

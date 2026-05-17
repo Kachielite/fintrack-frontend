@@ -32,7 +32,8 @@ export function useConnectGmail() {
       const connectionId = Number(redirectUrl.searchParams.get("connection_id"));
       if (!connectionId) throw new Error("No connection_id returned from server");
 
-      return connectionId;
+      const alreadyConnected = redirectUrl.searchParams.get("already_connected") === "1";
+      return { connectionId, alreadyConnected };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.EMAIL_CONNECTIONS] });
@@ -40,16 +41,15 @@ export function useConnectGmail() {
   });
 
   return {
-    connectGmail: (options?: { onSuccess?: () => void }) =>
+    connectGmail: (options?: { onSuccess?: (alreadyConnected: boolean) => void }) =>
       mutation.mutate(undefined, {
         onSuccess: (data) => {
-          // Don't fire the callback if the user just dismissed the browser
-          if (data !== null) options?.onSuccess?.();
+          if (data !== null) options?.onSuccess?.(data.alreadyConnected);
         },
       }),
     isConnecting: mutation.isPending,
-    // Only true when the full OAuth round-trip completed with a connection_id
     isSuccess: mutation.isSuccess && mutation.data !== null,
+    alreadyConnected: mutation.data?.alreadyConnected ?? false,
     error: mutation.error,
   };
 }

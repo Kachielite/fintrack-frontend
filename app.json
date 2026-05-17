@@ -44,6 +44,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
+          "enableFullScreenImage_legacy": true,
           "resizeMode": "cover",
           "backgroundColor": "#F5EFE6",
           "dark": {
@@ -63,6 +64,10 @@
       [
         "./plugins/with-kotlin-version",
         { "kotlinVersion": "1.9.25" }
+      ],
+      [
+        "react-native-onesignal",
+        { "mode": "production" }
       ]
     ]
   }

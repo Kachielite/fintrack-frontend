@@ -22,4 +22,15 @@ export const NotificationsService = {
   async markAllRead(): Promise<void> {
     await apiClient.patch(API_ENDPOINTS.NOTIFICATIONS_READ_ALL);
   },
+
+  async registerDeviceToken(playerId: string, platform: "ios" | "android"): Promise<void> {
+    await apiClient.post(API_ENDPOINTS.NOTIFICATIONS_DEVICE_TOKEN, {
+      player_id: playerId,
+      platform,
+    });
+  },
+
+  async removeDeviceToken(playerId: string): Promise<void> {
+    await apiClient.delete(API_ENDPOINTS.NOTIFICATIONS_DEVICE_TOKEN_DELETE(playerId));
+  },
 };
