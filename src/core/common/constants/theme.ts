@@ -66,16 +66,37 @@ export const DARK_COLORS: ThemeColors = {
 };
 
 // Category colours are the same in both modes — used for chip/badge fills
-export const CATEGORY_COLORS = {
-  food: "#E8845A",
-  transit: "#5A84B8",
-  utility: "#8A6EB0",
-  subs: "#5AADA0",
-  transfer: "#8A9E6B",
-  fun: "#D48A5A",
-  health: "#D45A7A",
-  other: "#9A9A8A",
-} as const;
+export const CATEGORY_COLORS: Record<string, string> = {
+  peer_to_peer_transfer: "#5AADA0",
+  business_payment: "#5A84B8",
+  subscriptions: "#8A6EB0",
+  entertainment_leisure: "#D48A5A",
+  mobile_internet: "#5A9EB8",
+  utilities: "#7BA05B",
+  groceries: "#E8845A",
+  retail_ecommerce: "#D4A05A",
+  dining_food_delivery: "#D45A5A",
+  transport: "#5A6EB0",
+  fuel_auto: "#6E8A5A",
+  travel: "#5AB8A0",
+  bank_charges: "#B05A6E",
+  currency_conversion: "#8A8A5A",
+  salary_wages: "#5AB05A",
+  refunds_reimbursements: "#5A8A8A",
+  healthcare: "#D45A7A",
+  education: "#5A7AD4",
+  charity_donations: "#D45AB0",
+  cash_withdrawal: "#9A8A5A",
+  uncategorized: "#9A9A8A",
+  investment: "#4A90A4",
+  savings: "#3A8C6E",
+  rent_housing: "#7A6AA0",
+  family_support: "#D4845A",
+  beauty_personal_care: "#D45A8A",
+  gifts_social: "#D4A05A",
+};
+
+export const FALLBACK_CATEGORY_COLOR = "#9A9A8A";
 
 export const FONTS = {
   regular: "PlusJakartaSans_400Regular",

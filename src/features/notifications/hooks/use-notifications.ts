@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NotificationsService } from "../notifications.service";
+import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 
 const KEYS = {
   list: ["notifications"] as const,
@@ -41,4 +43,32 @@ export function useMarkAllRead() {
       qc.invalidateQueries({ queryKey: KEYS.count });
     },
   });
+}
+
+// Watches for new unread notifications. When the count rises, check if any
+// are sync_complete and invalidate transaction-related queries so the lists
+// refresh automatically without a manual pull-to-refresh.
+export function useTransactionSyncWatcher() {
+  const qc = useQueryClient();
+  const { data: countData } = useUnreadCount();
+  const prevCount = useRef<number | null>(null);
+
+  useEffect(() => {
+    const count = countData?.count ?? 0;
+    if (prevCount.current !== null && count > prevCount.current) {
+      NotificationsService.list().then((notifications) => {
+        const hasSync = notifications.some(
+          (n) => n.type === "sync_complete" && n.readAt === null,
+        );
+        if (hasSync) {
+          qc.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+          qc.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+          qc.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+          qc.invalidateQueries({ queryKey: [QUERY_KEYS.UNVERIFIED_TRANSACTIONS] });
+          qc.invalidateQueries({ queryKey: KEYS.list });
+        }
+      });
+    }
+    prevCount.current = count;
+  }, [countData?.count]);
 }

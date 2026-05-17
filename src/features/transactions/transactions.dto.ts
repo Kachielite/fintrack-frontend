@@ -2,18 +2,7 @@ import { z } from "zod";
 
 export const correctTransactionSchema = z.object({
   merchant: z.string().optional(),
-  category: z
-    .enum([
-      "food",
-      "transit",
-      "utility",
-      "subs",
-      "transfer",
-      "fun",
-      "health",
-      "other",
-    ])
-    .optional(),
+  category: z.string().min(1).optional(),
   transaction_type: z.enum(["debit", "credit"]).optional(),
   amount: z.number().optional(),
 });
@@ -35,6 +24,8 @@ export interface TransactionDto {
   transactionDate: string;
   status: string;
   bankId: number | null;
+  bankName?: string | null;
+  bankShortCode?: string | null;
   reference: string | null;
   balance: number | null;
   originalMerchant: string | null;

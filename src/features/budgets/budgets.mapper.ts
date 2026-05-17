@@ -15,6 +15,7 @@ export function mapBudgetFromDto(dto: BudgetDto): Budget {
     percentage: dto.percentage,
     status: dto.status,
     daysRemaining: dto.days_remaining,
+    habitDescription: dto.habit_description ?? null,
   };
 }
 

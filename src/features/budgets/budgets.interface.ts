@@ -14,6 +14,7 @@ export interface Budget {
   percentage: number;
   status: BudgetStatus;
   daysRemaining: number;
+  habitDescription?: string | null;
 }
 
 export interface BudgetTransactionItem {

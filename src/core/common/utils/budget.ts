@@ -1,4 +1,4 @@
-import { ThemeColors, CATEGORY_COLORS } from "@/core/common/constants/theme";
+import { ThemeColors, CATEGORY_COLORS, FALLBACK_CATEGORY_COLOR } from "@/core/common/constants/theme";
 
 export function budgetStatusColor(
   status: "healthy" | "warning" | "over",
@@ -29,8 +29,5 @@ export function categoryIcon(category: string): string {
 }
 
 export function categoryColor(category: string): string {
-  return (
-    CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] ??
-    CATEGORY_COLORS.other
-  );
+  return CATEGORY_COLORS[category] ?? FALLBACK_CATEGORY_COLOR;
 }

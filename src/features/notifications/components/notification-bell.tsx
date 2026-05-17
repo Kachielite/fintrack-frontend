@@ -3,7 +3,7 @@ import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
-import { FONTS } from "@/core/common/constants/theme";
+import { FONTS, RADIUS } from "@/core/common/constants/theme";
 import { useUnreadCount } from "../hooks/use-notifications";
 
 export default function NotificationBell() {
@@ -16,9 +16,9 @@ export default function NotificationBell() {
     <Pressable
       onPress={() => navigation.navigate("Notifications" as never)}
       hitSlop={12}
-      style={styles.wrap}
+      style={[styles.wrap, { backgroundColor: colors.surface }]}
     >
-      <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
+      <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
       {count > 0 && (
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <Text style={[styles.badgeText, { color: colors.onPrimary, fontFamily: FONTS.bold }]}>
@@ -31,7 +31,14 @@ export default function NotificationBell() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { position: "relative", padding: 4 },
+  wrap: {
+    position: "relative",
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   badge: {
     position: "absolute",
     top: 0,

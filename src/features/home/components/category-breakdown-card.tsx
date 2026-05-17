@@ -11,21 +11,11 @@ import {
   TransactionSummary,
   CategoryType,
 } from "@/features/transactions/transactions.interface";
+import { CATEGORY_LABELS } from "@/features/transactions/transactions.constants";
 import GlassCard from "@/core/common/components/GlassCard";
 import DonutChart from "@/core/common/components/DonutChart";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 import EmptyState from "@/core/common/components/EmptyState";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  food: "Food & Dining",
-  transit: "Transport",
-  utility: "Utilities",
-  subs: "Subscriptions",
-  transfer: "Transfers",
-  fun: "Entertainment",
-  health: "Health",
-  other: "Other",
-};
 
 interface CategoryBreakdownCardProps {
   summary: TransactionSummary | undefined;

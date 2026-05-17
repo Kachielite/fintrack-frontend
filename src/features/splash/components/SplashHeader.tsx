@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { FONTS, FONT_SIZE, RADIUS, SPACING } from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import VelaIcon from "@/core/common/components/VelaIcon";
 
 interface SplashHeaderProps {
   onSkip: () => void;
@@ -13,11 +14,9 @@ export default function SplashHeader({ onSkip }: SplashHeaderProps) {
   return (
     <View style={styles.row}>
       <View style={styles.brand}>
-        <View style={[styles.mark, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.markLetter, { color: colors.onPrimary }]}>F</Text>
-        </View>
+        <VelaIcon size={28} variant="auto" />
         <Text style={[styles.wordmark, { color: colors.textPrimary }]}>
-          FinTrack
+          Vela
         </Text>
       </View>
 
@@ -40,18 +39,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
-  },
-  mark: {
-    width: 28,
-    height: 28,
-    borderRadius: RADIUS.sm,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  markLetter: {
-    fontFamily: FONTS.bold,
-    fontSize: 14,
-    lineHeight: 18,
   },
   wordmark: {
     fontFamily: FONTS.bold,

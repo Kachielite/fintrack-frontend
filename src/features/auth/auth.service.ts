@@ -106,6 +106,18 @@ export const AuthService = {
     }
   },
 
+  loginDemo: async (email: string, password: string): Promise<AuthSession> => {
+    try {
+      const { data } = await apiClient.post<AuthResponseDto>(API_ENDPOINTS.AUTH_DEMO, {
+        email,
+        password,
+      });
+      return mapAuthSessionFromDto(data);
+    } catch (error) {
+      throw mapAxiosErrorToAppError(error);
+    }
+  },
+
   refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
     const { data } = await apiClient.post<{ access_token: string }>(
       API_ENDPOINTS.AUTH_REFRESH,

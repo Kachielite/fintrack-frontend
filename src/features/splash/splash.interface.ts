@@ -10,7 +10,7 @@ export const SPLASH_SLIDES: SplashSlide[] = [
   {
     visual: "mail",
     title: "No more\nspreadsheets.",
-    sub: "FinTrack reads bank emails for you and turns them into clear, organised transactions.",
+    sub: "Vela reads bank emails for you and turns them into clear, organised transactions.",
   },
   {
     visual: "globe",

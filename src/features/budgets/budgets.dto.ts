@@ -1,16 +1,7 @@
 import { z } from "zod";
 
 export const createBudgetSchema = z.object({
-  category: z.enum([
-    "food",
-    "transit",
-    "utility",
-    "subs",
-    "transfer",
-    "fun",
-    "health",
-    "other",
-  ]),
+  category: z.string().min(1),
   limit_amount: z.number().positive(),
   currency: z.string(),
   period_type: z.enum(["monthly", "weekly"]),
@@ -37,6 +28,7 @@ export interface BudgetDto {
   percentage: number;
   status: "healthy" | "warning" | "over";
   days_remaining: number;
+  habit_description?: string | null;
 }
 
 export interface BudgetDetailDto extends BudgetDto {

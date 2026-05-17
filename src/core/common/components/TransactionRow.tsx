@@ -9,26 +9,10 @@ import {
   RADIUS,
   CATEGORY_COLORS,
 } from "@/core/common/constants/theme";
-import {
-  Transaction,
-  CategoryType,
-} from "@/features/transactions/transactions.interface";
+import { Transaction } from "@/features/transactions/transactions.interface";
+import { CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
 import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate } from "@/core/common/utils/date";
-
-const CATEGORY_ICONS: Record<
-  CategoryType,
-  React.ComponentProps<typeof Ionicons>["name"]
-> = {
-  food: "restaurant-outline",
-  transit: "car-outline",
-  utility: "flash-outline",
-  subs: "tv-outline",
-  transfer: "swap-horizontal-outline",
-  fun: "game-controller-outline",
-  health: "heart-outline",
-  other: "ellipsis-horizontal-outline",
-};
 
 interface TransactionRowProps {
   transaction: Transaction;
@@ -41,7 +25,7 @@ export default function TransactionRow({
 }: TransactionRowProps) {
   const colors = useThemeColors();
   const iconName =
-    CATEGORY_ICONS[transaction.category] ?? "ellipsis-horizontal-outline";
+    (CATEGORY_ICON_NAMES[transaction.category] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"];
   const categoryColor =
     CATEGORY_COLORS[transaction.category] ?? colors.textSubtle;
   const isCredit = transaction.transactionType === "credit";

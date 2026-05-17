@@ -12,7 +12,7 @@ const zustandStorage: StateStorage = {
     return value ?? null;
   },
   removeItem: (name) => {
-    storage.delete(name);
+    storage.remove(name);
   },
 };
 

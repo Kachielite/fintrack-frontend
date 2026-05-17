@@ -110,16 +110,67 @@ export default function SpendingOverviewCard({
             </View>
           </View>
 
-          <View
-            style={[
-              styles.footer,
-              {
-                borderTopColor: colors.border,
-                backgroundColor: colors.surface2,
-              },
-            ]}
-          >
-            {delta !== null && delta !== undefined && (
+          {summary.byCurrency.length > 1 ? (
+            <Pressable
+              onPress={() => setSheetOpen(true)}
+              style={({ pressed }) => [
+                styles.footer,
+                {
+                  borderTopColor: colors.border,
+                  backgroundColor: colors.surface2,
+                  opacity: pressed ? 0.75 : 1,
+                },
+              ]}
+            >
+              {delta !== null && delta !== undefined && (
+                <View style={styles.deltaRow}>
+                  <Text
+                    style={[
+                      styles.deltaText,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
+                    Compared to your last 3-month average
+                  </Text>
+                  <Text
+                    style={[
+                      styles.deltaPct,
+                      {
+                        color: isDown ? colors.success : colors.warning,
+                        fontFamily: FONTS.semiBold,
+                      },
+                    ]}
+                  >
+                    {isDown ? "↓" : "↑"} {Math.abs(Math.round(delta))}%
+                  </Text>
+                </View>
+              )}
+              <View style={styles.currencyLink}>
+                <Text
+                  style={[
+                    styles.currencyLinkText,
+                    { color: colors.primary, fontFamily: FONTS.semiBold },
+                  ]}
+                >
+                  See spending across currencies
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={12}
+                  color={colors.primary}
+                />
+              </View>
+            </Pressable>
+          ) : delta !== null && delta !== undefined ? (
+            <View
+              style={[
+                styles.footer,
+                {
+                  borderTopColor: colors.border,
+                  backgroundColor: colors.surface2,
+                },
+              ]}
+            >
               <View style={styles.deltaRow}>
                 <Text
                   style={[
@@ -141,30 +192,12 @@ export default function SpendingOverviewCard({
                   {isDown ? "↓" : "↑"} {Math.abs(Math.round(delta))}%
                 </Text>
               </View>
-            )}
-            <Pressable
-              onPress={() => setSheetOpen(true)}
-              style={styles.currencyLink}
-            >
-              <Text
-                style={[
-                  styles.currencyLinkText,
-                  { color: colors.primary, fontFamily: FONTS.semiBold },
-                ]}
-              >
-                See spending across currencies
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={12}
-                color={colors.primary}
-              />
-            </Pressable>
-          </View>
+            </View>
+          ) : null}
         </>
       )}
 
-      {summary && (
+      {summary && summary.byCurrency.length > 1 && (
         <CurrencyBreakdownSheet
           visible={sheetOpen}
           onClose={() => setSheetOpen(false)}

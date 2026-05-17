@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vela — Brand Assets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive: #3F5538;
+    --cream: #F5EFE6;
+    --amber: #C77638;
+    --text:  #231C13;
+    --muted: rgba(35, 28, 19, 0.55);
+    --subtle:rgba(35, 28, 19, 0.30);
+    --line:  rgba(35, 28, 19, 0.08);
+    --surface: #FFFFFF;
+    --bg:      #FAF6EF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 72px 40px 120px; }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
+    padding: 72px 56px; border-radius: 28px; background: var(--surface);
+    border: 1px solid var(--line); margin-bottom: 64px; }
+  .hero-icon { display: flex; align-items: center; justify-content: center; }
+  .hero-icon .squircle { width: 320px; height: 320px; border-radius: 72px;
+    background: var(--olive); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 30px 60px rgba(35,28,19,0.18), 0 4px 8px rgba(35,28,19,0.06);
+    position: relative; overflow: hidden; }
+  .hero-icon .squircle::after { content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.07), transparent 65%); pointer-events: none; }
+  .hero-icon svg { width: 270px; height: 270px; }
+  .hero-text .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 14px; }
+  .hero-text h1 { font-size: 64px; font-weight: 800; letter-spacing: -2.4px;
+    line-height: 1.02; margin: 0 0 18px; }
+  .hero-text .tag { font-size: 22px; color: var(--muted); line-height: 1.45;
+    max-width: 460px; text-wrap: pretty; margin: 0 0 28px; font-weight: 500; }
+  .hero-text .meta { display: flex; gap: 28px; }
+  .hero-text .meta-item { font-size: 13px; }
+  .hero-text .meta-item span { display: block; }
+  .hero-text .meta-item .k { color: var(--muted); font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase; font-size: 11px; margin-bottom: 4px; }
+  .hero-text .meta-item .v { font-weight: 700; color: var(--text); font-size: 14px; }
+
+  /* Section */
+  section { margin-bottom: 64px; }
+  section h2 { font-size: 13px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  section h3 { font-size: 32px; font-weight: 700; letter-spacing: -0.8px;
+    line-height: 1.15; margin: 0 0 8px; }
+  section .lede { font-size: 16px; color: var(--muted); line-height: 1.5;
+    margin: 0 0 32px; max-width: 640px; text-wrap: pretty; }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--line);
+    border-radius: 20px; padding: 32px; }
+  .card .label { display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 20px; font-size: 12px; }
+  .card .label .name { font-weight: 700; color: var(--text); letter-spacing: -0.1px; font-size: 15px; }
+  .card .label .spec { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* Icon variants */
+  .icon-tile { display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 1; border-radius: 16px; overflow: hidden; }
+  .icon-tile.olive { background: var(--olive); }
+  .icon-tile.cream { background: var(--cream); border: 1px solid var(--line); }
+  .icon-tile.amber { background: var(--amber); }
+  .icon-tile.dark  { background: #1C1916; }
+  .icon-tile.shot  { background: linear-gradient(135deg, #5b7c64, #2c3a26); }
+
+  /* Sizing demo */
+  .sizes { display: flex; align-items: flex-end; gap: 24px;
+    padding: 32px; background: var(--cream); border-radius: 20px;
+    border: 1px solid var(--line); }
+  .sizes .ss { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .sizes .squircle { background: var(--olive); display: flex; align-items: center; justify-content: center;
+    border-radius: 22%; box-shadow: 0 4px 16px rgba(35,28,19,0.12); overflow: hidden; }
+  .sizes .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--muted); font-weight: 500; }
+
+  /* Color palette */
+  .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .swatch { border-radius: 16px; padding: 24px; border: 1px solid var(--line);
+    display: flex; flex-direction: column; min-height: 160px; justify-content: space-between; }
+  .swatch .name { font-weight: 700; font-size: 14px; letter-spacing: -0.1px; }
+  .swatch .hex { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; opacity: 0.75; }
+  .swatch.dark { color: var(--cream); }
+
+  /* Splash preview */
+  .splash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .phone-frame { aspect-ratio: 9 / 19.5; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(35,28,19,0.18); border: 6px solid #1c1916; background: #1c1916; }
+  .phone-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .phone-cap { text-align: center; margin-top: 12px; font-size: 12px; color: var(--muted); font-weight: 600; }
+
+  /* Wordmark previews */
+  .wordmark-row { display: flex; align-items: center; gap: 48px; padding: 40px;
+    border-radius: 20px; border: 1px solid var(--line); }
+  .wordmark-row.dark { background: var(--olive); border-color: transparent; }
+  .wordmark-row.cream { background: var(--cream); }
+  .wordmark-row.surface { background: var(--surface); }
+  .wordmark-row .wm { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+    font-size: 64px; letter-spacing: -2.2px; line-height: 1; }
+  .wordmark-row.dark .wm { color: var(--cream); }
+  .wordmark-row .wm-mark { display: flex; align-items: center; gap: 16px; }
+  .wordmark-row .wm-mark .squircle { width: 64px; height: 64px; border-radius: 18px;
+    background: var(--olive); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .wordmark-row.dark .wm-mark .squircle { background: var(--cream); }
+  .wordmark-row.dark .wm-mark .squircle .ms { color: var(--olive) !important; }
+  .wordmark-row .wm-mark .squircle svg { width: 56px; height: 56px; }
+
+  /* Tagline */
+  .tag-block { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;
+    color: var(--muted); font-size: 18px; line-height: 1.4; max-width: 360px; }
+  .tag-block strong { color: var(--text); font-weight: 700; }
+
+  /* Asset table */
+  .asset-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .asset-table th, .asset-table td { padding: 14px 18px; text-align: left;
+    border-bottom: 1px solid var(--line); font-size: 13px; }
+  .asset-table th { background: var(--cream); font-weight: 700; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.6px; font-size: 11px; }
+  .asset-table td.spec { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  .asset-table tr:last-child td { border-bottom: none; }
+  .asset-table a { color: var(--amber); text-decoration: none; font-weight: 600; }
+
+  /* Footer */
+  footer { margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; }
+  footer .ft { font-size: 12px; color: var(--muted); }
+  footer .lk { font-size: 12px; color: var(--amber); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">
+      <div class="squircle">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/>
+          <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hero-text">
+      <div class="eyebrow">Brand Assets · v1</div>
+      <h1>Vela</h1>
+      <div class="tag">A geometric sail catching wind. Forward motion. Clarity. Quiet confidence — a personal finance app that knows where it's going.</div>
+      <div class="meta">
+        <div class="meta-item">
+          <span class="k">Wordmark</span>
+          <span class="v">Plus Jakarta Sans</span>
+        </div>
+        <div class="meta-item">
+          <span class="k">Ground</span>
+          <span class="v">Olive Sage</span>
+        </div>
+        <div class="meta-item">
+          <span class="k">Accent</span>
+          <span class="v">Warm Amber</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App icon variations -->
+  <section>
+    <h2>App icon · iOS appearance modes</h2>
+    <h3>Light. Dark. Tinted.</h3>
+    <p class="lede">iOS 18 lets the system swap the home-screen icon to match Light, Dark or Tinted modes. We ship a tuned variant for each — the silhouette stays identical so users always recognise the app.</p>
+
+    <div class="grid-3" style="margin-bottom: 32px;">
+      <div class="card">
+        <div class="label"><span class="name">Light</span><span class="spec">default</span></div>
+        <div class="icon-tile" style="background: #FAF6EF; padding: 36px;">
+          <img src="app-icon-1024.png" alt="Vela icon light" style="width: 100%; height: auto; border-radius: 22%; display: block; box-shadow: 0 12px 28px rgba(35,28,19,0.18);">
+        </div>
+        <div style="margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.45;">Olive ground, cream + amber sails. The brand state.</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="name">Dark</span><span class="spec">night mode</span></div>
+        <div class="icon-tile" style="background: #1C1916; padding: 36px;">
+          <img src="app-icon-1024-dark.png" alt="Vela icon dark" style="width: 100%; height: auto; border-radius: 22%; display: block; box-shadow: 0 12px 28px rgba(0,0,0,0.4);">
+        </div>
+        <div style="margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.45;">Deeper olive ground (#161E12). Mark slightly desaturated for restful contrast.</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="name">Tinted</span><span class="spec">monochrome</span></div>
+        <div class="icon-tile" style="background: #1C1916; padding: 36px;">
+          <img src="app-icon-1024-tinted.png" alt="Vela icon tinted" style="width: 100%; height: auto; border-radius: 22%; display: block; box-shadow: 0 12px 28px rgba(0,0,0,0.4);">
+        </div>
+        <div style="margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.45;">Grayscale luminance map — iOS applies the user's tint. Mark in white, jib in mid-gray.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>App icon · color contexts</h2>
+    <h3>The mark, on any ground.</h3>
+    <p class="lede">Four canonical fills for the rare cases where you need to render Vela on a non-brand surface — a partner ribbon, a co-branded card, a press kit.</p>
+
+    <div class="grid-4">
+      <div class="card">
+        <div class="label"><span class="name">Primary</span><span class="spec">olive / cream</span></div>
+        <div class="icon-tile olive">
+          <svg width="80%" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/>
+            <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="name">Amber ground</span><span class="spec">alt</span></div>
+        <div class="icon-tile amber">
+          <svg width="80%" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/>
+            <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#3F5538"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="name">Cream ground</span><span class="spec">light tile</span></div>
+        <div class="icon-tile cream">
+          <svg width="80%" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#3F5538"/>
+            <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="name">Dark ground</span><span class="spec">night</span></div>
+        <div class="icon-tile dark">
+          <svg width="80%" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/>
+            <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sizing -->
+  <section>
+    <h2>Scale</h2>
+    <h3>Reads at every size.</h3>
+    <p class="lede">The mark stays legible from app-store hero down to favicon. The amber sliver disappears gracefully at very small sizes — the sail silhouette carries the recognition.</p>
+
+    <div class="sizes">
+      <div class="ss">
+        <div class="squircle" style="width: 180px; height: 180px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">180×180</span>
+      </div>
+      <div class="ss">
+        <div class="squircle" style="width: 120px; height: 120px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">120×120</span>
+      </div>
+      <div class="ss">
+        <div class="squircle" style="width: 80px; height: 80px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">80×80</span>
+      </div>
+      <div class="ss">
+        <div class="squircle" style="width: 60px; height: 60px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">60×60</span>
+      </div>
+      <div class="ss">
+        <div class="squircle" style="width: 40px; height: 40px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">40×40</span>
+      </div>
+      <div class="ss">
+        <div class="squircle" style="width: 24px; height: 24px;">
+          <svg width="80%" viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+        </div>
+        <span class="lbl">24×24</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wordmark -->
+  <section>
+    <h2>Wordmark</h2>
+    <h3>Vela.</h3>
+    <p class="lede">Plus Jakarta Sans Bold with tight tracking (−2.2px). The mark sits to the left of the wordmark in lockup, with a half-x-height of breathing room between them.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="wordmark-row surface">
+        <div class="wm-mark">
+          <div class="squircle">
+            <svg viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+          </div>
+          <span class="wm">Vela</span>
+        </div>
+      </div>
+      <div class="wordmark-row cream">
+        <span class="wm">Vela</span>
+      </div>
+      <div class="wordmark-row dark">
+        <div class="wm-mark">
+          <div class="squircle">
+            <svg viewBox="0 0 1024 1024"><path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#3F5538"/><path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"/></svg>
+          </div>
+          <span class="wm">Vela</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Color palette -->
+  <section>
+    <h2>Palette</h2>
+    <h3>Earthy. Warm. Trustworthy.</h3>
+    <p class="lede">Olive sage as the brand ground — quietly confident, more interesting than navy. Warm cream as the surface. Amber as the accent — earned, used sparingly.</p>
+
+    <div class="palette">
+      <div class="swatch dark" style="background: #3F5538;">
+        <div>
+          <div class="name">Olive Sage</div>
+          <div style="font-size: 12px; opacity: 0.65; margin-top: 4px;">Ground · brand primary</div>
+        </div>
+        <div class="hex">#3F5538</div>
+      </div>
+      <div class="swatch" style="background: #F5EFE6;">
+        <div>
+          <div class="name">Warm Cream</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Surface · light backgrounds</div>
+        </div>
+        <div class="hex">#F5EFE6</div>
+      </div>
+      <div class="swatch dark" style="background: #C77638;">
+        <div>
+          <div class="name">Vela Amber</div>
+          <div style="font-size: 12px; opacity: 0.65; margin-top: 4px;">Accent · sparingly</div>
+        </div>
+        <div class="hex">#C77638</div>
+      </div>
+      <div class="swatch dark" style="background: #231C13;">
+        <div>
+          <div class="name">Ink</div>
+          <div style="font-size: 12px; opacity: 0.65; margin-top: 4px;">Wordmark · text on light</div>
+        </div>
+        <div class="hex">#231C13</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Splash screens -->
+  <section>
+    <h2>Splash screens · light</h2>
+    <h3>A breath, then the app.</h3>
+    <p class="lede">Centred icon, wordmark, and one-line tagline on warm cream. Generous negative space. Not exciting — just clean and trustworthy. The Android adaptive version drops the wordmark; the system handles branding.</p>
+
+    <div class="splash-grid">
+      <div>
+        <div class="phone-frame"><img src="ios-splash-1290x2796.png" alt="iOS splash"></div>
+        <div class="phone-cap">iOS · 1290 × 2796</div>
+      </div>
+      <div>
+        <div class="phone-frame"><img src="android-splash-legacy-1080x1920.png" alt="Android splash legacy"></div>
+        <div class="phone-cap">Android · legacy (1080 × 1920)</div>
+      </div>
+      <div>
+        <div class="phone-frame"><img src="android-splash-adaptive-1080x1920.png" alt="Android splash adaptive"></div>
+        <div class="phone-cap">Android · adaptive (API 31+)</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Splash screens · dark</h2>
+    <h3>Same breath, less light.</h3>
+    <p class="lede">Warm near-black ground (#0F1410) with a barely-there amber warmth radiating from behind the icon. Mark uses the dark-mode tuning — softer cream + warmer amber so it doesn't bloom on OLED.</p>
+
+    <div class="splash-grid">
+      <div>
+        <div class="phone-frame"><img src="ios-splash-dark-1290x2796.png" alt="iOS splash dark"></div>
+        <div class="phone-cap">iOS · dark (1290 × 2796)</div>
+      </div>
+      <div>
+        <div class="phone-frame"><img src="android-splash-legacy-dark-1080x1920.png" alt="Android splash legacy dark"></div>
+        <div class="phone-cap">Android · legacy dark</div>
+      </div>
+      <div>
+        <div class="phone-frame"><img src="android-splash-adaptive-dark-1080x1920.png" alt="Android splash adaptive dark"></div>
+        <div class="phone-cap">Android · adaptive dark</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Concept / rationale -->
+  <section>
+    <h2>Rationale</h2>
+    <h3>Why this mark.</h3>
+    <p class="lede">Vela means sail. A sail catches wind and converts it into forward motion — a useful metaphor for a personal finance app. The brief was clear: no coins, no charts, no shields, no dollar signs. So the mark earns its place by being a single, confident geometric form.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div style="font-size: 32px; font-weight: 800; color: var(--amber); margin-bottom: 12px;">01</div>
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">The sail catches wind</div>
+        <div style="font-size: 14px; color: var(--muted); line-height: 1.5; text-wrap: pretty;">The right-bulging silhouette is a sail with the wind in it. Asymmetry is not a bug — it's the whole point. Static sails don't go anywhere.</div>
+      </div>
+      <div class="card">
+        <div style="font-size: 32px; font-weight: 800; color: var(--amber); margin-bottom: 12px;">02</div>
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">The amber rises</div>
+        <div style="font-size: 14px; color: var(--muted); line-height: 1.5; text-wrap: pretty;">The amber sliver runs diagonally up-and-right. It reads as the mast of the sail, and — if you look twice — as a trendline going up. Negative space doing double duty.</div>
+      </div>
+      <div class="card">
+        <div style="font-size: 32px; font-weight: 800; color: var(--amber); margin-bottom: 12px;">03</div>
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Confident, not loud</div>
+        <div style="font-size: 14px; color: var(--muted); line-height: 1.5; text-wrap: pretty;">No gradients, no shines, no badges. Olive ground says "premium" without screaming it. The mark sits next to Linear and Wise on a home screen — not next to a casino app.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Deliverables -->
+  <section>
+    <h2>Files</h2>
+    <h3>Everything in this folder.</h3>
+    <p class="lede">All assets exported and ready for handoff. Filenames match the manifest below.</p>
+
+    <table class="asset-table">
+      <thead>
+        <tr><th>Asset</th><th>Format</th><th>Size</th><th>File</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>App icon · light (default)</td><td class="spec">PNG</td><td class="spec">1024 × 1024</td><td><a href="app-icon-1024.png">app-icon-1024.png</a></td></tr>
+        <tr><td>App icon · dark</td><td class="spec">PNG</td><td class="spec">1024 × 1024</td><td><a href="app-icon-1024-dark.png">app-icon-1024-dark.png</a></td></tr>
+        <tr><td>App icon · tinted (iOS 18 monochrome)</td><td class="spec">PNG</td><td class="spec">1024 × 1024</td><td><a href="app-icon-1024-tinted.png">app-icon-1024-tinted.png</a></td></tr>
+        <tr><td>App icon · cream ground (alt)</td><td class="spec">PNG</td><td class="spec">1024 × 1024</td><td><a href="app-icon-1024-light.png">app-icon-1024-light.png</a></td></tr>
+        <tr><td>Android adaptive — foreground</td><td class="spec">PNG · transparent</td><td class="spec">1024 × 1024</td><td><a href="android-icon-foreground.png">android-icon-foreground.png</a></td></tr>
+        <tr><td>Android adaptive — background</td><td class="spec">PNG · solid</td><td class="spec">1024 × 1024</td><td><a href="android-icon-background.png">android-icon-background.png</a></td></tr>
+        <tr><td>iOS splash · light</td><td class="spec">PNG</td><td class="spec">1290 × 2796</td><td><a href="ios-splash-1290x2796.png">ios-splash-1290x2796.png</a></td></tr>
+        <tr><td>iOS splash · dark</td><td class="spec">PNG</td><td class="spec">1290 × 2796</td><td><a href="ios-splash-dark-1290x2796.png">ios-splash-dark-1290x2796.png</a></td></tr>
+        <tr><td>Android splash · adaptive light</td><td class="spec">PNG</td><td class="spec">1080 × 1920</td><td><a href="android-splash-adaptive-1080x1920.png">android-splash-adaptive-1080x1920.png</a></td></tr>
+        <tr><td>Android splash · adaptive dark</td><td class="spec">PNG</td><td class="spec">1080 × 1920</td><td><a href="android-splash-adaptive-dark-1080x1920.png">android-splash-adaptive-dark-1080x1920.png</a></td></tr>
+        <tr><td>Android splash · legacy light</td><td class="spec">PNG</td><td class="spec">1080 × 1920</td><td><a href="android-splash-legacy-1080x1920.png">android-splash-legacy-1080x1920.png</a></td></tr>
+        <tr><td>Android splash · legacy dark</td><td class="spec">PNG</td><td class="spec">1080 × 1920</td><td><a href="android-splash-legacy-dark-1080x1920.png">android-splash-legacy-dark-1080x1920.png</a></td></tr>
+        <tr><td>Icon mark only</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="icon-mark.svg">icon-mark.svg</a></td></tr>
+        <tr><td>Icon mark — no background</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="icon-mark-no-bg.svg">icon-mark-no-bg.svg</a></td></tr>
+        <tr><td>Wordmark · dark</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="wordmark-dark.svg">wordmark-dark.svg</a></td></tr>
+        <tr><td>Wordmark · light</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="wordmark-light.svg">wordmark-light.svg</a></td></tr>
+        <tr><td>Wordmark · dark + mark lockup</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="wordmark-dark-with-mark.svg">wordmark-dark-with-mark.svg</a></td></tr>
+        <tr><td>Wordmark · light + mark lockup</td><td class="spec">SVG</td><td class="spec">scalable</td><td><a href="wordmark-light-with-mark.svg">wordmark-light-with-mark.svg</a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <span class="ft">Vela · Brand asset pack · May 2026</span>
+    <span class="lk">Your money, clearly.</span>
+  </footer>
+</div>
+</body>
+</html>

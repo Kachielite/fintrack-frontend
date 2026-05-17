@@ -22,7 +22,7 @@ export default function HomeScreen() {
 
   const { profile } = useProfile();
   const { summary, isLoading: summaryLoading, refetch: refetchSummary } = useTransactionSummary(year, month);
-  const { transactions, isLoading: txLoading, refetch: refetchTx } = useTransactions({ limit: 4 });
+  const { transactions, isLoading: txLoading, refetch: refetchTx } = useTransactions({ limit: 8 });
   const { insights, isLoading: insightsLoading, refetch: refetchInsights } = useInsights();
 
   const latestInsight = insights.find((i) => !i.isRead) ?? insights[0];
@@ -43,6 +43,8 @@ export default function HomeScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
+      <HomeHeader firstName={profile?.firstName} />
+
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scroll}
@@ -55,8 +57,6 @@ export default function HomeScreen() {
           />
         }
       >
-        <HomeHeader firstName={profile?.firstName} />
-
         <View style={styles.content}>
           <SpendingOverviewCard summary={summary} isLoading={summaryLoading} />
           <CategoryBreakdownCard summary={summary} isLoading={summaryLoading} />
@@ -76,7 +76,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  scroll: { paddingBottom: 100 },
+  scroll: { paddingBottom: 100, paddingTop: SPACING.sm },
   content: {
     paddingHorizontal: SPACING.base,
     gap: SPACING.base,

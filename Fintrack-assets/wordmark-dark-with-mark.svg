@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80">
+  
+  <g transform="translate(0, 6) scale(0.067)">
+         <rect width="1024" height="1024" rx="230" ry="230" fill="#3F5538"></rect>
+         
+  <path d="M 580 130 C 880 360, 880 720, 800 880 C 620 920, 360 920, 180 880 C 280 620, 420 380, 580 130 Z" fill="#F5EFE6"></path>
+  <path d="M 520 200 C 380 380, 280 600, 180 880 L 440 880 C 440 720, 490 460, 540 220 Z" fill="#C77638"></path>
+
+       </g>
+  <text class="vw" x="92" y="58" fill="#231C13">Vela</text>
+</svg>

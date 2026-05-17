@@ -1,24 +1,20 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { FONTS, FONT_SIZE, RADIUS, SPACING } from "@/core/common/constants/theme";
+import { FONTS, FONT_SIZE, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import VelaIcon from "@/core/common/components/VelaIcon";
 
 export default function AuthLogo() {
   const colors = useThemeColors();
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.mark,
-          { backgroundColor: colors.primary, shadowColor: colors.primary },
-        ]}
-      >
-        <Text style={[styles.markLetter, { color: colors.onPrimary }]}>F</Text>
+      <View style={[styles.iconShadow, { shadowColor: "#3F5538" }]}>
+        <VelaIcon size={72} variant="auto" />
       </View>
 
       <Text style={[styles.title, { color: colors.textPrimary }]}>
-        Welcome to FinTrack
+        Welcome to Vela
       </Text>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -33,22 +29,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: SPACING.xxxl + SPACING.sm,
   },
-  mark: {
-    width: 72,
-    height: 72,
-    borderRadius: RADIUS.xl,
-    alignItems: "center",
-    justifyContent: "center",
+  iconShadow: {
+    borderRadius: 16,
     marginBottom: SPACING.xl,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.28,
     shadowRadius: 28,
     elevation: 12,
-  },
-  markLetter: {
-    fontFamily: FONTS.bold,
-    fontSize: 36,
-    lineHeight: 44,
   },
   title: {
     fontFamily: FONTS.bold,

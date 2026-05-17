@@ -2,15 +2,10 @@ import apiClient from "@/core/common/network/api-client";
 import { API_ENDPOINTS } from "@/core/common/network/api-endpoints";
 import {
   EmailConnectionDto,
-  GmailLabelDto,
   GmailAuthUrlDto,
-  SetLabelSchemaType,
 } from "./email-connection.dto";
-import { EmailConnection, GmailLabel } from "./email-connection.interface";
-import {
-  mapEmailConnectionFromDto,
-  mapGmailLabelFromDto,
-} from "./email-connection.mapper";
+import { EmailConnection, ConnectionStats } from "./email-connection.interface";
+import { mapEmailConnectionFromDto } from "./email-connection.mapper";
 
 export const EmailConnectionService = {
   async getAuthUrl(): Promise<string> {
@@ -46,26 +41,19 @@ export const EmailConnectionService = {
     return mapEmailConnectionFromDto(data);
   },
 
-  async listLabels(connectionId: number): Promise<GmailLabel[]> {
-    const { data } = await apiClient.get<GmailLabelDto[]>(
-      API_ENDPOINTS.EMAIL_CONNECTION_LABELS(connectionId),
-    );
-    return data.map(mapGmailLabelFromDto);
-  },
-
-  async setLabel(
-    connectionId: number,
-    payload: SetLabelSchemaType,
-  ): Promise<EmailConnection> {
-    const { data } = await apiClient.patch<EmailConnectionDto>(
-      API_ENDPOINTS.EMAIL_CONNECTION_LABEL(connectionId),
-      payload,
-    );
-    return mapEmailConnectionFromDto(data);
-  },
-
   async triggerSync(connectionId: number): Promise<void> {
     await apiClient.post(API_ENDPOINTS.EMAIL_CONNECTION_SYNC(connectionId));
+  },
+
+  async getStats(id: number): Promise<ConnectionStats> {
+    const { data } = await apiClient.get<ConnectionStats>(
+      API_ENDPOINTS.EMAIL_CONNECTION_STATS(id),
+    );
+    return data;
+  },
+
+  async deleteConnectionData(id: number): Promise<void> {
+    await apiClient.delete(API_ENDPOINTS.EMAIL_CONNECTION_DATA(id));
   },
 
   async deleteConnection(id: number): Promise<void> {

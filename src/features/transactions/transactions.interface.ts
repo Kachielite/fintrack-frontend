@@ -4,15 +4,7 @@ export type TransactionStatus =
   | "review"
   | "corrected";
 export type TransactionType = "debit" | "credit";
-export type CategoryType =
-  | "food"
-  | "transit"
-  | "utility"
-  | "subs"
-  | "transfer"
-  | "fun"
-  | "health"
-  | "other";
+export type CategoryType = string;
 
 export interface Transaction {
   id: number;
@@ -27,6 +19,8 @@ export interface Transaction {
   transactionDate: Date;
   status: TransactionStatus;
   bankId: number | null;
+  bankName?: string | null;
+  bankShortCode?: string | null;
   reference: string | null;
   balance: number | null;
   originalMerchant: string | null;

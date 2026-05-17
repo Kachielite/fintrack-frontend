@@ -27,7 +27,7 @@ export default function TransactionsDateGroup({
         <View style={styles.list}>
           {transactions.map((tx, i) => (
             <View
-              key={tx.id}
+              key={tx.reference ?? String(tx.id)}
               style={
                 i < transactions.length - 1
                   ? [

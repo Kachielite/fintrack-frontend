@@ -56,4 +56,11 @@ export const BudgetService = {
     );
     return data.map(mapBudgetSuggestionFromDto);
   },
+
+  async autoGenerateBudgets(): Promise<{ created: Budget[]; skipped: string[] }> {
+    const { data } = await apiClient.post<{ created: BudgetDto[]; skipped: string[] }>(
+      API_ENDPOINTS.BUDGET_AUTO_GENERATE,
+    );
+    return { created: data.created.map(mapBudgetFromDto), skipped: data.skipped };
+  },
 };

@@ -1,37 +1,79 @@
 {
   "expo": {
     "newArchEnabled": true,
-    "name": "FinTrack",
+    "name": "Vela",
     "slug": "fintrack",
     "scheme": "fintrack",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F9F6F0"
+      "resizeMode": "cover",
+      "backgroundColor": "#F5EFE6",
+      "dark": {
+        "image": "./assets/splash-dark.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#1C1916"
+      }
     },
     "ios": {
+      "usesAppleSignIn": true,
       "supportsTablet": false,
-      "bundleIdentifier": "com.kachielite.fintrack"
+      "bundleIdentifier": "com.kachielite.fintrack",
+      "icon": {
+        "light": "./assets/icon-light.png",
+        "dark": "./assets/icon-dark.png",
+        "tinted": "./assets/icon-tinted.png"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F9F6F0"
+        "backgroundImage": "./assets/android-icon-background.png"
       },
       "package": "com.kachielite.fintrack"
     },
     "plugins": [
       "expo-font",
       [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "enableFullScreenImage_legacy": true,
+          "resizeMode": "cover",
+          "backgroundColor": "#F5EFE6",
+          "dark": {
+            "image": "./assets/splash-dark.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#1C1916"
+          }
+        }
+      ],
+      "expo-apple-authentication",
+      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.215586258976-5tk7fhsjkkceqhso1be0rvoh74jsfr04"
         }
-      ]
+      ],
+      [
+        "./plugins/with-kotlin-version",
+        {
+          "kotlinVersion": "1.9.25"
+        }
+      ],
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "production"
+        }
+      ],
+      "expo-web-browser"
     ]
   }
 }
