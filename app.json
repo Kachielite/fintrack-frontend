@@ -63,12 +63,17 @@
       ],
       [
         "./plugins/with-kotlin-version",
-        { "kotlinVersion": "1.9.25" }
+        {
+          "kotlinVersion": "1.9.25"
+        }
       ],
       [
         "onesignal-expo-plugin",
-        { "mode": "production" }
-      ]
+        {
+          "mode": "production"
+        }
+      ],
+      "expo-web-browser"
     ]
   }
 }
