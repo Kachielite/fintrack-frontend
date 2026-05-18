@@ -62,12 +62,16 @@ function groupNotifications(items: AppNotification[]): Section[] {
     .map(([title, data]) => ({ title, data }));
 }
 
-function getDestination(type: string): string | null {
+function navigate(navigation: any, type: string) {
   switch (type) {
-    case "insight_generated": return "Insights";
+    case "insight_generated":
+      navigation.navigate("Insights");
+      break;
     case "budget_warning":
-    case "budget_exceeded": return "Budget";
-    default: return null;
+    case "budget_exceeded":
+      // Budget is a tab inside "Tabs", not a root stack screen
+      navigation.navigate("Tabs", { screen: "Budget" });
+      break;
   }
 }
 
@@ -77,11 +81,9 @@ function NotificationRow({ item }: { item: AppNotification }) {
   const { mutate: markRead } = useMarkRead();
   const icon = ICON_MAP[item.type] ?? { name: "notifications", color: colors.primary };
   const isUnread = item.readAt === null;
-  const destination = getDestination(item.type);
-
   const handlePress = () => {
     if (isUnread) markRead(item.id);
-    if (destination) navigation.navigate(destination);
+    navigate(navigation, item.type);
   };
 
   return (

@@ -1,6 +1,5 @@
 {
   "expo": {
-    "newArchEnabled": true,
     "name": "Vela",
     "slug": "fintrack",
     "scheme": "fintrack",
@@ -64,7 +63,7 @@
       [
         "./plugins/with-kotlin-version",
         {
-          "kotlinVersion": "1.9.25"
+          "kotlinVersion": "2.0.21"
         }
       ],
       [

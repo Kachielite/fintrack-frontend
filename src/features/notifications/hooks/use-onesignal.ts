@@ -6,28 +6,42 @@ import { NotificationsService } from "../notifications.service";
 
 const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID ?? "";
 
+async function registerToken() {
+  try {
+    const playerId = await OneSignal.User.pushSubscription.getIdAsync();
+    if (playerId) {
+      const platform = Platform.OS === "ios" ? "ios" : "android";
+      await NotificationsService.registerDeviceToken(playerId, platform);
+    }
+  } catch {
+    // Non-critical
+  }
+}
+
 export function useOnesignal(isAuthenticated: boolean) {
   React.useEffect(() => {
     OneSignal.initialize(ONESIGNAL_APP_ID);
     OneSignal.Notifications.requestPermission(true);
   }, []);
 
+  // Register on login — catches the case where subscription was already active
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    registerToken();
+  }, [isAuthenticated]);
+
+  // Also register whenever the subscription changes (e.g. permission just granted)
   React.useEffect(() => {
     if (!isAuthenticated) return;
 
-    const register = async () => {
-      try {
-        const playerId = await OneSignal.User.pushSubscription.getIdAsync();
-        if (playerId) {
-          const platform = Platform.OS === "ios" ? "ios" : "android";
-          await NotificationsService.registerDeviceToken(playerId, platform);
-        }
-      } catch {
-        // Non-critical
+    const handler = (event: any) => {
+      if (event?.current?.isSubscribed) {
+        registerToken();
       }
     };
 
-    register();
+    OneSignal.User.pushSubscription.addEventListener("change", handler);
+    return () => OneSignal.User.pushSubscription.removeEventListener("change", handler);
   }, [isAuthenticated]);
 
   React.useEffect(() => {
@@ -50,7 +64,7 @@ export function useOnesignal(isAuthenticated: boolean) {
           break;
         case "budget_warning":
         case "budget_exceeded":
-          nav.navigate("Budget");
+          nav.navigate("Tabs", { screen: "Budget" });
           break;
         default:
           nav.navigate("Notifications");

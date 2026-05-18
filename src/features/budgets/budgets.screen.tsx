@@ -20,13 +20,17 @@ import AddBudgetSheet from "./components/add-budget-sheet";
 export default function BudgetsScreen() {
   const colors = useThemeColors();
 
-  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<number | null>(null);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [autoGenerateFired, setAutoGenerateFired] = useState(false);
 
   // ── Data ─────────────────────────────────────────────────────────────────
   const { budgets, isLoading: budgetsLoading, refetch: refetchBudgets } = useBudgets();
+
+  const selectedBudget = selectedBudgetId != null
+    ? (budgets.find((b) => b.id === selectedBudgetId) ?? null)
+    : null;
   const { goals, refetch: refetchGoals } = useGoals();
   const { chartData, refetch: refetchChart } = useChartData("1m");
   const { autoGenerate, isGenerating } = useAutoGenerateBudgets();
@@ -84,7 +88,7 @@ export default function BudgetsScreen() {
         <BudgetList
           budgets={budgets}
           isLoading={budgetsLoading || isGenerating}
-          onPressBudget={setSelectedBudget}
+          onPressBudget={(b) => setSelectedBudgetId(b.id)}
         />
 
         {/* AI goal progress assessment */}
@@ -105,7 +109,7 @@ export default function BudgetsScreen() {
       {selectedBudget && (
         <BudgetCategorySheet
           visible={!!selectedBudget}
-          onClose={() => setSelectedBudget(null)}
+          onClose={() => setSelectedBudgetId(null)}
           budget={selectedBudget}
         />
       )}
