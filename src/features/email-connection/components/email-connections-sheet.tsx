@@ -48,7 +48,7 @@ function StatPill({ label, value }: { label: string; value: number }) {
 function ConnectionCard({ connection }: { connection: EmailConnection }) {
   const colors = useThemeColors();
   const queryClient = useQueryClient();
-  const { stats, isLoading: statsLoading } = useConnectionStats(connection.id);
+  const { stats, isLoading: statsLoading, refetch: refetchStats, isRefetching: statsRefetching } = useConnectionStats(connection.id);
   const { triggerSync, isSyncing } = useTriggerSync();
 
   const deleteDataMutation = useMutation({
@@ -132,10 +132,22 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
         </View>
       </View>
 
-      {/* Last synced */}
-      <Text style={[styles.lastSync, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-        {connection.lastSyncedAt ? `Last synced ${formatDate(connection.lastSyncedAt)}` : "Not yet synced"}
-      </Text>
+      {/* Last synced + stats refresh */}
+      <View style={styles.lastSyncRow}>
+        <Text style={[styles.lastSync, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+          {connection.lastSyncedAt ? `Last synced ${formatDate(connection.lastSyncedAt)}` : "Not yet synced"}
+        </Text>
+        <Pressable
+          onPress={() => refetchStats()}
+          disabled={statsRefetching || statsLoading}
+          hitSlop={10}
+          style={{ opacity: statsRefetching ? 0.4 : 1 }}
+        >
+          {statsRefetching
+            ? <ActivityIndicator size={12} color={colors.textSubtle} />
+            : <Ionicons name="refresh-outline" size={13} color={colors.textSubtle} />}
+        </Pressable>
+      </View>
 
       {/* Stats */}
       {statsLoading ? (
@@ -328,7 +340,8 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 10 },
   sep: { fontSize: 10 },
   metaText: { fontSize: 10, flexShrink: 1 },
-  lastSync: { fontSize: 11, paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
+  lastSyncRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
+  lastSync: { fontSize: 11 },
   statsRow: { flexDirection: "row", gap: SPACING.xs, paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
   statPill: {
     flex: 1,

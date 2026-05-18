@@ -27,7 +27,8 @@
         "tinted": "./assets/icon-tinted.png"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Location is not used by this app. This key is required because a dependency references the location API."
       }
     },
     "android": {
