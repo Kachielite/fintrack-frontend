@@ -9,6 +9,17 @@ import { IrisSession, IrisChatMessage } from "./iris.interface";
 import { mapSessionFromDto, mapMessageFromDto } from "./iris.mapper";
 
 export const IrisService = {
+  async getStatus(): Promise<{ ready: boolean }> {
+    const { data } = await apiClient.get<{ ready: boolean }>(
+      API_ENDPOINTS.IRIS_STATUS,
+    );
+    return data;
+  },
+
+  async initialize(): Promise<void> {
+    await apiClient.post(API_ENDPOINTS.IRIS_INITIALIZE);
+  },
+
   async createSession(): Promise<IrisSession> {
     const { data } = await apiClient.post<IrisSessionDto>(
       API_ENDPOINTS.IRIS_SESSIONS,

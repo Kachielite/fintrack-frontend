@@ -23,6 +23,7 @@ const ICON_MAP: Record<string, { name: string; color: string }> = {
   insight_generated: { name: "sparkles", color: "#a78bfa" },
   budget_warning: { name: "warning", color: "#f59e0b" },
   budget_exceeded: { name: "alert-circle", color: "#ef4444" },
+  iris_ready: { name: "sparkles", color: "#a78bfa" },
 };
 
 interface Section {
@@ -154,6 +155,7 @@ export default function NotificationsScreen() {
   useFocusEffect(
     React.useCallback(() => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     }, [qc]),
   );
 

@@ -67,6 +67,8 @@ export const API_ENDPOINTS = {
   EMAIL_CONNECTION_SYNC_STREAM: (id: number) => `/email-connections/${id}/sync-stream`,
 
   // Iris chat
+  IRIS_STATUS: "/iris/status",
+  IRIS_INITIALIZE: "/iris/initialize",
   IRIS_SESSIONS: "/iris/sessions",
   IRIS_SESSION_DETAIL: (id: number) => `/iris/sessions/${id}`,
   IRIS_SESSION_MESSAGES: (id: number) => `/iris/sessions/${id}/messages`,

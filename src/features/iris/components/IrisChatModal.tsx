@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import {
   Modal,
   View,
@@ -15,6 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { useIrisStore } from "../iris.state";
+import { IrisService } from "../iris.service";
 import { useCreateIrisSession } from "../hooks/use-iris-session";
 import { useLoadMessages, useSendMessage } from "../hooks/use-iris-chat";
 import { useIrisSuggestions } from "../hooks/use-iris-suggestions";
@@ -28,6 +29,8 @@ export default function IrisChatModal() {
   const { isOpen, close, sessionId, messages, isSending, reset } = useIrisStore();
   const [inputText, setInputText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [irisReady, setIrisReady] = useState<boolean | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   const { mutate: createSession, isPending: isCreating } = useCreateIrisSession();
@@ -35,6 +38,39 @@ export default function IrisChatModal() {
   const sendMessage = useSendMessage();
 
   useLoadMessages(sessionId);
+
+  // Check if Iris has financial data ready; initialize build if not
+  const checkStatus = useCallback(async () => {
+    try {
+      const { ready } = await IrisService.getStatus();
+      setIrisReady(ready);
+      if (ready && pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    } catch {
+      setIrisReady(true); // fail open
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+      setIrisReady(null);
+      return;
+    }
+    checkStatus().then((ready) => {
+      // checkStatus sets irisReady; if it came back not ready, kick off build + poll
+    });
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (irisReady === false && !pollRef.current) {
+      IrisService.initialize().catch(() => {});
+      pollRef.current = setInterval(checkStatus, 4000);
+    }
+    return () => {};
+  }, [irisReady, checkStatus]);
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -58,9 +94,11 @@ export default function IrisChatModal() {
     }
   }, [messages.length, isSending]);
 
+  const isInputBlocked = !irisReady || isSending || !sessionId;
+
   const handleSend = () => {
     const text = inputText.trim();
-    if (!text || isSending || !sessionId) return;
+    if (!text || isInputBlocked) return;
     setInputText("");
     sendMessage.mutate(text);
   };
@@ -102,6 +140,16 @@ export default function IrisChatModal() {
             <Ionicons name="close" size={22} color={colors.textSubtle} />
           </Pressable>
         </View>
+
+        {/* Iris data loading banner */}
+        {irisReady === false && (
+          <View style={[styles.readinessBanner, { backgroundColor: colors.primaryLight }]}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.readinessText, { color: colors.primary }]}>
+              Iris is reading your financial data… You'll get a notification when ready.
+            </Text>
+          </View>
+        )}
 
         <View style={{ flex: 1, paddingBottom: keyboardHeight }}>
           {/* Message list */}
@@ -164,19 +212,19 @@ export default function IrisChatModal() {
             />
             <Pressable
               onPress={handleSend}
-              disabled={!inputText.trim() || isSending || !sessionId}
+              disabled={!inputText.trim() || isInputBlocked}
               style={[
                 styles.sendBtn,
                 {
                   backgroundColor:
-                    inputText.trim() && !isSending ? colors.primary : colors.surface2,
+                    inputText.trim() && !isInputBlocked ? colors.primary : colors.surface2,
                 },
               ]}
             >
               <Ionicons
                 name="arrow-up"
                 size={18}
-                color={inputText.trim() && !isSending ? "#FFFFFF" : colors.textSubtle}
+                color={inputText.trim() && !isInputBlocked ? "#FFFFFF" : colors.textSubtle}
               />
             </Pressable>
           </View>
@@ -265,5 +313,17 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+  readinessBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  readinessText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
