@@ -7,7 +7,7 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -27,6 +27,7 @@ export default function IrisChatModal() {
   const insets = useSafeAreaInsets();
   const { isOpen, close, sessionId, messages, isSending, reset } = useIrisStore();
   const [inputText, setInputText] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   const { mutate: createSession, isPending: isCreating } = useCreateIrisSession();
@@ -34,6 +35,14 @@ export default function IrisChatModal() {
   const sendMessage = useSendMessage();
 
   useLoadMessages(sessionId);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showSub = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
+    const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   // Start a new session whenever the modal opens without one
   useEffect(() => {
@@ -94,11 +103,7 @@ export default function IrisChatModal() {
           </Pressable>
         </View>
 
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={0}
-        >
+        <View style={{ flex: 1, paddingBottom: keyboardHeight }}>
           {/* Message list */}
           {isCreating ? (
             <View style={styles.centerLoader}>
@@ -135,7 +140,16 @@ export default function IrisChatModal() {
           )}
 
           {/* Input row */}
-          <View style={[styles.inputRow, { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: insets.bottom + 8 }]}>
+          <View
+            style={[
+              styles.inputRow,
+              {
+                borderTopColor: colors.border,
+                backgroundColor: colors.surface,
+                paddingBottom: keyboardHeight > 0 ? 8 : insets.bottom + 8,
+              },
+            ]}
+          >
             <TextInput
               style={[styles.input, { color: colors.textPrimary, backgroundColor: colors.surface2 }]}
               placeholder="Ask Iris anything..."
@@ -166,7 +180,7 @@ export default function IrisChatModal() {
               />
             </Pressable>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </SafeAreaView>
     </Modal>
   );

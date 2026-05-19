@@ -1,4 +1,5 @@
 import React from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -250,8 +251,11 @@ export default function EmailConnectionsSheet({ visible, onClose }: Props) {
       <View style={sheet.overlay}>
         <Pressable style={sheet.backdrop} onPress={onClose} />
 
-        <View style={[sheet.panel, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}>
-          <View style={[sheet.handle, { backgroundColor: colors.borderStrong }]} />
+        <DraggableSheet
+          style={[sheet.panel, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
+        >
 
           <View style={sheet.header}>
             <Text style={[sheet.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
@@ -305,7 +309,7 @@ export default function EmailConnectionsSheet({ visible, onClose }: Props) {
               </Text>
             </View>
           </ScrollView>
-        </View>
+        </DraggableSheet>
       </View>
     </Modal>
   );

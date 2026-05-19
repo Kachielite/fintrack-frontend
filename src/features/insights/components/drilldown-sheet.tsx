@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   View,
   Text,
@@ -67,7 +68,7 @@ export default function DrilldownSheet({
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View
+        <DraggableSheet
           style={[
             styles.sheet,
             {
@@ -75,10 +76,9 @@ export default function DrilldownSheet({
               paddingBottom: insets.bottom + SPACING.lg,
             },
           ]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
         >
-          {/* Drag handle */}
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
           {/* Header */}
           <View style={styles.header}>
             <View style={[styles.iconWrap, { backgroundColor: iconColor + "22" }]}>
@@ -137,7 +137,7 @@ export default function DrilldownSheet({
               ))}
             </ScrollView>
           )}
-        </View>
+        </DraggableSheet>
       </View>
     </Modal>
   );

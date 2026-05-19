@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -155,8 +156,7 @@ export default function AddBudgetSheet({ visible, onClose }: Props) {
       <View style={styles.overlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        <DraggableSheet
           style={[
             styles.sheet,
             {
@@ -164,9 +164,13 @@ export default function AddBudgetSheet({ visible, onClose }: Props) {
               paddingBottom: insets.bottom,
             },
           ]}
+          onClose={handleClose}
+          handleColor={colors.borderStrong}
         >
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            style={{ flex: 1 }}
+          >
           {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
@@ -353,7 +357,8 @@ export default function AddBudgetSheet({ visible, onClose }: Props) {
               )}
             </Pressable>
           </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </DraggableSheet>
       </View>
 
       {/* ── Category picker (overlay inside same Modal) ───────────── */}

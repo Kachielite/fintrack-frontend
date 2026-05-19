@@ -9,7 +9,8 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { useNotifications, useMarkRead, useMarkAllRead } from "../hooks/use-notifications";
@@ -146,8 +147,15 @@ function SectionHeader({ title }: { title: string }) {
 export default function NotificationsScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
+  const qc = useQueryClient();
   const { data, isLoading } = useNotifications();
   const { mutate: markAllRead } = useMarkAllRead();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    }, [qc]),
+  );
 
   const sections = React.useMemo(() => groupNotifications(data ?? []), [data]);
 
