@@ -11,12 +11,10 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { useIrisStore } from "../iris.state";
-import { IrisService } from "../iris.service";
 import { useCreateIrisSession } from "../hooks/use-iris-session";
 import { useLoadMessages, useSendMessage } from "../hooks/use-iris-chat";
 import { useIrisSuggestions } from "../hooks/use-iris-suggestions";
@@ -30,7 +28,6 @@ export default function IrisChatModal() {
   const { isOpen, close, sessionId, messages, isSending, reset } = useIrisStore();
   const [inputText, setInputText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const initCalledRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   const { mutate: createSession, isPending: isCreating } = useCreateIrisSession();
@@ -38,29 +35,6 @@ export default function IrisChatModal() {
   const sendMessage = useSendMessage();
 
   useLoadMessages(sessionId);
-
-  // Query-based status check so the OneSignal handler can invalidate it externally
-  const { data: statusData } = useQuery({
-    queryKey: ["iris", "status"],
-    queryFn: () => IrisService.getStatus(),
-    enabled: isOpen,
-    staleTime: 0,
-    refetchInterval: (query) =>
-      query.state.data?.ready === false ? 3000 : false,
-    retry: false,
-  });
-
-  // null = initial fetch in progress; false = not ready; true = ready
-  const irisReady: boolean | null = statusData ? statusData.ready : null;
-
-  // Call initialize once when we first learn Iris is not ready
-  useEffect(() => {
-    if (!isOpen) { initCalledRef.current = false; return; }
-    if (irisReady === false && !initCalledRef.current) {
-      initCalledRef.current = true;
-      IrisService.initialize().catch(() => {});
-    }
-  }, [isOpen, irisReady]);
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -84,7 +58,7 @@ export default function IrisChatModal() {
     }
   }, [messages.length, isSending]);
 
-  const isInputBlocked = !irisReady || isSending || !sessionId;
+  const isInputBlocked = isSending || !sessionId;
 
   const handleSend = () => {
     const text = inputText.trim();
@@ -130,16 +104,6 @@ export default function IrisChatModal() {
             <Ionicons name="close" size={22} color={colors.textSubtle} />
           </Pressable>
         </View>
-
-        {/* Iris data loading banner */}
-        {irisReady === false && (
-          <View style={[styles.readinessBanner, { backgroundColor: colors.primaryLight }]}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={[styles.readinessText, { color: colors.primary }]}>
-              Iris is reading your financial data… You'll get a notification when ready.
-            </Text>
-          </View>
-        )}
 
         <View style={{ flex: 1, paddingBottom: keyboardHeight }}>
           {/* Message list */}
@@ -303,17 +267,5 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-  },
-  readinessBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  readinessText: {
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 18,
   },
 });
