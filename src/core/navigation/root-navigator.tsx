@@ -50,6 +50,8 @@ import SettingsScreen from "@/features/user/screens/settings.screen";
 import PrivacyPolicyScreen from "@/features/user/screens/privacy-policy.screen";
 import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.screen";
 import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
+import IrisFAB from "@/features/iris/components/IrisFAB";
+import IrisChatModal from "@/features/iris/components/IrisChatModal";
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -402,9 +404,15 @@ export default function RootNavigator() {
     ActiveNavigator = MainStack;
   }
 
+  const showIris = !!token && onboardingComplete;
+
   return (
-    <NavigationContainer ref={navigationRef} theme={navTheme}>
-      <ActiveNavigator />
-    </NavigationContainer>
+    <>
+      <NavigationContainer ref={navigationRef} theme={navTheme}>
+        <ActiveNavigator />
+      </NavigationContainer>
+      {showIris && <IrisFAB />}
+      {showIris && <IrisChatModal />}
+    </>
   );
 }
