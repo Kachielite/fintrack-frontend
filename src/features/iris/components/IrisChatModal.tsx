@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
@@ -29,8 +30,7 @@ export default function IrisChatModal() {
   const { isOpen, close, sessionId, messages, isSending, reset } = useIrisStore();
   const [inputText, setInputText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [irisReady, setIrisReady] = useState<boolean | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initCalledRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   const { mutate: createSession, isPending: isCreating } = useCreateIrisSession();
@@ -39,38 +39,28 @@ export default function IrisChatModal() {
 
   useLoadMessages(sessionId);
 
-  // Check if Iris has financial data ready; initialize build if not
-  const checkStatus = useCallback(async () => {
-    try {
-      const { ready } = await IrisService.getStatus();
-      setIrisReady(ready);
-      if (ready && pollRef.current) {
-        clearInterval(pollRef.current);
-        pollRef.current = null;
-      }
-    } catch {
-      setIrisReady(true); // fail open
-    }
-  }, []);
+  // Query-based status check so the OneSignal handler can invalidate it externally
+  const { data: statusData } = useQuery({
+    queryKey: ["iris", "status"],
+    queryFn: () => IrisService.getStatus(),
+    enabled: isOpen,
+    staleTime: 0,
+    refetchInterval: (query) =>
+      query.state.data?.ready === false ? 3000 : false,
+    retry: false,
+  });
 
-  useEffect(() => {
-    if (!isOpen) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-      setIrisReady(null);
-      return;
-    }
-    checkStatus().then((ready) => {
-      // checkStatus sets irisReady; if it came back not ready, kick off build + poll
-    });
-  }, [isOpen]);
+  // null = initial fetch in progress; false = not ready; true = ready
+  const irisReady: boolean | null = statusData ? statusData.ready : null;
 
+  // Call initialize once when we first learn Iris is not ready
   useEffect(() => {
-    if (irisReady === false && !pollRef.current) {
+    if (!isOpen) { initCalledRef.current = false; return; }
+    if (irisReady === false && !initCalledRef.current) {
+      initCalledRef.current = true;
       IrisService.initialize().catch(() => {});
-      pollRef.current = setInterval(checkStatus, 4000);
     }
-    return () => {};
-  }, [irisReady, checkStatus]);
+  }, [isOpen, irisReady]);
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -109,7 +99,7 @@ export default function IrisChatModal() {
   };
 
   const handleSuggestion = (text: string) => {
-    if (!sessionId || isSending) return;
+    if (isInputBlocked) return;
     sendMessage.mutate(text);
   };
 

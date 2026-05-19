@@ -48,30 +48,51 @@ export function useOnesignal(isAuthenticated: boolean) {
     return () => OneSignal.User.pushSubscription.removeEventListener("change", handler);
   }, [isAuthenticated]);
 
+  // Foreground received: any push instantly refreshes the in-app notification list
+  React.useEffect(() => {
+    const handler = (event: any) => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
+
+      const type = (event?.notification?.additionalData as { type?: string } | undefined)?.type;
+      if (type === "iris_ready") {
+        qc.invalidateQueries({ queryKey: ["iris", "status"] });
+      }
+    };
+    OneSignal.Notifications.addEventListener("foregroundWillDisplay", handler);
+    return () => OneSignal.Notifications.removeEventListener("foregroundWillDisplay", handler);
+  }, [qc]);
+
   React.useEffect(() => {
     const handler = (event: NotificationClickEvent) => {
       const data = event.notification.additionalData as
         | { type?: string }
         | undefined;
 
-      if (!data?.type || !navigationRef.isReady()) return;
+      if (!navigationRef.isReady()) return;
+
+      // Always freshen the notification list when the user taps any push
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
 
       const nav = navigationRef as any;
 
-      switch (data.type) {
+      switch (data?.type) {
         case "sync_complete":
         case "sync_failed":
           nav.navigate("Notifications");
           break;
         case "insight_generated":
-          // Invalidate so the Insights screen always shows the latest insight
-          // even if the screen is already mounted with stale cached data.
           qc.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
           nav.navigate("Insights");
           break;
         case "budget_warning":
         case "budget_exceeded":
           nav.navigate("Tabs", { screen: "Budget" });
+          break;
+        case "iris_ready":
+          qc.invalidateQueries({ queryKey: ["iris", "status"] });
+          nav.navigate("Notifications");
           break;
         default:
           nav.navigate("Notifications");
