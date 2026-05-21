@@ -15,6 +15,7 @@ import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { useNotifications, useMarkRead, useMarkAllRead } from "../hooks/use-notifications";
 import { AppNotification } from "../notifications.interface";
+import { useConnectGmail } from "@/features/email-connection/hooks/use-connect-gmail";
 
 const ICON_MAP: Record<string, { name: string; color: string }> = {
   sync_complete: { name: "checkmark-circle", color: "#22c55e" },
@@ -71,7 +72,6 @@ function navigate(navigation: any, type: string) {
       break;
     case "budget_warning":
     case "budget_exceeded":
-      // Budget is a tab inside "Tabs", not a root stack screen
       navigation.navigate("Tabs", { screen: "Budget" });
       break;
   }
@@ -81,10 +81,15 @@ function NotificationRow({ item }: { item: AppNotification }) {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
   const { mutate: markRead } = useMarkRead();
+  const { connectGmail, isConnecting } = useConnectGmail();
   const icon = ICON_MAP[item.type] ?? { name: "notifications", color: colors.primary };
   const isUnread = item.readAt === null;
   const handlePress = () => {
     if (isUnread) markRead(item.id);
+    if (item.type === "sync_failed" && item.data?.reason === "auth_revoked") {
+      connectGmail();
+      return;
+    }
     navigate(navigation, item.type);
   };
 

@@ -22,6 +22,7 @@ import { EmailConnectionService } from "../email-connection.service";
 import { useEmailConnections } from "../hooks/use-email-connections";
 import { useConnectionStats } from "../hooks/use-connection-stats";
 import { useTriggerSync } from "../hooks/use-trigger-sync";
+import { useConnectGmail } from "../hooks/use-connect-gmail";
 import EmptyState from "@/core/common/components/EmptyState";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 import { formatDate } from "@/core/common/utils/date";
@@ -51,6 +52,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
   const queryClient = useQueryClient();
   const { stats, isLoading: statsLoading, refetch: refetchStats, isRefetching: statsRefetching } = useConnectionStats(connection.id);
   const { triggerSync, isSyncing } = useTriggerSync();
+  const { connectGmail, isConnecting } = useConnectGmail();
 
   const deleteDataMutation = useMutation({
     mutationFn: () => EmailConnectionService.deleteConnectionData(connection.id),
@@ -74,6 +76,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
 
   const isActive = connection.status === "active";
   const isExpired = connection.status === "expired";
+  const isRevoked = connection.status === "revoked";
   const statusColor = isActive ? colors.success : isExpired ? colors.warning : colors.error;
   const statusLabel = isActive ? "Active" : isExpired ? "Expired" : "Revoked";
 
@@ -189,18 +192,33 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
 
       {/* Actions */}
       <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
-        <Pressable
-          onPress={handleSync}
-          disabled={isSyncing || !isActive}
-          style={[styles.actionBtn, { backgroundColor: colors.primaryLight, opacity: !isActive ? 0.4 : 1 }]}
-        >
-          {isSyncing
-            ? <ActivityIndicator size="small" color={colors.primary} />
-            : <Ionicons name="refresh-outline" size={13} color={colors.primary} />}
-          <Text style={[styles.actionText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
-            {isSyncing ? "Syncing…" : "Sync now"}
-          </Text>
-        </Pressable>
+        {isRevoked ? (
+          <Pressable
+            onPress={() => connectGmail()}
+            disabled={isConnecting}
+            style={[styles.actionBtn, { backgroundColor: colors.warningLight }]}
+          >
+            {isConnecting
+              ? <ActivityIndicator size="small" color={colors.warning} />
+              : <Ionicons name="refresh-outline" size={13} color={colors.warning} />}
+            <Text style={[styles.actionText, { color: colors.warning, fontFamily: FONTS.semiBold }]}>
+              {isConnecting ? "Connecting…" : "Reconnect"}
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleSync}
+            disabled={isSyncing || !isActive}
+            style={[styles.actionBtn, { backgroundColor: colors.primaryLight, opacity: !isActive ? 0.4 : 1 }]}
+          >
+            {isSyncing
+              ? <ActivityIndicator size="small" color={colors.primary} />
+              : <Ionicons name="refresh-outline" size={13} color={colors.primary} />}
+            <Text style={[styles.actionText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
+              {isSyncing ? "Syncing…" : "Sync now"}
+            </Text>
+          </Pressable>
+        )}
 
         <Pressable
           onPress={handleDeleteData}
