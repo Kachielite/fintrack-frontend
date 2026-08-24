@@ -1,6 +1,5 @@
 {
   "expo": {
-    "newArchEnabled": true,
     "name": "Vela",
     "slug": "fintrack",
     "scheme": "fintrack",
@@ -28,7 +27,8 @@
         "tinted": "./assets/icon-tinted.png"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Location is not used by this app. This key is required because a dependency references the location API."
       }
     },
     "android": {
@@ -64,7 +64,7 @@
       [
         "./plugins/with-kotlin-version",
         {
-          "kotlinVersion": "1.9.25"
+          "kotlinVersion": "2.0.21"
         }
       ],
       [

@@ -12,5 +12,6 @@ export function useBudgets() {
     queryKey: [QUERY_KEYS.BUDGETS],
     queryFn: () => BudgetService.listBudgets(),
   });
-  return { budgets: budgets ?? [], isLoading, error, refetch };
+  const sorted = (budgets ?? []).slice().sort((a, b) => a.category.localeCompare(b.category));
+  return { budgets: sorted, isLoading, error, refetch };
 }

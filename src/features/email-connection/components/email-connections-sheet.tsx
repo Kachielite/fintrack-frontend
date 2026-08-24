@@ -1,4 +1,5 @@
 import React from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -21,6 +22,7 @@ import { EmailConnectionService } from "../email-connection.service";
 import { useEmailConnections } from "../hooks/use-email-connections";
 import { useConnectionStats } from "../hooks/use-connection-stats";
 import { useTriggerSync } from "../hooks/use-trigger-sync";
+import { useConnectGmail } from "../hooks/use-connect-gmail";
 import EmptyState from "@/core/common/components/EmptyState";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 import { formatDate } from "@/core/common/utils/date";
@@ -48,8 +50,9 @@ function StatPill({ label, value }: { label: string; value: number }) {
 function ConnectionCard({ connection }: { connection: EmailConnection }) {
   const colors = useThemeColors();
   const queryClient = useQueryClient();
-  const { stats, isLoading: statsLoading } = useConnectionStats(connection.id);
+  const { stats, isLoading: statsLoading, refetch: refetchStats, isRefetching: statsRefetching } = useConnectionStats(connection.id);
   const { triggerSync, isSyncing } = useTriggerSync();
+  const { connectGmail, isConnecting } = useConnectGmail();
 
   const deleteDataMutation = useMutation({
     mutationFn: () => EmailConnectionService.deleteConnectionData(connection.id),
@@ -73,6 +76,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
 
   const isActive = connection.status === "active";
   const isExpired = connection.status === "expired";
+  const isRevoked = connection.status === "revoked";
   const statusColor = isActive ? colors.success : isExpired ? colors.warning : colors.error;
   const statusLabel = isActive ? "Active" : isExpired ? "Expired" : "Revoked";
 
@@ -132,10 +136,22 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
         </View>
       </View>
 
-      {/* Last synced */}
-      <Text style={[styles.lastSync, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-        {connection.lastSyncedAt ? `Last synced ${formatDate(connection.lastSyncedAt)}` : "Not yet synced"}
-      </Text>
+      {/* Last synced + stats refresh */}
+      <View style={styles.lastSyncRow}>
+        <Text style={[styles.lastSync, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+          {connection.lastSyncedAt ? `Last synced ${formatDate(connection.lastSyncedAt)}` : "Not yet synced"}
+        </Text>
+        <Pressable
+          onPress={() => refetchStats()}
+          disabled={statsRefetching || statsLoading}
+          hitSlop={10}
+          style={{ opacity: statsRefetching ? 0.4 : 1 }}
+        >
+          {statsRefetching
+            ? <ActivityIndicator size={12} color={colors.textSubtle} />
+            : <Ionicons name="refresh-outline" size={13} color={colors.textSubtle} />}
+        </Pressable>
+      </View>
 
       {/* Stats */}
       {statsLoading ? (
@@ -176,18 +192,33 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
 
       {/* Actions */}
       <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
-        <Pressable
-          onPress={handleSync}
-          disabled={isSyncing || !isActive}
-          style={[styles.actionBtn, { backgroundColor: colors.primaryLight, opacity: !isActive ? 0.4 : 1 }]}
-        >
-          {isSyncing
-            ? <ActivityIndicator size="small" color={colors.primary} />
-            : <Ionicons name="refresh-outline" size={13} color={colors.primary} />}
-          <Text style={[styles.actionText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
-            {isSyncing ? "Syncing…" : "Sync now"}
-          </Text>
-        </Pressable>
+        {isRevoked ? (
+          <Pressable
+            onPress={() => connectGmail()}
+            disabled={isConnecting}
+            style={[styles.actionBtn, { backgroundColor: colors.warningLight }]}
+          >
+            {isConnecting
+              ? <ActivityIndicator size="small" color={colors.warning} />
+              : <Ionicons name="refresh-outline" size={13} color={colors.warning} />}
+            <Text style={[styles.actionText, { color: colors.warning, fontFamily: FONTS.semiBold }]}>
+              {isConnecting ? "Connecting…" : "Reconnect"}
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleSync}
+            disabled={isSyncing || !isActive}
+            style={[styles.actionBtn, { backgroundColor: colors.primaryLight, opacity: !isActive ? 0.4 : 1 }]}
+          >
+            {isSyncing
+              ? <ActivityIndicator size="small" color={colors.primary} />
+              : <Ionicons name="refresh-outline" size={13} color={colors.primary} />}
+            <Text style={[styles.actionText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
+              {isSyncing ? "Syncing…" : "Sync now"}
+            </Text>
+          </Pressable>
+        )}
 
         <Pressable
           onPress={handleDeleteData}
@@ -238,8 +269,11 @@ export default function EmailConnectionsSheet({ visible, onClose }: Props) {
       <View style={sheet.overlay}>
         <Pressable style={sheet.backdrop} onPress={onClose} />
 
-        <View style={[sheet.panel, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}>
-          <View style={[sheet.handle, { backgroundColor: colors.borderStrong }]} />
+        <DraggableSheet
+          style={[sheet.panel, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
+        >
 
           <View style={sheet.header}>
             <Text style={[sheet.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
@@ -293,7 +327,7 @@ export default function EmailConnectionsSheet({ visible, onClose }: Props) {
               </Text>
             </View>
           </ScrollView>
-        </View>
+        </DraggableSheet>
       </View>
     </Modal>
   );
@@ -328,7 +362,8 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 10 },
   sep: { fontSize: 10 },
   metaText: { fontSize: 10, flexShrink: 1 },
-  lastSync: { fontSize: 11, paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
+  lastSyncRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
+  lastSync: { fontSize: 11 },
   statsRow: { flexDirection: "row", gap: SPACING.xs, paddingHorizontal: SPACING.base, paddingBottom: SPACING.sm },
   statPill: {
     flex: 1,

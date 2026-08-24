@@ -1,4 +1,5 @@
 import React from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -148,7 +149,7 @@ export default function InsightSheet({ visible, onClose, insight }: Props) {
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View
+        <DraggableSheet
           style={[
             styles.sheet,
             {
@@ -156,10 +157,9 @@ export default function InsightSheet({ visible, onClose, insight }: Props) {
               paddingBottom: insets.bottom + SPACING.lg,
             },
           ]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
         >
-          {/* Drag handle */}
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
           {/* Header */}
           <View style={styles.header}>
             <Text
@@ -333,7 +333,7 @@ export default function InsightSheet({ visible, onClose, insight }: Props) {
               </Text>
             </Pressable>
           </ScrollView>
-        </View>
+        </DraggableSheet>
       </View>
     </Modal>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -200,14 +201,14 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View
+        <DraggableSheet
           style={[
             styles.sheet,
             { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg },
           ]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
         >
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
           <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
               Transaction
@@ -408,7 +409,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               </Text>
             </Pressable>
           </ScrollView>
-        </View>
+        </DraggableSheet>
       </View>
 
       {/* ── Combined edit sheet ──────────────────────────────── */}

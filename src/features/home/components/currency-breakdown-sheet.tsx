@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   Modal,
   View,
@@ -77,7 +78,7 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View
+        <DraggableSheet
           style={[
             styles.sheet,
             {
@@ -85,10 +86,9 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
               paddingBottom: insets.bottom,
             },
           ]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
         >
-          {/* Drag handle */}
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
           {/* Header row */}
           <View style={styles.header}>
             <Text
@@ -267,7 +267,7 @@ export default function CurrencyBreakdownSheet({ visible, onClose, summary }: Pr
               </View>
             )}
           </ScrollView>
-        </View>
+        </DraggableSheet>
       </View>
 
       {selectedTx && (

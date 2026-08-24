@@ -17,4 +17,7 @@ export const QUERY_KEYS = {
   GMAIL_AUTH_URL: "gmail-auth-url",
   CHART_DATA: "chart-data",
   CATEGORIES: "categories",
+  IRIS_SESSIONS: "iris-sessions",
+  IRIS_MESSAGES: "iris-messages",
+  IRIS_SUGGESTIONS: "iris-suggestions",
 } as const;

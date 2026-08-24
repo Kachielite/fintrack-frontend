@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
@@ -200,7 +201,7 @@ export default function TransactionsFilterSheet({
       <View style={styles.overlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View
+        <DraggableSheet
           style={[
             styles.sheet,
             {
@@ -208,9 +209,9 @@ export default function TransactionsFilterSheet({
               paddingBottom: insets.bottom + SPACING.lg,
             },
           ]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
         >
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
-
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
               Filter
@@ -382,7 +383,7 @@ export default function TransactionsFilterSheet({
               </Text>
             </Pressable>
           </View>
-        </View>
+        </DraggableSheet>
       </View>
     </Modal>
   );

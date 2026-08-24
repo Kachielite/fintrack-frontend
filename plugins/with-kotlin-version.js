@@ -1,35 +1,52 @@
-/**
- * Expo config plugin that pins the Kotlin Gradle plugin version in the
- * top-level android/build.gradle after every `expo prebuild`.
- *
- * Problem: The generated build.gradle sets `ext.kotlinVersion` but declares
- * the classpath WITHOUT a version, so the React Native BOM overrides it to
- * 1.9.24.  Compose Compiler 1.5.15 requires >= 1.9.25, causing build failure.
- *
- * Fix: replace the versionless classpath declaration with one that uses
- * `"${kotlinVersion}"` so the explicit ext value is honoured.
- */
-const { withProjectBuildGradle } = require('@expo/config-plugins');
+const {
+  withGradleProperties,
+  withProjectBuildGradle,
+} = require('@expo/config-plugins');
 
-const withKotlinVersion = (config, { kotlinVersion = '1.9.25' } = {}) => {
-  return withProjectBuildGradle(config, (mod) => {
+const withKotlinVersion = (config, { kotlinVersion = '2.0.21' } = {}) => {
+  const withBuildGradle = withProjectBuildGradle(config, (mod) => {
     let contents = mod.modResults.contents;
 
-    // Ensure ext.kotlinVersion is set to the desired version (overrides default)
-    contents = contents.replace(
-      /kotlinVersion\s*=\s*findProperty\('android\.kotlinVersion'\)\s*\?:\s*'[^']+'/,
-      `kotlinVersion = findProperty('android.kotlinVersion') ?: '${kotlinVersion}'`,
-    );
+    const extAssignmentRegex = /kotlinVersion\s*=\s*findProperty\('android\.kotlinVersion'\)\s*\?:\s*'[^']+'/;
+    const versionedClasspath = `classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:\${kotlinVersion}")`;
+    const versionlessClasspath = "classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')";
 
-    // Pin the classpath to use the explicit kotlinVersion variable
-    const versionless = "classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')";
-    const versioned = `classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:\${kotlinVersion}")`;
-
-    if (contents.includes(versionless)) {
-      contents = contents.replace(versionless, versioned);
+    // Keep kotlinVersion coming from gradle.properties, with a safe fallback.
+    if (extAssignmentRegex.test(contents)) {
+      contents = contents.replace(
+        extAssignmentRegex,
+        `kotlinVersion = findProperty('android.kotlinVersion') ?: '${kotlinVersion}'`,
+      );
+    } else if (!contents.includes('kotlinVersion = findProperty(\'android.kotlinVersion\')')) {
+      contents = contents.replace(
+        /buildscript\s*\{/,
+        `buildscript {\n  ext {\n    kotlinVersion = findProperty('android.kotlinVersion') ?: '${kotlinVersion}'\n  }`,
+      );
     }
-    // Already patched — no-op
+
+    if (contents.includes(versionlessClasspath)) {
+      contents = contents.replace(versionlessClasspath, versionedClasspath);
+    } else if (!contents.includes('org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}')) {
+      contents = contents.replace(
+        /classpath\('com\.facebook\.react:react-native-gradle-plugin'\)/,
+        `classpath('com.facebook.react:react-native-gradle-plugin')\n    ${versionedClasspath}`,
+      );
+    }
+
     mod.modResults.contents = contents;
+    return mod;
+  });
+
+  return withGradleProperties(withBuildGradle, (mod) => {
+    const key = 'android.kotlinVersion';
+    const existing = mod.modResults.find((item) => item.type === 'property' && item.key === key);
+
+    if (existing) {
+      existing.value = kotlinVersion;
+    } else {
+      mod.modResults.push({ type: 'property', key, value: kotlinVersion });
+    }
+
     return mod;
   });
 };

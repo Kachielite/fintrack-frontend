@@ -12,6 +12,7 @@ export function useNotifications() {
   return useQuery({
     queryKey: KEYS.list,
     queryFn: () => NotificationsService.list(),
+    staleTime: 0,
   });
 }
 
@@ -56,6 +57,9 @@ export function useTransactionSyncWatcher() {
   useEffect(() => {
     const count = countData?.count ?? 0;
     if (prevCount.current !== null && count > prevCount.current) {
+      // Always refresh the notification list when new unread notifications arrive
+      qc.invalidateQueries({ queryKey: KEYS.list });
+      // Only invalidate transaction data when a sync completed
       NotificationsService.list().then((notifications) => {
         const hasSync = notifications.some(
           (n) => n.type === "sync_complete" && n.readAt === null,
@@ -65,7 +69,6 @@ export function useTransactionSyncWatcher() {
           qc.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
           qc.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
           qc.invalidateQueries({ queryKey: [QUERY_KEYS.UNVERIFIED_TRANSACTIONS] });
-          qc.invalidateQueries({ queryKey: KEYS.list });
         }
       });
     }

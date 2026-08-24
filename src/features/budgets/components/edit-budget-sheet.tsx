@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import DraggableSheet from "@/core/common/components/DraggableSheet";
 import {
   View,
   Text,
@@ -92,9 +93,11 @@ export default function EditBudgetSheet({ visible, onClose, budget }: Props) {
       >
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}>
-          {/* Handle */}
-          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
+        <DraggableSheet
+          style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + SPACING.lg }]}
+          onClose={onClose}
+          handleColor={colors.borderStrong}
+        >
 
           {/* Header */}
           <View style={styles.header}>
@@ -188,7 +191,7 @@ export default function EditBudgetSheet({ visible, onClose, budget }: Props) {
               )}
             </Pressable>
           </View>
-        </View>
+        </DraggableSheet>
       </KeyboardAvoidingView>
     </Modal>
   );

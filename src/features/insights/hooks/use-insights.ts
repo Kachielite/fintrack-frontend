@@ -1,11 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { InsightService } from "../insights.service";
 
+// Module-level flag so multiple hook instances never fire generate() simultaneously.
+let generationTriggered = false;
+
 export function useInsights() {
   const queryClient = useQueryClient();
-  const generationTriggered = useRef(false);
 
   const {
     data: insights,
@@ -18,8 +20,8 @@ export function useInsights() {
   });
 
   useEffect(() => {
-    if (!isLoading && insights?.length === 0 && !generationTriggered.current) {
-      generationTriggered.current = true;
+    if (!isLoading && insights?.length === 0 && !generationTriggered) {
+      generationTriggered = true;
       InsightService.generate()
         .then(() => {
           setTimeout(() => {

@@ -1,4 +1,11 @@
-export type NotificationType = "sync_complete" | "sync_skipped" | "sync_failed";
+export type NotificationType =
+  | "sync_complete"
+  | "sync_skipped"
+  | "sync_failed"
+  | "insight_generated"
+  | "budget_warning"
+  | "budget_exceeded"
+  | "iris_ready";
 
 export interface AppNotification {
   id: number;

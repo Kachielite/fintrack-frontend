@@ -9,11 +9,13 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { useNotifications, useMarkRead, useMarkAllRead } from "../hooks/use-notifications";
 import { AppNotification } from "../notifications.interface";
+import { useConnectGmail } from "@/features/email-connection/hooks/use-connect-gmail";
 
 const ICON_MAP: Record<string, { name: string; color: string }> = {
   sync_complete: { name: "checkmark-circle", color: "#22c55e" },
@@ -22,6 +24,7 @@ const ICON_MAP: Record<string, { name: string; color: string }> = {
   insight_generated: { name: "sparkles", color: "#a78bfa" },
   budget_warning: { name: "warning", color: "#f59e0b" },
   budget_exceeded: { name: "alert-circle", color: "#ef4444" },
+  iris_ready: { name: "sparkles", color: "#a78bfa" },
 };
 
 interface Section {
@@ -62,12 +65,15 @@ function groupNotifications(items: AppNotification[]): Section[] {
     .map(([title, data]) => ({ title, data }));
 }
 
-function getDestination(type: string): string | null {
+function navigate(navigation: any, type: string) {
   switch (type) {
-    case "insight_generated": return "Insights";
+    case "insight_generated":
+      navigation.navigate("Insights");
+      break;
     case "budget_warning":
-    case "budget_exceeded": return "Budget";
-    default: return null;
+    case "budget_exceeded":
+      navigation.navigate("Tabs", { screen: "Budget" });
+      break;
   }
 }
 
@@ -75,13 +81,16 @@ function NotificationRow({ item }: { item: AppNotification }) {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
   const { mutate: markRead } = useMarkRead();
+  const { connectGmail, isConnecting } = useConnectGmail();
   const icon = ICON_MAP[item.type] ?? { name: "notifications", color: colors.primary };
   const isUnread = item.readAt === null;
-  const destination = getDestination(item.type);
-
   const handlePress = () => {
     if (isUnread) markRead(item.id);
-    if (destination) navigation.navigate(destination);
+    if (item.type === "sync_failed" && item.data?.reason === "auth_revoked") {
+      connectGmail();
+      return;
+    }
+    navigate(navigation, item.type);
   };
 
   return (
@@ -144,8 +153,16 @@ function SectionHeader({ title }: { title: string }) {
 export default function NotificationsScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
+  const qc = useQueryClient();
   const { data, isLoading } = useNotifications();
   const { mutate: markAllRead } = useMarkAllRead();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
+    }, [qc]),
+  );
 
   const sections = React.useMemo(() => groupNotifications(data ?? []), [data]);
 

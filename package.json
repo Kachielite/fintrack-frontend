@@ -5,6 +5,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "android:bundle:universal": "bash scripts/build-universal-apk.sh",
     "ios": "expo run:ios",
     "ios:device": "expo run:ios",
     "prebuild": "expo prebuild --clean",
