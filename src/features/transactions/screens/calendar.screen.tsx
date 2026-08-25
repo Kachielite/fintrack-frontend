@@ -30,6 +30,8 @@ import DayTransactionsSheet from "../components/day-transactions-sheet";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const CELL_MIN_ALPHA = 20; // 0x14 — faintest visible tint
+const CELL_MAX_ALPHA = 170; // 0xAA — strong but keeps cell text legible
 
 /** Compact form for cell display — "820", "12.5k" — full amounts show in the summary card. */
 function compactAmount(n: number): string {
@@ -37,6 +39,32 @@ function compactAmount(n: number): string {
   if (n < 1000) return Math.round(n).toString();
   const k = n / 1000;
   return `${Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)}k`;
+}
+
+function toHexAlpha(value: number): string {
+  return Math.round(value).toString(16).padStart(2, "0");
+}
+
+/** Tints the cell by whichever of spend/income dominates that day, scaled by its share of the month's peak. */
+function cellTint(
+  spend: number,
+  income: number,
+  maxSpend: number,
+  maxIncome: number,
+  errorColor: string,
+  successColor: string,
+): string | undefined {
+  if (spend <= 0 && income <= 0) return undefined;
+  if (spend >= income) {
+    if (maxSpend <= 0) return undefined;
+    const alpha =
+      CELL_MIN_ALPHA + (spend / maxSpend) * (CELL_MAX_ALPHA - CELL_MIN_ALPHA);
+    return errorColor + toHexAlpha(alpha);
+  }
+  if (maxIncome <= 0) return undefined;
+  const alpha =
+    CELL_MIN_ALPHA + (income / maxIncome) * (CELL_MAX_ALPHA - CELL_MIN_ALPHA);
+  return successColor + toHexAlpha(alpha);
 }
 
 export default function CalendarScreen() {
@@ -68,6 +96,15 @@ export default function CalendarScreen() {
         }),
         { spend: 0, income: 0 },
       ),
+    [dailySpend],
+  );
+
+  const maxSpend = useMemo(
+    () => dailySpend.reduce((max, p) => Math.max(max, p.spend), 0),
+    [dailySpend],
+  );
+  const maxIncome = useMemo(
+    () => dailySpend.reduce((max, p) => Math.max(max, p.income), 0),
     [dailySpend],
   );
 
@@ -183,6 +220,17 @@ export default function CalendarScreen() {
                   ? dayData(day)
                   : { spend: 0, income: 0 };
 
+                const tint = inMonth
+                  ? cellTint(
+                      spend,
+                      income,
+                      maxSpend,
+                      maxIncome,
+                      colors.error,
+                      colors.success,
+                    )
+                  : undefined;
+
                 return (
                   <View key={day.toISOString()} style={styles.cellWrap}>
                     <Pressable
@@ -190,16 +238,15 @@ export default function CalendarScreen() {
                       disabled={!inMonth}
                       style={[
                         styles.cell,
-                        {
-                          backgroundColor: isSelected
-                            ? colors.primaryMid
-                            : colors.surface2,
-                        },
+                        { backgroundColor: tint ?? "transparent" },
                         today && {
                           borderWidth: 1.5,
+                          borderColor: colors.textSecondary,
+                        },
+                        isSelected && {
+                          borderWidth: 2,
                           borderColor: colors.primary,
                         },
-                        !inMonth && { backgroundColor: "transparent" },
                       ]}
                     >
                       <Text
