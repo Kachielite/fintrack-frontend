@@ -32,8 +32,21 @@ export const CATEGORY_ICON_NAMES: Record<string, string> = {
   uncategorized: "ellipsis-horizontal-outline",
 };
 
-export function getCategoryIconName(slug: string): string {
-  return CATEGORY_ICON_NAMES[slug] ?? "ellipsis-horizontal-outline";
+/**
+ * System categories always resolve from the static map above. A custom
+ * category has no entry there, so — if the caller has the category list
+ * handy — fall back to whatever Ionicons name the user picked when they
+ * created it, stored in that category's own `icon` field.
+ */
+export function getCategoryIconName(
+  slug: string,
+  categories?: { slug: string; icon: string | null }[],
+): string {
+  return (
+    CATEGORY_ICON_NAMES[slug] ??
+    categories?.find((c) => c.slug === slug)?.icon ??
+    "ellipsis-horizontal-outline"
+  );
 }
 
 export const CATEGORY_LABELS: Record<string, string> = {

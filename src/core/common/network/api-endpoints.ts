@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
 
   // Categories
   CATEGORIES: "/categories",
+  CATEGORY_DETAIL: (id: number) => `/categories/${id}`,
 
   // Notifications
   NOTIFICATIONS: "/notifications",
