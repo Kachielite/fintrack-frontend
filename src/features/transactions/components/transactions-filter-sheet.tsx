@@ -22,6 +22,14 @@ import {
 } from "@/core/common/constants/theme";
 import { getCategoryIconName } from "../transactions.constants";
 import { useCategories } from "@/features/categories/hooks/use-categories";
+import {
+  DateFilter,
+  DatePreset,
+  DATE_PRESETS,
+  DATE_PRESET_LABELS,
+  DEFAULT_DATE_FILTER,
+  dateFilterLabel,
+} from "../utils/date-filter";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -29,6 +37,8 @@ export interface TransactionFilters {
   categories: string[];
   currencies: string[];
   bankIds: number[];
+  accountIds: number[];
+  dateFilter: DateFilter;
 }
 
 export interface BankOption {
@@ -36,7 +46,12 @@ export interface BankOption {
   name: string;
 }
 
-type Section = "categories" | "banks" | "currencies";
+export interface AccountOption {
+  id: number;
+  label: string;
+}
+
+type Section = "categories" | "banks" | "currencies" | "accounts" | "date";
 
 interface Props {
   visible: boolean;
@@ -44,6 +59,7 @@ interface Props {
   filters: TransactionFilters;
   currencies: string[];
   banks: BankOption[];
+  accounts: AccountOption[];
   resultCount: number;
   onApply: (filters: TransactionFilters) => void;
   onClear: () => void;
@@ -55,6 +71,7 @@ export default function TransactionsFilterSheet({
   filters,
   currencies,
   banks,
+  accounts,
   resultCount,
   onApply,
   onClear,
@@ -104,13 +121,32 @@ export default function TransactionsFilterSheet({
     }));
   }
 
+  function toggleAccount(id: number) {
+    setDraft((prev) => ({
+      ...prev,
+      accountIds: prev.accountIds.includes(id)
+        ? prev.accountIds.filter((x) => x !== id)
+        : [...prev.accountIds, id],
+    }));
+  }
+
+  function selectDatePreset(preset: DatePreset) {
+    setDraft((prev) => ({ ...prev, dateFilter: { kind: "preset", preset } }));
+  }
+
   function handleApply() {
     onApply(draft);
     onClose();
   }
 
   function handleClear() {
-    const empty: TransactionFilters = { categories: [], currencies: [], bankIds: [] };
+    const empty: TransactionFilters = {
+      categories: [],
+      currencies: [],
+      bankIds: [],
+      accountIds: [],
+      dateFilter: DEFAULT_DATE_FILTER,
+    };
     setDraft(empty);
     onClear();
     onClose();
@@ -120,7 +156,10 @@ export default function TransactionsFilterSheet({
   function categoryLabel(): string {
     if (draft.categories.length === 0) return "All";
     if (draft.categories.length === 1) {
-      return categories.find((c) => c.slug === draft.categories[0])?.name ?? draft.categories[0];
+      return (
+        categories.find((c) => c.slug === draft.categories[0])?.name ??
+        draft.categories[0]
+      );
     }
     return `${draft.categories.length} selected`;
   }
@@ -139,6 +178,16 @@ export default function TransactionsFilterSheet({
     return `${draft.currencies.length} selected`;
   }
 
+  function accountLabel(): string {
+    if (draft.accountIds.length === 0) return "All";
+    if (draft.accountIds.length === 1) {
+      return (
+        accounts.find((a) => a.id === draft.accountIds[0])?.label ?? "1 account"
+      );
+    }
+    return `${draft.accountIds.length} accounts`;
+  }
+
   // ── Shared row renderer ─────────────────────────────────────────────────
   function DropdownSection({
     id,
@@ -155,9 +204,22 @@ export default function TransactionsFilterSheet({
   }) {
     const isOpen = openSection === id;
     return (
-      <View style={[styles.dropdown, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-        <Pressable onPress={() => toggleSection(id)} style={styles.dropdownHeader}>
-          <Text style={[styles.dropdownLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+      <View
+        style={[
+          styles.dropdown,
+          { borderColor: colors.border, backgroundColor: colors.surface },
+        ]}
+      >
+        <Pressable
+          onPress={() => toggleSection(id)}
+          style={styles.dropdownHeader}
+        >
+          <Text
+            style={[
+              styles.dropdownLabel,
+              { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+            ]}
+          >
             {label}
           </Text>
           <View style={styles.dropdownRight}>
@@ -182,7 +244,9 @@ export default function TransactionsFilterSheet({
         </Pressable>
 
         {isOpen && (
-          <View style={[styles.dropdownBody, { borderTopColor: colors.border }]}>
+          <View
+            style={[styles.dropdownBody, { borderTopColor: colors.border }]}
+          >
             {children}
           </View>
         )}
@@ -213,7 +277,12 @@ export default function TransactionsFilterSheet({
           handleColor={colors.borderStrong}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+            <Text
+              style={[
+                styles.title,
+                { color: colors.textPrimary, fontFamily: FONTS.bold },
+              ]}
+            >
               Filter
             </Text>
             <Pressable
@@ -238,8 +307,11 @@ export default function TransactionsFilterSheet({
             >
               {categories.map((cat, i) => {
                 const active = draft.categories.includes(cat.slug);
-                const tileColor = CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
-                const tileIcon = getCategoryIconName(cat.slug) as React.ComponentProps<typeof Ionicons>["name"];
+                const tileColor =
+                  CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
+                const tileIcon = getCategoryIconName(
+                  cat.slug,
+                ) as React.ComponentProps<typeof Ionicons>["name"];
                 const isLast = i === categories.length - 1;
                 return (
                   <Pressable
@@ -248,13 +320,22 @@ export default function TransactionsFilterSheet({
                     style={[
                       styles.listItem,
                       {
-                        backgroundColor: active ? tileColor + "12" : "transparent",
-                        borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+                        backgroundColor: active
+                          ? tileColor + "12"
+                          : "transparent",
+                        borderBottomWidth: isLast
+                          ? 0
+                          : StyleSheet.hairlineWidth,
                         borderBottomColor: colors.border,
                       },
                     ]}
                   >
-                    <View style={[styles.listItemIcon, { backgroundColor: tileColor + "22" }]}>
+                    <View
+                      style={[
+                        styles.listItemIcon,
+                        { backgroundColor: tileColor + "22" },
+                      ]}
+                    >
                       <Ionicons name={tileIcon} size={15} color={tileColor} />
                     </View>
                     <Text
@@ -268,7 +349,13 @@ export default function TransactionsFilterSheet({
                     >
                       {cat.name}
                     </Text>
-                    {active && <Ionicons name="checkmark-circle" size={17} color={tileColor} />}
+                    {active && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={17}
+                        color={tileColor}
+                      />
+                    )}
                   </Pressable>
                 );
               })}
@@ -292,14 +379,27 @@ export default function TransactionsFilterSheet({
                       style={[
                         styles.listItem,
                         {
-                          backgroundColor: active ? colors.primary + "12" : "transparent",
-                          borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+                          backgroundColor: active
+                            ? colors.primary + "12"
+                            : "transparent",
+                          borderBottomWidth: isLast
+                            ? 0
+                            : StyleSheet.hairlineWidth,
                           borderBottomColor: colors.border,
                         },
                       ]}
                     >
-                      <View style={[styles.listItemIcon, { backgroundColor: colors.primary + "18" }]}>
-                        <Ionicons name="business-outline" size={15} color={colors.primary} />
+                      <View
+                        style={[
+                          styles.listItemIcon,
+                          { backgroundColor: colors.primary + "18" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="business-outline"
+                          size={15}
+                          color={colors.primary}
+                        />
                       </View>
                       <Text
                         style={[
@@ -312,7 +412,13 @@ export default function TransactionsFilterSheet({
                       >
                         {bank.name}
                       </Text>
-                      {active && <Ionicons name="checkmark-circle" size={17} color={colors.primary} />}
+                      {active && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={17}
+                          color={colors.primary}
+                        />
+                      )}
                     </Pressable>
                   );
                 })}
@@ -337,14 +443,30 @@ export default function TransactionsFilterSheet({
                       style={[
                         styles.listItem,
                         {
-                          backgroundColor: active ? colors.primary + "12" : "transparent",
-                          borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+                          backgroundColor: active
+                            ? colors.primary + "12"
+                            : "transparent",
+                          borderBottomWidth: isLast
+                            ? 0
+                            : StyleSheet.hairlineWidth,
                           borderBottomColor: colors.border,
                         },
                       ]}
                     >
-                      <View style={[styles.listItemIcon, { backgroundColor: colors.primary + "18" }]}>
-                        <Text style={[styles.currencyCode, { color: colors.primary }]}>{code.slice(0, 2)}</Text>
+                      <View
+                        style={[
+                          styles.listItemIcon,
+                          { backgroundColor: colors.primary + "18" },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.currencyCode,
+                            { color: colors.primary },
+                          ]}
+                        >
+                          {code.slice(0, 2)}
+                        </Text>
                       </View>
                       <Text
                         style={[
@@ -357,28 +479,186 @@ export default function TransactionsFilterSheet({
                       >
                         {code}
                       </Text>
-                      {active && <Ionicons name="checkmark-circle" size={17} color={colors.primary} />}
+                      {active && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={17}
+                          color={colors.primary}
+                        />
+                      )}
                     </Pressable>
                   );
                 })}
               </DropdownSection>
             )}
+
+            {/* ── Account ──────────────────────────────── */}
+            {accounts.length > 0 && (
+              <DropdownSection
+                id="accounts"
+                label="Account"
+                valueText={accountLabel()}
+                hasSelection={draft.accountIds.length > 0}
+              >
+                {accounts.map((account, i) => {
+                  const active = draft.accountIds.includes(account.id);
+                  const isLast = i === accounts.length - 1;
+                  return (
+                    <Pressable
+                      key={account.id}
+                      onPress={() => toggleAccount(account.id)}
+                      style={[
+                        styles.listItem,
+                        {
+                          backgroundColor: active
+                            ? colors.primary + "12"
+                            : "transparent",
+                          borderBottomWidth: isLast
+                            ? 0
+                            : StyleSheet.hairlineWidth,
+                          borderBottomColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.listItemIcon,
+                          { backgroundColor: colors.primary + "18" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="wallet-outline"
+                          size={15}
+                          color={colors.primary}
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          styles.listItemName,
+                          {
+                            color: active ? colors.primary : colors.textPrimary,
+                            fontFamily: active ? FONTS.semiBold : FONTS.regular,
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {account.label}
+                      </Text>
+                      {active && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={17}
+                          color={colors.primary}
+                        />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </DropdownSection>
+            )}
+
+            {/* ── Date range ───────────────────────────── */}
+            <DropdownSection
+              id="date"
+              label="Date range"
+              valueText={dateFilterLabel(draft.dateFilter)}
+              hasSelection={
+                !(
+                  draft.dateFilter.kind === "preset" &&
+                  draft.dateFilter.preset === "all"
+                )
+              }
+            >
+              {DATE_PRESETS.map((preset, i) => {
+                const active =
+                  draft.dateFilter.kind === "preset" &&
+                  draft.dateFilter.preset === preset;
+                const isLast = i === DATE_PRESETS.length - 1;
+                return (
+                  <Pressable
+                    key={preset}
+                    onPress={() => selectDatePreset(preset)}
+                    style={[
+                      styles.listItem,
+                      {
+                        backgroundColor: active
+                          ? colors.primary + "12"
+                          : "transparent",
+                        borderBottomWidth: isLast
+                          ? 0
+                          : StyleSheet.hairlineWidth,
+                        borderBottomColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.listItemIcon,
+                        { backgroundColor: colors.primary + "18" },
+                      ]}
+                    >
+                      <Ionicons
+                        name="calendar-outline"
+                        size={14}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.listItemName,
+                        {
+                          color: active ? colors.primary : colors.textPrimary,
+                          fontFamily: active ? FONTS.semiBold : FONTS.regular,
+                        },
+                      ]}
+                    >
+                      {DATE_PRESET_LABELS[preset]}
+                    </Text>
+                    {active && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={17}
+                        color={colors.primary}
+                      />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </DropdownSection>
           </ScrollView>
 
           <View style={styles.actions}>
             <Pressable
               onPress={handleClear}
-              style={[styles.btn, styles.btnSecondary, { borderColor: colors.border }]}
+              style={[
+                styles.btn,
+                styles.btnSecondary,
+                { borderColor: colors.border },
+              ]}
             >
-              <Text style={[styles.btnText, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+              <Text
+                style={[
+                  styles.btnText,
+                  { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                ]}
+              >
                 Clear all
               </Text>
             </Pressable>
             <Pressable
               onPress={handleApply}
-              style={[styles.btn, styles.btnPrimary, { backgroundColor: colors.primary }]}
+              style={[
+                styles.btn,
+                styles.btnPrimary,
+                { backgroundColor: colors.primary },
+              ]}
             >
-              <Text style={[styles.btnText, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
+              <Text
+                style={[
+                  styles.btnText,
+                  { color: colors.onPrimary, fontFamily: FONTS.semiBold },
+                ]}
+              >
                 Show {resultCount} results
               </Text>
             </Pressable>
