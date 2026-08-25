@@ -6,13 +6,10 @@ import {
   Pressable,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import Toast from "react-native-toast-message";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import {
   FONTS,
@@ -21,10 +18,10 @@ import {
   RADIUS,
 } from "@/core/common/constants/theme";
 import { useAccounts } from "../hooks/use-accounts";
-import { useRescanTransfers } from "../hooks/use-rescan-transfers";
 import { Account } from "../accounts.interface";
 import AccountCard from "../components/account-card";
 import AccountActionsSheet from "../components/account-actions-sheet";
+import RescanTransfersSheet from "../components/rescan-transfers-sheet";
 import EmptyState from "@/core/common/components/EmptyState";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
@@ -32,9 +29,9 @@ export default function AccountsScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
   const { accounts, isLoading, refetch } = useAccounts();
-  const { rescan, isRescanning } = useRescanTransfers();
 
   const [selected, setSelected] = useState<Account | null>(null);
+  const [rescanSheetOpen, setRescanSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
@@ -45,35 +42,6 @@ export default function AccountsScreen() {
       setRefreshing(false);
     }
   }, [refetch]);
-
-  async function handleRescan() {
-    try {
-      const result = await rescan();
-      Toast.show({
-        type: "success",
-        text1:
-          result.linked > 0
-            ? `Found ${result.linked} transfer${result.linked === 1 ? "" : "s"}`
-            : "No new transfers found",
-        text2: `Checked ${result.scanned} transaction${result.scanned === 1 ? "" : "s"}`,
-      });
-      if (result.linked > 0) {
-        Alert.alert(
-          "Transfers found",
-          `We excluded ${result.linked} transaction${result.linked === 1 ? "" : "s"} from your totals. Want to review them now?`,
-          [
-            { text: "Later", style: "cancel" },
-            {
-              text: "Review now",
-              onPress: () => navigation.navigate("ReviewTransfers"),
-            },
-          ],
-        );
-      }
-    } catch {
-      Toast.show({ type: "error", text1: "Could not re-scan transactions" });
-    }
-  }
 
   return (
     <SafeAreaView
@@ -111,15 +79,10 @@ export default function AccountsScreen() {
       >
         <View style={styles.actionsRow}>
           <Pressable
-            onPress={handleRescan}
-            disabled={isRescanning}
+            onPress={() => setRescanSheetOpen(true)}
             style={styles.rescanRow}
           >
-            {isRescanning ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <Ionicons name="sync-outline" size={16} color={colors.primary} />
-            )}
+            <Ionicons name="sync-outline" size={16} color={colors.primary} />
             <Text
               style={[
                 styles.rescanText,
@@ -188,6 +151,12 @@ export default function AccountsScreen() {
           otherAccounts={accounts.filter((a) => a.id !== selected.id)}
         />
       )}
+
+      <RescanTransfersSheet
+        visible={rescanSheetOpen}
+        onClose={() => setRescanSheetOpen(false)}
+        onReview={() => navigation.navigate("ReviewTransfers")}
+      />
     </SafeAreaView>
   );
 }
