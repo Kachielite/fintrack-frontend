@@ -35,7 +35,6 @@ import ProfileScreen from "@/features/user/screens/profile.screen";
 import TransactionDetailScreen from "@/features/transactions/screens/transaction-detail.screen";
 import AccountsScreen from "@/features/accounts/screens/accounts.screen";
 import ReviewTransfersScreen from "@/features/transactions/screens/review-transfers.screen";
-import CalendarScreen from "@/features/transactions/screens/calendar.screen";
 import CorrectTransactionScreen from "@/features/transactions/screens/correct-transaction.screen";
 import BudgetDetailScreen from "@/features/budgets/screens/budget-detail.screen";
 import AddBudgetScreen from "@/features/budgets/screens/add-budget.screen";
@@ -63,7 +62,6 @@ export type RootStackParamList = {
   CorrectTransaction: { transactionId: number };
   Accounts: undefined;
   ReviewTransfers: undefined;
-  Calendar: undefined;
   BudgetDetail: { budgetId: number };
   AddBudget: undefined;
   EditBudget: { budgetId: number };
@@ -329,11 +327,6 @@ function MainStack() {
       <Stack.Screen
         name="ReviewTransfers"
         component={ReviewTransfersScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Calendar"
-        component={CalendarScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

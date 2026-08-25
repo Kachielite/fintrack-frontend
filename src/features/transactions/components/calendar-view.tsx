@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   startOfMonth,
@@ -26,7 +24,7 @@ import {
 import { formatCurrency } from "@/core/common/utils/currency";
 import { useDailySpend } from "../hooks/use-daily-spend";
 import { useUserStore } from "@/features/user/user.state";
-import DayTransactionsSheet from "../components/day-transactions-sheet";
+import DayTransactionsSheet from "./day-transactions-sheet";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -67,9 +65,8 @@ function cellTint(
   return successColor + toHexAlpha(alpha);
 }
 
-export default function CalendarScreen() {
+export default function CalendarView() {
   const colors = useThemeColors();
-  const navigation = useNavigation<any>();
   const refCurrency = useUserStore((s) => s.profile?.refCurrency ?? "NGN");
 
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
@@ -127,28 +124,7 @@ export default function CalendarScreen() {
   const selectedNet = selected ? selected.income - selected.spend : 0;
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={["top"]}
-    >
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          hitSlop={12}
-          style={[styles.iconBtn, { backgroundColor: colors.surface }]}
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
-        </Pressable>
-        <Text
-          style={[
-            styles.title,
-            { color: colors.textPrimary, fontFamily: FONTS.bold },
-          ]}
-        >
-          Calendar
-        </Text>
-      </View>
-
+    <>
       <View style={styles.monthNav}>
         <Pressable
           onPress={() => {
@@ -481,21 +457,11 @@ export default function CalendarScreen() {
           onClose={() => setDetailOpen(false)}
         />
       )}
-    </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.base,
-    paddingTop: SPACING.base,
-    paddingBottom: SPACING.md,
-    gap: SPACING.xs,
-  },
-  title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   iconBtn: {
     width: 36,
     height: 36,

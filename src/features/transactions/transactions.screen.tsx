@@ -1,15 +1,17 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { useTransactionsInfinite } from "./hooks/use-transactions-infinite";
 import { Transaction } from "./transactions.interface";
 import { useAccounts } from "@/features/accounts/hooks/use-accounts";
 import { resolveDateRange, DEFAULT_DATE_FILTER } from "./utils/date-filter";
-import TransactionsHeader from "./components/transactions-header";
+import TransactionsHeader, {
+  TransactionsViewMode,
+} from "./components/transactions-header";
 import TransactionsSearchBar from "./components/transactions-search-bar";
 import TransactionsFeed from "./components/transactions-feed";
+import CalendarView from "./components/calendar-view";
 import TransactionsFilterSheet, {
   TransactionFilters,
   BankOption,
@@ -27,9 +29,9 @@ const EMPTY_FILTERS: TransactionFilters = {
 
 export default function TransactionsScreen() {
   const colors = useThemeColors();
-  const navigation = useNavigation<any>();
 
   // ── State ────────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<TransactionsViewMode>("list");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<TransactionFilters>(EMPTY_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -136,46 +138,50 @@ export default function TransactionsScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
-      <TransactionsHeader
-        onCalendarPress={() => navigation.navigate("Calendar")}
-      />
+      <TransactionsHeader viewMode={viewMode} onViewModeChange={setViewMode} />
 
-      <TransactionsSearchBar
-        value={search}
-        onChangeText={setSearch}
-        filterCount={filterCount}
-        onFilterPress={() => setFilterSheetOpen(true)}
-      />
+      {viewMode === "calendar" ? (
+        <CalendarView />
+      ) : (
+        <>
+          <TransactionsSearchBar
+            value={search}
+            onChangeText={setSearch}
+            filterCount={filterCount}
+            onFilterPress={() => setFilterSheetOpen(true)}
+          />
 
-      <TransactionsFeed
-        transactions={filteredTransactions}
-        isLoading={isLoading}
-        isFetchingMore={isFetchingNextPage}
-        hasNextPage={hasNextPage ?? false}
-        onEndReached={handleEndReached}
-        onPressTx={setSelectedTx}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-      />
+          <TransactionsFeed
+            transactions={filteredTransactions}
+            isLoading={isLoading}
+            isFetchingMore={isFetchingNextPage}
+            hasNextPage={hasNextPage ?? false}
+            onEndReached={handleEndReached}
+            onPressTx={setSelectedTx}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+          />
 
-      <TransactionsFilterSheet
-        visible={filterSheetOpen}
-        onClose={() => setFilterSheetOpen(false)}
-        filters={filters}
-        currencies={availableCurrencies}
-        banks={availableBanks}
-        accounts={availableAccounts}
-        resultCount={filteredTransactions.length}
-        onApply={handleApplyFilters}
-        onClear={handleClearFilters}
-      />
+          <TransactionsFilterSheet
+            visible={filterSheetOpen}
+            onClose={() => setFilterSheetOpen(false)}
+            filters={filters}
+            currencies={availableCurrencies}
+            banks={availableBanks}
+            accounts={availableAccounts}
+            resultCount={filteredTransactions.length}
+            onApply={handleApplyFilters}
+            onClear={handleClearFilters}
+          />
 
-      {selectedTx && (
-        <TransactionDetailSheet
-          visible={!!selectedTx}
-          onClose={() => setSelectedTx(null)}
-          transaction={selectedTx}
-        />
+          {selectedTx && (
+            <TransactionDetailSheet
+              visible={!!selectedTx}
+              onClose={() => setSelectedTx(null)}
+              transaction={selectedTx}
+            />
+          )}
+        </>
       )}
     </SafeAreaView>
   );
