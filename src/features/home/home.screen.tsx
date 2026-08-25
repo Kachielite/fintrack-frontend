@@ -7,8 +7,10 @@ import { useProfile } from "@/features/user/hooks/use-profile";
 import { useTransactionSummary } from "@/features/transactions/hooks/use-transaction-summary";
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 import { useInsights } from "@/features/insights/hooks/use-insights";
+import { useAccounts } from "@/features/accounts/hooks/use-accounts";
 import HomeHeader from "./components/home-header";
 import SpendingOverviewCard from "./components/spending-overview-card";
+import AccountsSummaryCard from "./components/accounts-summary-card";
 import CategoryBreakdownCard from "./components/category-breakdown-card";
 import IrisInsightCard from "./components/iris-insight-card";
 import RecentTransactionsCard from "./components/recent-transactions-card";
@@ -24,6 +26,7 @@ export default function HomeScreen() {
   const { summary, isLoading: summaryLoading, refetch: refetchSummary } = useTransactionSummary(year, month);
   const { transactions, isLoading: txLoading, refetch: refetchTx } = useTransactions({ limit: 8 });
   const { insights, isLoading: insightsLoading, refetch: refetchInsights } = useInsights();
+  const { accounts, isLoading: accountsLoading, refetch: refetchAccounts } = useAccounts();
 
   const latestInsight = insights.find((i) => !i.isRead) ?? insights[0];
 
@@ -32,11 +35,11 @@ export default function HomeScreen() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchSummary(), refetchTx(), refetchInsights()]);
+      await Promise.all([refetchSummary(), refetchTx(), refetchInsights(), refetchAccounts()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refetchSummary, refetchTx, refetchInsights]);
+  }, [refetchSummary, refetchTx, refetchInsights, refetchAccounts]);
 
   return (
     <SafeAreaView
@@ -59,6 +62,7 @@ export default function HomeScreen() {
       >
         <View style={styles.content}>
           <SpendingOverviewCard summary={summary} isLoading={summaryLoading} />
+          <AccountsSummaryCard accounts={accounts} isLoading={accountsLoading} />
           <CategoryBreakdownCard summary={summary} isLoading={summaryLoading} />
           <IrisInsightCard
             insight={latestInsight}

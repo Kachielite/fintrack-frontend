@@ -33,6 +33,7 @@ import BudgetScreen from "@/features/budgets/budgets.screen";
 import ProfileScreen from "@/features/user/screens/profile.screen";
 // Main stack screens
 import TransactionDetailScreen from "@/features/transactions/screens/transaction-detail.screen";
+import AccountsScreen from "@/features/accounts/screens/accounts.screen";
 import CorrectTransactionScreen from "@/features/transactions/screens/correct-transaction.screen";
 import BudgetDetailScreen from "@/features/budgets/screens/budget-detail.screen";
 import AddBudgetScreen from "@/features/budgets/screens/add-budget.screen";
@@ -58,6 +59,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   TransactionDetail: { transactionId: number };
   CorrectTransaction: { transactionId: number };
+  Accounts: undefined;
   BudgetDetail: { budgetId: number };
   AddBudget: undefined;
   EditBudget: { budgetId: number };
@@ -312,6 +314,11 @@ function MainStack() {
         name="CorrectTransaction"
         component={CorrectTransactionScreen}
         options={modalOptions}
+      />
+      <Stack.Screen
+        name="Accounts"
+        component={AccountsScreen}
+        options={{ title: "Accounts" }}
       />
       <Stack.Screen
         name="BudgetDetail"

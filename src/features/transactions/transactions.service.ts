@@ -82,4 +82,26 @@ export const TransactionService = {
     );
     return data;
   },
+
+  async markTransfer(id: number, linkedTransactionId?: number): Promise<Transaction> {
+    const { data } = await apiClient.post<TransactionDto>(
+      API_ENDPOINTS.TRANSACTION_MARK_TRANSFER(id),
+      linkedTransactionId != null ? { linked_transaction_id: linkedTransactionId } : {},
+    );
+    return mapTransactionFromDto(data);
+  },
+
+  async unmarkTransfer(id: number): Promise<Transaction> {
+    const { data } = await apiClient.post<TransactionDto>(
+      API_ENDPOINTS.TRANSACTION_UNMARK_TRANSFER(id),
+    );
+    return mapTransactionFromDto(data);
+  },
+
+  async getLinkedTransaction(id: number): Promise<Transaction | null> {
+    const { data } = await apiClient.get<TransactionDto | null>(
+      API_ENDPOINTS.TRANSACTION_LINKED_TRANSACTION(id),
+    );
+    return data ? mapTransactionFromDto(data) : null;
+  },
 };

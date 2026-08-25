@@ -32,6 +32,14 @@ export const API_ENDPOINTS = {
   TRANSACTIONS_UNVERIFIED: "/transactions/unverified",
   TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
   TRANSACTIONS_BULK_CATEGORY: "/transactions/bulk-category",
+  TRANSACTION_MARK_TRANSFER: (id: number) => `/transactions/${id}/mark-transfer`,
+  TRANSACTION_UNMARK_TRANSFER: (id: number) => `/transactions/${id}/unmark-transfer`,
+  TRANSACTION_LINKED_TRANSACTION: (id: number) => `/transactions/${id}/linked-transaction`,
+
+  // Accounts
+  ACCOUNTS: "/accounts",
+  ACCOUNT_DETAIL: (id: number) => `/accounts/${id}`,
+  ACCOUNTS_RESCAN_TRANSFERS: "/accounts/rescan-transfers",
 
   // Exchange rates
   EXCHANGE_RATES: "/exchange-rates",

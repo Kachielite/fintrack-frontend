@@ -5,6 +5,8 @@ export const QUERY_KEYS = {
   TRANSACTION_DETAIL: "transaction-detail",
   TRANSACTION_SUMMARY: "transaction-summary",
   UNVERIFIED_TRANSACTIONS: "unverified-transactions",
+  LINKED_TRANSACTION: "linked-transaction",
+  ACCOUNTS: "accounts",
   BUDGETS: "budgets",
   BUDGET_DETAIL: "budget-detail",
   BUDGET_SUGGESTIONS: "budget-suggestions",

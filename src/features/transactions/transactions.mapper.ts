@@ -22,6 +22,8 @@ export function mapTransactionFromDto(dto: TransactionDto): Transaction {
     bankId: dto.bankId,
     bankName: dto.bankName,
     bankShortCode: dto.bankShortCode,
+    accountId: dto.accountId,
+    excludeFromTotals: dto.excludeFromTotals,
     reference: dto.reference,
     balance: dto.balance,
     originalMerchant: dto.originalMerchant,
