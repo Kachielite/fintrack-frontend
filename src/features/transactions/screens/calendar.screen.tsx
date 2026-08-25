@@ -12,6 +12,7 @@ import {
   addMonths,
   subMonths,
   isSameMonth,
+  isSameDay,
   isToday as isTodayFn,
   format,
 } from "date-fns";
@@ -29,11 +30,13 @@ import DayTransactionsSheet from "../components/day-transactions-sheet";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
-const CELL_MIN_ALPHA = 24; // 0x18 — faintest visible tint
-const CELL_MAX_ALPHA = 224; // 0xE0 — near-solid
 
-function toHexAlpha(value: number): string {
-  return Math.round(value).toString(16).padStart(2, "0");
+/** Compact form for cell display — "820", "12.5k" — full amounts show in the summary card. */
+function compactAmount(n: number): string {
+  if (n <= 0) return "";
+  if (n < 1000) return Math.round(n).toString();
+  const k = n / 1000;
+  return `${Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)}k`;
 }
 
 export default function CalendarScreen() {
@@ -43,24 +46,28 @@ export default function CalendarScreen() {
 
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth() + 1;
   const { dailySpend, isLoading } = useDailySpend(year, month);
 
-  const spendByDate = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const p of dailySpend) map.set(p.date, p.spend);
+  const dataByDate = useMemo(() => {
+    const map = new Map<string, { spend: number; income: number }>();
+    for (const p of dailySpend)
+      map.set(p.date, { spend: p.spend, income: p.income });
     return map;
   }, [dailySpend]);
 
-  const maxSpend = useMemo(
-    () => dailySpend.reduce((max, p) => Math.max(max, p.spend), 0),
-    [dailySpend],
-  );
-
-  const monthTotal = useMemo(
-    () => dailySpend.reduce((sum, p) => sum + p.spend, 0),
+  const monthTotals = useMemo(
+    () =>
+      dailySpend.reduce(
+        (acc, p) => ({
+          spend: acc.spend + p.spend,
+          income: acc.income + p.income,
+        }),
+        { spend: 0, income: 0 },
+      ),
     [dailySpend],
   );
 
@@ -70,14 +77,17 @@ export default function CalendarScreen() {
     return eachDayOfInterval({ start, end });
   }, [cursor]);
 
-  function cellColor(day: Date): string | undefined {
-    const key = format(day, "yyyy-MM-dd");
-    const spend = spendByDate.get(key);
-    if (!spend || spend <= 0 || maxSpend <= 0) return undefined;
-    const alpha =
-      CELL_MIN_ALPHA + (spend / maxSpend) * (CELL_MAX_ALPHA - CELL_MIN_ALPHA);
-    return colors.primary + toHexAlpha(alpha);
+  function dayData(day: Date): { spend: number; income: number } {
+    return dataByDate.get(format(day, "yyyy-MM-dd")) ?? { spend: 0, income: 0 };
   }
+
+  function selectDay(day: Date) {
+    setSelectedDay(day);
+    setDetailOpen(false);
+  }
+
+  const selected = selectedDay ? dayData(selectedDay) : null;
+  const selectedNet = selected ? selected.income - selected.spend : 0;
 
   return (
     <SafeAreaView
@@ -104,7 +114,10 @@ export default function CalendarScreen() {
 
       <View style={styles.monthNav}>
         <Pressable
-          onPress={() => setCursor((c) => subMonths(c, 1))}
+          onPress={() => {
+            setCursor((c) => subMonths(c, 1));
+            setSelectedDay(null);
+          }}
           hitSlop={12}
           style={[styles.iconBtn, { backgroundColor: colors.surface }]}
         >
@@ -123,7 +136,10 @@ export default function CalendarScreen() {
           {format(cursor, "MMMM yyyy")}
         </Text>
         <Pressable
-          onPress={() => setCursor((c) => addMonths(c, 1))}
+          onPress={() => {
+            setCursor((c) => addMonths(c, 1));
+            setSelectedDay(null);
+          }}
           hitSlop={12}
           style={[styles.iconBtn, { backgroundColor: colors.surface }]}
         >
@@ -140,7 +156,7 @@ export default function CalendarScreen() {
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
-          <SkeletonBox width="100%" height={280} radius={RADIUS.lg} />
+          <SkeletonBox width="100%" height={340} radius={RADIUS.lg} />
         ) : (
           <>
             <View style={styles.weekdayRow}>
@@ -162,42 +178,198 @@ export default function CalendarScreen() {
               {gridDays.map((day) => {
                 const inMonth = isSameMonth(day, cursor);
                 const today = isTodayFn(day);
-                const bg = inMonth ? cellColor(day) : undefined;
+                const isSelected = !!selectedDay && isSameDay(day, selectedDay);
+                const { spend, income } = inMonth
+                  ? dayData(day)
+                  : { spend: 0, income: 0 };
+
                 return (
                   <View key={day.toISOString()} style={styles.cellWrap}>
                     <Pressable
-                      onPress={() => inMonth && setSelectedDay(day)}
+                      onPress={() => inMonth && selectDay(day)}
                       disabled={!inMonth}
                       style={[
                         styles.cell,
-                        { backgroundColor: bg ?? "transparent" },
+                        {
+                          backgroundColor: isSelected
+                            ? colors.primaryMid
+                            : colors.surface2,
+                        },
                         today && {
                           borderWidth: 1.5,
                           borderColor: colors.primary,
                         },
+                        !inMonth && { backgroundColor: "transparent" },
                       ]}
                     >
                       <Text
                         style={[
-                          styles.cellText,
+                          styles.dayNumber,
                           {
                             color: !inMonth
                               ? colors.textSubtle
                               : today
                                 ? colors.primary
                                 : colors.textPrimary,
-                            fontFamily: today ? FONTS.bold : FONTS.regular,
+                            fontFamily:
+                              today || isSelected ? FONTS.bold : FONTS.semiBold,
                             opacity: inMonth ? 1 : 0.3,
                           },
                         ]}
                       >
                         {format(day, "d")}
                       </Text>
+                      <Text
+                        style={[
+                          styles.cellAmount,
+                          { color: colors.error, fontFamily: FONTS.mono },
+                        ]}
+                      >
+                        {compactAmount(spend)}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.cellAmount,
+                          { color: colors.success, fontFamily: FONTS.mono },
+                        ]}
+                      >
+                        {compactAmount(income)}
+                      </Text>
                     </Pressable>
                   </View>
                 );
               })}
             </View>
+
+            {selectedDay && selected && (
+              <View
+                style={[
+                  styles.daySummaryCard,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View style={styles.daySummaryHeader}>
+                  <Text
+                    style={[
+                      styles.daySummaryDate,
+                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
+                    {format(selectedDay, "EEEE, d MMMM")}
+                  </Text>
+                  <Pressable
+                    onPress={() => setSelectedDay(null)}
+                    hitSlop={12}
+                    style={[
+                      styles.closeBtn,
+                      { backgroundColor: colors.surface2 },
+                    ]}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={16}
+                      color={colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+
+                <View style={styles.daySummaryStatsRow}>
+                  <View style={styles.daySummaryStat}>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        {
+                          color: colors.textSubtle,
+                          fontFamily: FONTS.semiBold,
+                        },
+                      ]}
+                    >
+                      SPEND
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statValue,
+                        { color: colors.error, fontFamily: FONTS.mono },
+                      ]}
+                    >
+                      {formatCurrency(selected.spend, refCurrency)}
+                    </Text>
+                  </View>
+                  <View style={styles.daySummaryStat}>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        {
+                          color: colors.textSubtle,
+                          fontFamily: FONTS.semiBold,
+                        },
+                      ]}
+                    >
+                      INCOME
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statValue,
+                        { color: colors.success, fontFamily: FONTS.mono },
+                      ]}
+                    >
+                      {formatCurrency(selected.income, refCurrency)}
+                    </Text>
+                  </View>
+                  <View style={styles.daySummaryStat}>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        {
+                          color: colors.textSubtle,
+                          fontFamily: FONTS.semiBold,
+                        },
+                      ]}
+                    >
+                      NET
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statValue,
+                        {
+                          color:
+                            selectedNet >= 0 ? colors.success : colors.error,
+                          fontFamily: FONTS.mono,
+                        },
+                      ]}
+                    >
+                      {selectedNet >= 0 ? "+" : "-"}
+                      {formatCurrency(Math.abs(selectedNet), refCurrency)}
+                    </Text>
+                  </View>
+                </View>
+
+                <Pressable
+                  onPress={() => setDetailOpen(true)}
+                  style={[
+                    styles.viewDetailsBtn,
+                    { borderColor: colors.border },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.viewDetailsText,
+                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
+                    View transactions
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={15}
+                    color={colors.textSubtle}
+                  />
+                </Pressable>
+              </View>
+            )}
 
             <View
               style={[
@@ -211,25 +383,55 @@ export default function CalendarScreen() {
                   { color: colors.textSubtle, fontFamily: FONTS.semiBold },
                 ]}
               >
-                TOTAL SPEND — {format(cursor, "MMMM")}
+                TOTAL — {format(cursor, "MMMM")}
               </Text>
-              <Text
-                style={[
-                  styles.totalValue,
-                  { color: colors.textPrimary, fontFamily: FONTS.mono },
-                ]}
-              >
-                {formatCurrency(monthTotal, refCurrency)}
-              </Text>
+              <View style={styles.totalRow}>
+                <View style={styles.totalStat}>
+                  <Text
+                    style={[
+                      styles.totalStatLabel,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
+                    Spend
+                  </Text>
+                  <Text
+                    style={[
+                      styles.totalValue,
+                      { color: colors.error, fontFamily: FONTS.mono },
+                    ]}
+                  >
+                    {formatCurrency(monthTotals.spend, refCurrency)}
+                  </Text>
+                </View>
+                <View style={styles.totalStat}>
+                  <Text
+                    style={[
+                      styles.totalStatLabel,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
+                    Income
+                  </Text>
+                  <Text
+                    style={[
+                      styles.totalValue,
+                      { color: colors.success, fontFamily: FONTS.mono },
+                    ]}
+                  >
+                    {formatCurrency(monthTotals.income, refCurrency)}
+                  </Text>
+                </View>
+              </View>
             </View>
           </>
         )}
       </ScrollView>
 
-      {selectedDay && (
+      {detailOpen && selectedDay && (
         <DayTransactionsSheet
           date={selectedDay}
-          onClose={() => setSelectedDay(null)}
+          onClose={() => setDetailOpen(false)}
         />
       )}
     </SafeAreaView>
@@ -273,23 +475,61 @@ const styles = StyleSheet.create({
     width: "14.2857%",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 2,
   },
   weekdayLabel: { fontSize: 11 },
   cell: {
-    width: 36,
-    height: 36,
+    width: "100%",
+    minHeight: 56,
     borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 5,
+    gap: 1,
   },
-  cellText: { fontSize: 13 },
+  dayNumber: { fontSize: 13 },
+  cellAmount: { fontSize: 9, lineHeight: 11 },
+  daySummaryCard: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    padding: SPACING.base,
+    gap: SPACING.sm,
+  },
+  daySummaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  daySummaryDate: { fontSize: FONT_SIZE.bodySmall, letterSpacing: -0.2 },
+  closeBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 99,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  daySummaryStatsRow: { flexDirection: "row" },
+  daySummaryStat: { flex: 1, gap: 2 },
+  statLabel: { fontSize: 10, letterSpacing: 0.4 },
+  statValue: { fontSize: 14, letterSpacing: -0.2 },
+  viewDetailsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: SPACING.sm,
+  },
+  viewDetailsText: { fontSize: 13 },
   totalCard: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: SPACING.base,
-    gap: 4,
+    gap: SPACING.sm,
   },
   totalLabel: { fontSize: 11, letterSpacing: 0.6 },
-  totalValue: { fontSize: FONT_SIZE.h2, letterSpacing: -0.4 },
+  totalRow: { flexDirection: "row", gap: SPACING.lg },
+  totalStat: { gap: 2 },
+  totalStatLabel: { fontSize: 12 },
+  totalValue: { fontSize: FONT_SIZE.h3, letterSpacing: -0.3 },
 });
