@@ -44,7 +44,7 @@ import {
 
 /** Friendly, best-effort label for the account a transaction belongs to (e.g. "Access Bank (USD)"). */
 function accountLabel(t: Transaction): string {
-  return t.bankName ? `${t.bankName} (${t.currency})` : `your ${t.currency} account`;
+  return t.bankName ? `your ${t.bankName} (${t.currency})` : `your ${t.currency} account`;
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -320,10 +320,8 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 </View>
                 <Text style={[styles.transferBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
                   {linkedTransaction
-                    ? transaction.currency !== linkedTransaction.currency
-                      ? `This looks like it was converted from ${accountLabel(transaction)} to ${accountLabel(linkedTransaction)} — not counted as spend or income.`
-                      : `This looks like a transfer to ${accountLabel(linkedTransaction)} — not counted as spend or income.`
-                    : "This looks like money moving between your own accounts, not spend or income — but we couldn't find the other side of it."}
+                    ? `This looks like a transfer to ${accountLabel(linkedTransaction)} and won't be counted as spend or income.`
+                    : "This looks like a transfer between your own accounts, and won't be counted as spend or income, but we couldn't find the other side of it."}
                 </Text>
                 {linkedTransaction && (
                   <View style={[styles.linkedRow, { borderColor: colors.border }]}>
@@ -350,7 +348,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                       ]}
                     >
                       <Text style={[styles.transferChoiceTextOn, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
-                        Yes, it&apos;s a transfer
+                        Yes it is
                       </Text>
                     </Pressable>
                     <Pressable
@@ -362,7 +360,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                       ]}
                     >
                       <Text style={[styles.transferChoiceText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
-                        No — count it
+                        No, count it
                       </Text>
                     </Pressable>
                   </View>
