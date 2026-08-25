@@ -90,7 +90,6 @@ const modalOptions = {
   animationDuration: 50,
 };
 
-
 // ─── Cross-platform tab bar (Android + older iOS) ─────────────────────────────
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
@@ -141,7 +140,10 @@ function TabsCrossPlatform() {
   // Using a custom bar avoids platform-specific overlays applied by the default bar.
   function MyTabBar({ state, _descriptors, navigation }: any) {
     return (
-      <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
+      <SafeAreaView
+        edges={["bottom"]}
+        style={{ backgroundColor: colors.surface }}
+      >
         <View
           style={{
             flexDirection: "row",
@@ -320,12 +322,12 @@ function MainStack() {
       <Stack.Screen
         name="Accounts"
         component={AccountsScreen}
-        options={{ title: "Accounts" }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ReviewTransfers"
         component={ReviewTransfersScreen}
-        options={{ title: "Review Transfers" }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="BudgetDetail"

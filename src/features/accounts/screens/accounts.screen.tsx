@@ -63,7 +63,10 @@ export default function AccountsScreen() {
           `We excluded ${result.linked} transaction${result.linked === 1 ? "" : "s"} from your totals. Want to review them now?`,
           [
             { text: "Later", style: "cancel" },
-            { text: "Review now", onPress: () => navigation.navigate("ReviewTransfers") },
+            {
+              text: "Review now",
+              onPress: () => navigation.navigate("ReviewTransfers"),
+            },
           ],
         );
       }
@@ -75,8 +78,26 @@ export default function AccountsScreen() {
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
+      edges={["top"]}
     >
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        </Pressable>
+        <Text
+          style={[
+            styles.title,
+            { color: colors.textPrimary, fontFamily: FONTS.bold },
+          ]}
+        >
+          Accounts
+        </Text>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -113,7 +134,11 @@ export default function AccountsScreen() {
             onPress={() => navigation.navigate("ReviewTransfers")}
             style={styles.rescanRow}
           >
-            <Ionicons name="swap-horizontal-outline" size={16} color={colors.textSecondary} />
+            <Ionicons
+              name="swap-horizontal-outline"
+              size={16}
+              color={colors.textSecondary}
+            />
             <Text
               style={[
                 styles.rescanText,
@@ -169,6 +194,23 @@ export default function AccountsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: SPACING.base,
+    paddingTop: SPACING.base,
+    paddingBottom: SPACING.md,
+    gap: SPACING.xs,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 2,
+  },
+  title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: SPACING.base,

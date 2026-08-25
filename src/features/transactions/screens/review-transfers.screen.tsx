@@ -3,12 +3,20 @@ import {
   ScrollView,
   View,
   Text,
+  Pressable,
   StyleSheet,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
-import { FONTS, SPACING, RADIUS } from "@/core/common/constants/theme";
+import {
+  FONTS,
+  FONT_SIZE,
+  SPACING,
+  RADIUS,
+} from "@/core/common/constants/theme";
 import { useTransfersToReview } from "../hooks/use-transfers-to-review";
 import { Transaction } from "../transactions.interface";
 import TransactionRow from "@/core/common/components/TransactionRow";
@@ -19,6 +27,7 @@ import TransactionDetailSheet from "../components/transaction-detail-sheet";
 
 export default function ReviewTransfersScreen() {
   const colors = useThemeColors();
+  const navigation = useNavigation<any>();
   const { transfers, isLoading, refetch } = useTransfersToReview();
   const [selected, setSelected] = useState<Transaction | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,8 +44,26 @@ export default function ReviewTransfersScreen() {
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
+      edges={["top"]}
     >
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        </Pressable>
+        <Text
+          style={[
+            styles.title,
+            { color: colors.textPrimary, fontFamily: FONTS.bold },
+          ]}
+        >
+          Review Transfers
+        </Text>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -112,6 +139,23 @@ export default function ReviewTransfersScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: SPACING.base,
+    paddingTop: SPACING.base,
+    paddingBottom: SPACING.md,
+    gap: SPACING.xs,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 2,
+  },
+  title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: SPACING.base,
