@@ -64,6 +64,26 @@ export default function AccountsScreen() {
         >
           Accounts
         </Text>
+        <Pressable
+          onPress={() => setRescanSheetOpen(true)}
+          hitSlop={12}
+          accessibilityLabel="Re-scan for transfers"
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons name="sync-outline" size={19} color={colors.textPrimary} />
+        </Pressable>
+        <Pressable
+          onPress={() => navigation.navigate("ReviewTransfers")}
+          hitSlop={12}
+          accessibilityLabel="Review transfers"
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons
+            name="swap-horizontal-outline"
+            size={19}
+            color={colors.textPrimary}
+          />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -77,42 +97,6 @@ export default function AccountsScreen() {
           />
         }
       >
-        <View style={styles.actionsRow}>
-          <Pressable
-            onPress={() => setRescanSheetOpen(true)}
-            style={styles.rescanRow}
-          >
-            <Ionicons name="sync-outline" size={16} color={colors.primary} />
-            <Text
-              style={[
-                styles.rescanText,
-                { color: colors.primary, fontFamily: FONTS.semiBold },
-              ]}
-            >
-              Re-scan for transfers
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => navigation.navigate("ReviewTransfers")}
-            style={styles.rescanRow}
-          >
-            <Ionicons
-              name="swap-horizontal-outline"
-              size={16}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[
-                styles.rescanText,
-                { color: colors.textSecondary, fontFamily: FONTS.semiBold },
-              ]}
-            >
-              Review transfers
-            </Text>
-          </Pressable>
-        </View>
-
         {isLoading ? (
           <View style={{ gap: SPACING.sm }}>
             {[0, 1, 2].map((i) => (
@@ -177,9 +161,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 2,
   },
-  title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
+  title: { flex: 1, fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: SPACING.base,
@@ -187,17 +170,4 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxl,
     gap: SPACING.base,
   },
-  actionsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.lg,
-  },
-  rescanRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.xs,
-    alignSelf: "flex-start",
-    paddingVertical: SPACING.xs,
-  },
-  rescanText: { fontSize: 13 },
 });
