@@ -18,6 +18,7 @@ export const QUERY_KEYS = {
   EMAIL_CONNECTION_DETAIL: "email-connection-detail",
   GMAIL_AUTH_URL: "gmail-auth-url",
   CHART_DATA: "chart-data",
+  DAILY_SPEND: "daily-spend",
   CATEGORIES: "categories",
   IRIS_SESSIONS: "iris-sessions",
   IRIS_MESSAGES: "iris-messages",

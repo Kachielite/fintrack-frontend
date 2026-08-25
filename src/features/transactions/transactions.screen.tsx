@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { useTransactionsInfinite } from "./hooks/use-transactions-infinite";
 import { Transaction } from "./transactions.interface";
@@ -26,6 +27,7 @@ const EMPTY_FILTERS: TransactionFilters = {
 
 export default function TransactionsScreen() {
   const colors = useThemeColors();
+  const navigation = useNavigation<any>();
 
   // ── State ────────────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -134,7 +136,9 @@ export default function TransactionsScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
-      <TransactionsHeader />
+      <TransactionsHeader
+        onCalendarPress={() => navigation.navigate("Calendar")}
+      />
 
       <TransactionsSearchBar
         value={search}

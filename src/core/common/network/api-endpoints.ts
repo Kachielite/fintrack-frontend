@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   TRANSACTIONS_SUMMARY: "/transactions/summary",
   TRANSACTIONS_UNVERIFIED: "/transactions/unverified",
   TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
+  TRANSACTIONS_DAILY_SPEND: "/transactions/daily-spend",
   TRANSACTIONS_BULK_CATEGORY: "/transactions/bulk-category",
   TRANSACTION_MARK_TRANSFER: (id: number) => `/transactions/${id}/mark-transfer`,
   TRANSACTION_UNMARK_TRANSFER: (id: number) => `/transactions/${id}/unmark-transfer`,
