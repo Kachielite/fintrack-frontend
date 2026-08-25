@@ -40,7 +40,6 @@ import CorrectTransactionScreen from "@/features/transactions/screens/correct-tr
 import BudgetDetailScreen from "@/features/budgets/screens/budget-detail.screen";
 import AddBudgetScreen from "@/features/budgets/screens/add-budget.screen";
 import EditBudgetScreen from "@/features/budgets/screens/edit-budget.screen";
-import BudgetSuggestionsScreen from "@/features/budgets/screens/budget-suggestions.screen";
 import GoalsScreen from "@/features/goals/screens/goals.screen";
 import GoalDetailScreen from "@/features/goals/screens/goal-detail.screen";
 import AddGoalScreen from "@/features/goals/screens/add-goal.screen";
@@ -66,7 +65,6 @@ export type RootStackParamList = {
   BudgetDetail: { budgetId: number };
   AddBudget: undefined;
   EditBudget: { budgetId: number };
-  BudgetSuggestions: undefined;
   Goals: undefined;
   GoalDetail: { goalId: number };
   AddGoal: undefined;
@@ -348,10 +346,6 @@ function MainStack() {
         name="EditBudget"
         component={EditBudgetScreen}
         options={modalOptions}
-      />
-      <Stack.Screen
-        name="BudgetSuggestions"
-        component={BudgetSuggestionsScreen}
       />
       <Stack.Screen name="Goals" component={GoalsScreen} />
       <Stack.Screen name="GoalDetail" component={GoalDetailScreen} />
