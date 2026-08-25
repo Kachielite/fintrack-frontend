@@ -6,6 +6,8 @@ import {
   TransactionQueryParams,
   TransactionSummaryDto,
   CorrectTransactionSchemaType,
+  CreateManualTransactionPayload,
+  ImportCsvResultDto,
 } from "./transactions.dto";
 import { Transaction, TransactionSummary } from "./transactions.interface";
 import {
@@ -75,7 +77,10 @@ export const TransactionService = {
     return data.map(mapTransactionFromDto);
   },
 
-  async bulkCorrectCategory(ids: number[], category: string): Promise<{ updated: number }> {
+  async bulkCorrectCategory(
+    ids: number[],
+    category: string,
+  ): Promise<{ updated: number }> {
     const { data } = await apiClient.patch<{ updated: number }>(
       API_ENDPOINTS.TRANSACTIONS_BULK_CATEGORY,
       { ids, category },
@@ -83,10 +88,15 @@ export const TransactionService = {
     return data;
   },
 
-  async markTransfer(id: number, linkedTransactionId?: number): Promise<Transaction> {
+  async markTransfer(
+    id: number,
+    linkedTransactionId?: number,
+  ): Promise<Transaction> {
     const { data } = await apiClient.post<TransactionDto>(
       API_ENDPOINTS.TRANSACTION_MARK_TRANSFER(id),
-      linkedTransactionId != null ? { linked_transaction_id: linkedTransactionId } : {},
+      linkedTransactionId != null
+        ? { linked_transaction_id: linkedTransactionId }
+        : {},
     );
     return mapTransactionFromDto(data);
   },
@@ -103,5 +113,23 @@ export const TransactionService = {
       API_ENDPOINTS.TRANSACTION_LINKED_TRANSACTION(id),
     );
     return data ? mapTransactionFromDto(data) : null;
+  },
+
+  async createManualTransaction(
+    payload: CreateManualTransactionPayload,
+  ): Promise<Transaction> {
+    const { data } = await apiClient.post<TransactionDto>(
+      API_ENDPOINTS.TRANSACTIONS,
+      payload,
+    );
+    return mapTransactionFromDto(data);
+  },
+
+  async importTransactionsCsv(csv: string): Promise<ImportCsvResultDto> {
+    const { data } = await apiClient.post<ImportCsvResultDto>(
+      API_ENDPOINTS.TRANSACTIONS_IMPORT,
+      { csv },
+    );
+    return data;
   },
 };
