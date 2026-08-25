@@ -33,9 +33,13 @@ export const API_ENDPOINTS = {
   TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
   TRANSACTIONS_DAILY_SPEND: "/transactions/daily-spend",
   TRANSACTIONS_BULK_CATEGORY: "/transactions/bulk-category",
-  TRANSACTION_MARK_TRANSFER: (id: number) => `/transactions/${id}/mark-transfer`,
-  TRANSACTION_UNMARK_TRANSFER: (id: number) => `/transactions/${id}/unmark-transfer`,
-  TRANSACTION_LINKED_TRANSACTION: (id: number) => `/transactions/${id}/linked-transaction`,
+  TRANSACTION_MARK_TRANSFER: (id: number) =>
+    `/transactions/${id}/mark-transfer`,
+  TRANSACTION_UNMARK_TRANSFER: (id: number) =>
+    `/transactions/${id}/unmark-transfer`,
+  TRANSACTION_LINKED_TRANSACTION: (id: number) =>
+    `/transactions/${id}/linked-transaction`,
+  TRANSACTIONS_IMPORT: "/transactions/import",
 
   // Accounts
   ACCOUNTS: "/accounts",
@@ -70,10 +74,12 @@ export const API_ENDPOINTS = {
   NOTIFICATION_READ: (id: number) => `/notifications/${id}/read`,
   NOTIFICATIONS_READ_ALL: "/notifications/read-all",
   NOTIFICATIONS_DEVICE_TOKEN: "/notifications/device-token",
-  NOTIFICATIONS_DEVICE_TOKEN_DELETE: (playerId: string) => `/notifications/device-token/${encodeURIComponent(playerId)}`,
+  NOTIFICATIONS_DEVICE_TOKEN_DELETE: (playerId: string) =>
+    `/notifications/device-token/${encodeURIComponent(playerId)}`,
 
   // Email sync SSE stream (not a standard API call — used directly with XHR)
-  EMAIL_CONNECTION_SYNC_STREAM: (id: number) => `/email-connections/${id}/sync-stream`,
+  EMAIL_CONNECTION_SYNC_STREAM: (id: number) =>
+    `/email-connections/${id}/sync-stream`,
 
   // Iris chat
   IRIS_STATUS: "/iris/status",

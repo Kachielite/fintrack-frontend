@@ -23,6 +23,7 @@ import AuthScreen from "@/features/auth/auth.screen";
 // Onboarding
 import OnboardingGmailScreen from "@/features/onboarding/screens/onboarding-gmail.screen";
 import OnboardingConnectScreen from "@/features/onboarding/screens/onboarding-connect.screen";
+import OnboardingManualEntryScreen from "@/features/onboarding/screens/onboarding-manual-entry.screen";
 import OnboardingGoalScreen from "@/features/onboarding/screens/onboarding-goal.screen";
 import OnboardingLoadingScreen from "@/features/onboarding/screens/onboarding-loading.screen";
 import OnboardingResultsScreen from "@/features/onboarding/screens/onboarding-results.screen";
@@ -272,6 +273,10 @@ function OnboardingNavigator() {
       <OnboardingStack.Screen
         name="OnboardingConnect"
         component={OnboardingConnectScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingManualEntry"
+        component={OnboardingManualEntryScreen}
       />
       <OnboardingStack.Screen
         name="OnboardingGoal"

@@ -34,6 +34,25 @@ export interface TransactionDto {
   originalCategory: string | null;
 }
 
+export interface CreateManualTransactionPayload {
+  merchant: string;
+  category: string;
+  transaction_type: "debit" | "credit";
+  amount: number;
+  currency: string;
+  transaction_date: string;
+  account_id?: number;
+  reference?: string;
+  balance?: number;
+}
+
+export interface ImportCsvResultDto {
+  imported: number;
+  skippedDuplicates: number;
+  skippedInvalid: number;
+  errors: string[];
+}
+
 export interface TransactionQueryParams {
   page?: number;
   limit?: number;

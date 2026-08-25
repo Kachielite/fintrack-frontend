@@ -1,9 +1,14 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
-import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
+import {
+  FONTS,
+  FONT_SIZE,
+  SPACING,
+  RADIUS,
+} from "@/core/common/constants/theme";
 import ScreenContainer from "@/core/common/components/ScreenContainer";
 import PrimaryButton from "@/core/common/components/PrimaryButton";
 import { useConnectGmail } from "@/features/email-connection/hooks/use-connect-gmail";
@@ -34,7 +39,8 @@ const SETUP_ITEMS = [
 export default function OnboardingGmailScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
-  const { connectGmail, isConnecting, isSuccess, alreadyConnected, error } = useConnectGmail();
+  const { connectGmail, isConnecting, isSuccess, alreadyConnected, error } =
+    useConnectGmail();
 
   const handleConnect = () => {
     connectGmail({
@@ -47,7 +53,9 @@ export default function OnboardingGmailScreen() {
   return (
     <ScreenContainer scrollable>
       {/* Step indicator */}
-      <View style={{ flexDirection: "row", gap: 6, marginBottom: SPACING.xxxl }}>
+      <View
+        style={{ flexDirection: "row", gap: 6, marginBottom: SPACING.xxxl }}
+      >
         {[1, 2].map((n) => (
           <View
             key={n}
@@ -97,7 +105,9 @@ export default function OnboardingGmailScreen() {
           marginBottom: SPACING.xxxl,
         }}
       >
-        Connect once and we handle everything automatically. Your bank emails keep arriving in your inbox exactly as normal. We just quietly organise them in the background.
+        Connect once and we handle everything automatically. Your bank emails
+        keep arriving in your inbox exactly as normal. We just quietly organise
+        them in the background.
       </Text>
 
       {/* What we set up */}
@@ -105,7 +115,11 @@ export default function OnboardingGmailScreen() {
         {SETUP_ITEMS.map((item) => (
           <View
             key={item.icon}
-            style={{ flexDirection: "row", gap: SPACING.md, alignItems: "flex-start" }}
+            style={{
+              flexDirection: "row",
+              gap: SPACING.md,
+              alignItems: "flex-start",
+            }}
           >
             <View
               style={{
@@ -195,7 +209,9 @@ export default function OnboardingGmailScreen() {
               fontSize: FONT_SIZE.body,
             }}
           >
-            {alreadyConnected ? "Already connected — tokens refreshed" : "Gmail connected successfully"}
+            {alreadyConnected
+              ? "Already connected — tokens refreshed"
+              : "Gmail connected successfully"}
           </Text>
         </View>
       ) : (
@@ -217,8 +233,29 @@ export default function OnboardingGmailScreen() {
           marginTop: SPACING.lg,
         }}
       >
-        Gmail access is limited to the Bank Transactions folder only. You can disconnect at any time in Settings.
+        Gmail access is limited to the Bank Transactions folder only. You can
+        disconnect at any time in Settings.
       </Text>
+
+      {/* Skip path — not everyone wants to connect Gmail right away */}
+      {!isSuccess && (
+        <Pressable
+          onPress={() => navigation.navigate("OnboardingManualEntry")}
+          hitSlop={8}
+          style={{ marginTop: SPACING.lg, alignSelf: "center" }}
+        >
+          <Text
+            style={{
+              fontFamily: FONTS.semiBold,
+              fontSize: FONT_SIZE.bodySmall,
+              color: colors.textSecondary,
+              textDecorationLine: "underline",
+            }}
+          >
+            I'd rather add transactions manually
+          </Text>
+        </Pressable>
+      )}
     </ScreenContainer>
   );
 }
