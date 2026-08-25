@@ -54,8 +54,18 @@ export default function ImportCsvSheet({ visible, onClose }: Props) {
     const asset = picked.assets[0];
     setFileName(asset.name);
 
+    let content: string;
     try {
-      const content = await new File(asset.uri).text();
+      content = await new File(asset.uri).text();
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Could not read that file. Try a different CSV.",
+      });
+      return;
+    }
+
+    try {
       const outcome = await importCsv(content);
       setResult(outcome);
       if (outcome.imported > 0) {
@@ -64,11 +74,11 @@ export default function ImportCsvSheet({ visible, onClose }: Props) {
           text1: `Imported ${outcome.imported} transaction${outcome.imported === 1 ? "" : "s"}`,
         });
       }
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Could not read that file. Try a different CSV.",
-      });
+    } catch (err) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Could not import this CSV. Try a different file.";
+      Toast.show({ type: "error", text1: message });
     }
   }
 
@@ -118,9 +128,9 @@ export default function ImportCsvSheet({ visible, onClose }: Props) {
                 { color: colors.textSecondary, fontFamily: FONTS.regular },
               ]}
             >
-              Pick a CSV file with columns: date, merchant, category, type
-              (debit/credit), amount, currency. This is the same format your
-              exported transactions use.
+              Pick almost any CSV of transactions — a bank statement export or
+              your own spreadsheet. We'll automatically figure out which columns
+              are the date, description, and amount.
             </Text>
 
             <Pressable
