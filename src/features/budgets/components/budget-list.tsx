@@ -20,7 +20,11 @@ export default function BudgetList({
   onPressBudget,
 }: Props) {
   return (
-    <View style={budgets.length === 0 && !isLoading ? styles.flexContainer : undefined}>
+    <View
+      style={
+        budgets.length === 0 && !isLoading ? styles.flexContainer : undefined
+      }
+    >
       <SectionHeader title="How are my budgets doing?" />
 
       {isLoading ? (
@@ -29,8 +33,8 @@ export default function BudgetList({
         <GlassCard style={styles.emptyCard}>
           <EmptyState
             icon="sparkles-outline"
-            message="Setting up your budgets"
-            subMessage="Iris is analysing your spending history and setting limits automatically."
+            message="No budgets yet"
+            subMessage="Once you have some spending history, Iris will suggest budgets you can accept or adjust — or add one yourself with the + button."
           />
         </GlassCard>
       ) : (
@@ -53,4 +57,3 @@ const styles = StyleSheet.create({
   list: { gap: SPACING.sm },
   emptyCard: { flex: 1, justifyContent: "center" },
 });
-
