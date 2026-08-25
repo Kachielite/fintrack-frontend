@@ -19,7 +19,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
-import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import {
+  useThemeColors,
+  useIsDark,
+} from "@/core/common/hooks/use-theme-colors";
 import {
   FONTS,
   FONT_SIZE,
@@ -33,6 +36,7 @@ import {
   useCategories,
   getCategoryLabel,
 } from "@/features/categories/hooks/use-categories";
+import { useAccounts } from "@/features/accounts/hooks/use-accounts";
 import { useCreateTransaction } from "../hooks/use-create-transaction";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -61,12 +65,17 @@ export default function AddTransactionSheet({
   onImportCsv,
 }: Props) {
   const colors = useThemeColors();
+  const isDark = useIsDark();
   const insets = useSafeAreaInsets();
 
   const { data: allCategories = [] } = useCategories();
+  const { accounts } = useAccounts();
   const { createTransaction, isCreating } = useCreateTransaction();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
+    null,
+  );
   const [merchant, setMerchant] = useState("");
   const [amount, setAmount] = useState("");
   const [transactionType, setTransactionType] = useState<"debit" | "credit">(
@@ -76,11 +85,14 @@ export default function AddTransactionSheet({
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [catPickerOpen, setCatPickerOpen] = useState(false);
+  const [acctPickerOpen, setAcctPickerOpen] = useState(false);
 
   const pickerY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const acctPickerY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   function handleClose() {
     setSelectedCategory(null);
+    setSelectedAccountId(null);
     setMerchant("");
     setAmount("");
     setTransactionType("debit");
@@ -112,6 +124,29 @@ export default function AddTransactionSheet({
     closePicker();
   }
 
+  function openAcctPicker() {
+    setAcctPickerOpen(true);
+    Animated.spring(acctPickerY, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 65,
+      friction: 11,
+    }).start();
+  }
+
+  function closeAcctPicker() {
+    Animated.timing(acctPickerY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => setAcctPickerOpen(false));
+  }
+
+  function selectAccount(id: number | null) {
+    setSelectedAccountId(id);
+    closeAcctPicker();
+  }
+
   function handleAmountChange(text: string) {
     setAmount(text.replace(/[^0-9.]/g, ""));
   }
@@ -141,6 +176,7 @@ export default function AddTransactionSheet({
         amount: num,
         currency,
         transaction_date: date.toISOString(),
+        account_id: selectedAccountId ?? undefined,
       });
       Toast.show({ type: "success", text1: "Transaction added!" });
       handleClose();
@@ -164,6 +200,9 @@ export default function AddTransactionSheet({
     : ("grid-outline" as React.ComponentProps<typeof Ionicons>["name"]);
   const catLabel = selectedCategory
     ? getCategoryLabel(selectedCategory, allCategories)
+    : null;
+  const selectedAccount = selectedAccountId
+    ? (accounts.find((a) => a.id === selectedAccountId) ?? null)
     : null;
   const canCreate =
     !!merchant.trim() && !!selectedCategory && parsedAmount > 0 && !isCreating;
@@ -372,6 +411,58 @@ export default function AddTransactionSheet({
                 </Pressable>
               </View>
 
+              {/* Account dropdown */}
+              <View style={styles.section}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: colors.textSecondary, fontFamily: FONTS.bold },
+                  ]}
+                >
+                  ACCOUNT
+                </Text>
+                <Pressable
+                  onPress={openAcctPicker}
+                  style={[
+                    styles.dropdownTrigger,
+                    {
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.catChipIcon,
+                      { backgroundColor: colors.surface2 },
+                    ]}
+                  >
+                    <Ionicons
+                      name={
+                        selectedAccount ? "wallet-outline" : "layers-outline"
+                      }
+                      size={16}
+                      color={colors.textSubtle}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.dropdownValue,
+                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
+                    {selectedAccount
+                      ? selectedAccount.label
+                      : "General Account"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textSubtle}
+                  />
+                </Pressable>
+              </View>
+
               {/* Amount + currency */}
               <View style={styles.section}>
                 <Text
@@ -484,6 +575,7 @@ export default function AddTransactionSheet({
                     value={date}
                     mode="date"
                     display={Platform.OS === "ios" ? "inline" : "default"}
+                    themeVariant={isDark ? "dark" : "light"}
                     maximumDate={new Date()}
                     onChange={(_event, selected) => {
                       setShowDatePicker(Platform.OS === "ios");
@@ -603,6 +695,122 @@ export default function AddTransactionSheet({
                   </Pressable>
                 );
               })}
+            </ScrollView>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* Account picker overlay */}
+      {acctPickerOpen && (
+        <View style={styles.pickerOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={closeAcctPicker}
+          />
+          <Animated.View
+            style={[
+              styles.pickerSheet,
+              {
+                backgroundColor: colors.surface,
+                transform: [{ translateY: acctPickerY }],
+              },
+            ]}
+          >
+            <View style={styles.pickerHeader}>
+              <Text
+                style={[
+                  styles.pickerTitle,
+                  { color: colors.textPrimary, fontFamily: FONTS.bold },
+                ]}
+              >
+                Select account
+              </Text>
+              <Pressable
+                onPress={closeAcctPicker}
+                hitSlop={12}
+                style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}
+              >
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={{ maxHeight: SCREEN_HEIGHT * 0.5 }}>
+              <Pressable
+                onPress={() => selectAccount(null)}
+                style={styles.pickerRow}
+              >
+                <View
+                  style={[
+                    styles.catChipIcon,
+                    { backgroundColor: colors.surface2 },
+                  ]}
+                >
+                  <Ionicons
+                    name="layers-outline"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.pickerRowLabel,
+                      { color: colors.textPrimary, fontFamily: FONTS.medium },
+                    ]}
+                  >
+                    General Account
+                  </Text>
+                  <Text
+                    style={[
+                      styles.pickerRowSubLabel,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
+                    Not linked to a specific bank — grouped by currency
+                  </Text>
+                </View>
+                {selectedAccountId === null && (
+                  <Ionicons name="checkmark" size={18} color={colors.primary} />
+                )}
+              </Pressable>
+              {accounts.map((acct) => (
+                <Pressable
+                  key={acct.id}
+                  onPress={() => selectAccount(acct.id)}
+                  style={styles.pickerRow}
+                >
+                  <View
+                    style={[
+                      styles.catChipIcon,
+                      { backgroundColor: colors.surface2 },
+                    ]}
+                  >
+                    <Ionicons
+                      name="wallet-outline"
+                      size={16}
+                      color={colors.textSecondary}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.pickerRowLabel,
+                      {
+                        color: colors.textPrimary,
+                        fontFamily: FONTS.medium,
+                        flex: 1,
+                      },
+                    ]}
+                  >
+                    {acct.label}
+                  </Text>
+                  {selectedAccountId === acct.id && (
+                    <Ionicons
+                      name="checkmark"
+                      size={18}
+                      color={colors.primary}
+                    />
+                  )}
+                </Pressable>
+              ))}
             </ScrollView>
           </Animated.View>
         </View>
@@ -727,4 +935,5 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   pickerRowLabel: { fontSize: 15 },
+  pickerRowSubLabel: { fontSize: 12, marginTop: 2 },
 });

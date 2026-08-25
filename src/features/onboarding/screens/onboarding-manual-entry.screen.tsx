@@ -14,7 +14,10 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
-import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
+import {
+  useThemeColors,
+  useIsDark,
+} from "@/core/common/hooks/use-theme-colors";
 import {
   FONTS,
   FONT_SIZE,
@@ -26,6 +29,7 @@ import {
   useCategories,
   getCategoryLabel,
 } from "@/features/categories/hooks/use-categories";
+import { useAccounts } from "@/features/accounts/hooks/use-accounts";
 import { useCreateTransaction } from "@/features/transactions/hooks/use-create-transaction";
 
 const CURRENCIES = [
@@ -40,12 +44,17 @@ const CURRENCIES = [
 
 export default function OnboardingManualEntryScreen() {
   const colors = useThemeColors();
+  const isDark = useIsDark();
   const navigation = useNavigation();
   const { data: allCategories = [] } = useCategories();
+  const { accounts } = useAccounts();
   const { createTransaction, isCreating } = useCreateTransaction();
 
   const [merchant, setMerchant] = useState("");
   const [category, setCategory] = useState<string | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
+    null,
+  );
   const [transactionType, setTransactionType] = useState<"debit" | "credit">(
     "debit",
   );
@@ -80,6 +89,7 @@ export default function OnboardingManualEntryScreen() {
         amount: num,
         currency,
         transaction_date: date.toISOString(),
+        account_id: selectedAccountId ?? undefined,
       });
       setAddedCount((c) => c + 1);
       resetForm();
@@ -294,6 +304,77 @@ export default function OnboardingManualEntryScreen() {
           </View>
         </View>
 
+        {/* Account */}
+        <View style={styles.section}>
+          <Text
+            style={[
+              styles.label,
+              { color: colors.textPrimary, fontFamily: FONTS.bold },
+            ]}
+          >
+            Account
+          </Text>
+          <View style={styles.chipGrid}>
+            <Pressable
+              onPress={() => setSelectedAccountId(null)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor:
+                    selectedAccountId === null
+                      ? colors.primary
+                      : colors.surface,
+                  borderColor:
+                    selectedAccountId === null ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.chipLabel,
+                  {
+                    color:
+                      selectedAccountId === null
+                        ? colors.onPrimary
+                        : colors.textPrimary,
+                    fontFamily: FONTS.semiBold,
+                  },
+                ]}
+              >
+                General Account
+              </Text>
+            </Pressable>
+            {accounts.map((acct) => {
+              const active = selectedAccountId === acct.id;
+              return (
+                <Pressable
+                  key={acct.id}
+                  onPress={() => setSelectedAccountId(acct.id)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surface,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chipLabel,
+                      {
+                        color: active ? colors.onPrimary : colors.textPrimary,
+                        fontFamily: FONTS.semiBold,
+                      },
+                    ]}
+                  >
+                    {acct.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Amount + currency */}
         <View style={styles.section}>
           <Text
@@ -397,6 +478,7 @@ export default function OnboardingManualEntryScreen() {
               value={date}
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
+              themeVariant={isDark ? "dark" : "light"}
               maximumDate={new Date()}
               onChange={(_event, selected) => {
                 setShowDatePicker(Platform.OS === "ios");
