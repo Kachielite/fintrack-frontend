@@ -21,6 +21,8 @@ export interface Transaction {
   bankId: number | null;
   bankName?: string | null;
   bankShortCode?: string | null;
+  accountId: number | null;
+  excludeFromTotals: boolean;
   reference: string | null;
   balance: number | null;
   originalMerchant: string | null;

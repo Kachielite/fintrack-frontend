@@ -8,7 +8,7 @@ import { useGoals } from "@/features/goals/hooks/use-goals";
 import { useChartData } from "@/features/insights/hooks/use-chart-data";
 import { useAutoGenerateBudgets } from "./hooks/use-auto-generate-budgets";
 import { Budget } from "./budgets.interface";
-import { useUserStore } from "@/features/user/user.state";
+import { useProfile } from "@/features/user/hooks/use-profile";
 import BudgetHeader from "./components/budget-header";
 import BudgetAdvisorCard from "./components/budget-advisor-card";
 import BudgetList from "./components/budget-list";
@@ -26,15 +26,20 @@ export default function BudgetsScreen() {
   const [autoGenerateFired, setAutoGenerateFired] = useState(false);
 
   // ── Data ─────────────────────────────────────────────────────────────────
-  const { budgets, isLoading: budgetsLoading, refetch: refetchBudgets } = useBudgets();
+  const {
+    budgets,
+    isLoading: budgetsLoading,
+    refetch: refetchBudgets,
+  } = useBudgets();
 
-  const selectedBudget = selectedBudgetId != null
-    ? (budgets.find((b) => b.id === selectedBudgetId) ?? null)
-    : null;
+  const selectedBudget =
+    selectedBudgetId != null
+      ? (budgets.find((b) => b.id === selectedBudgetId) ?? null)
+      : null;
   const { goals, refetch: refetchGoals } = useGoals();
   const { chartData, refetch: refetchChart } = useChartData("1m");
   const { autoGenerate, isGenerating } = useAutoGenerateBudgets();
-  const profile = useUserStore((s) => s.profile);
+  const { profile } = useProfile();
 
   /** First active goal with a target amount */
   const primaryGoal =
@@ -132,4 +137,3 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
   },
 });
-

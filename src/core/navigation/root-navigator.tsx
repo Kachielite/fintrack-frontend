@@ -33,6 +33,8 @@ import BudgetScreen from "@/features/budgets/budgets.screen";
 import ProfileScreen from "@/features/user/screens/profile.screen";
 // Main stack screens
 import TransactionDetailScreen from "@/features/transactions/screens/transaction-detail.screen";
+import AccountsScreen from "@/features/accounts/screens/accounts.screen";
+import ReviewTransfersScreen from "@/features/transactions/screens/review-transfers.screen";
 import CorrectTransactionScreen from "@/features/transactions/screens/correct-transaction.screen";
 import BudgetDetailScreen from "@/features/budgets/screens/budget-detail.screen";
 import AddBudgetScreen from "@/features/budgets/screens/add-budget.screen";
@@ -58,6 +60,8 @@ export type RootStackParamList = {
   Notifications: undefined;
   TransactionDetail: { transactionId: number };
   CorrectTransaction: { transactionId: number };
+  Accounts: undefined;
+  ReviewTransfers: undefined;
   BudgetDetail: { budgetId: number };
   AddBudget: undefined;
   EditBudget: { budgetId: number };
@@ -85,7 +89,6 @@ const modalOptions = {
   animation: "slide_from_bottom" as const,
   animationDuration: 50,
 };
-
 
 // ─── Cross-platform tab bar (Android + older iOS) ─────────────────────────────
 
@@ -137,7 +140,10 @@ function TabsCrossPlatform() {
   // Using a custom bar avoids platform-specific overlays applied by the default bar.
   function MyTabBar({ state, _descriptors, navigation }: any) {
     return (
-      <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
+      <SafeAreaView
+        edges={["bottom"]}
+        style={{ backgroundColor: colors.surface }}
+      >
         <View
           style={{
             flexDirection: "row",
@@ -312,6 +318,16 @@ function MainStack() {
         name="CorrectTransaction"
         component={CorrectTransactionScreen}
         options={modalOptions}
+      />
+      <Stack.Screen
+        name="Accounts"
+        component={AccountsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ReviewTransfers"
+        component={ReviewTransfersScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="BudgetDetail"

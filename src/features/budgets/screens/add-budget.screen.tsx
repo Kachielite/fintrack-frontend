@@ -32,9 +32,12 @@ import {
 import { CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { RootStackParamList } from "@/core/navigation/root-navigator";
-import { useCategories, getCategoryLabel } from "@/features/categories/hooks/use-categories";
+import {
+  useCategories,
+  getCategoryLabel,
+} from "@/features/categories/hooks/use-categories";
 import { useBudgets } from "../hooks/use-budgets";
-import { useUserStore } from "@/features/user/user.state";
+import { useProfile } from "@/features/user/hooks/use-profile";
 import { BudgetService } from "../budgets.service";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -42,12 +45,14 @@ const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 export default function AddBudgetScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
 
   const { data: allCategories = [] } = useCategories();
   const { budgets } = useBudgets();
-  const refCurrency = useUserStore((s) => s.profile?.refCurrency ?? "NGN");
+  const { profile } = useProfile();
+  const refCurrency = profile?.refCurrency ?? "NGN";
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -76,7 +81,10 @@ export default function AddBudgetScreen() {
       navigation.goBack();
     },
     onError: () => {
-      Toast.show({ type: "error", text1: "Could not create budget. Try again." });
+      Toast.show({
+        type: "error",
+        text1: "Could not create budget. Try again.",
+      });
     },
   });
 
@@ -115,7 +123,10 @@ export default function AddBudgetScreen() {
 
   function handleSubmit() {
     if (!selectedCategory) {
-      Alert.alert("Select a category", "Please pick a category for this budget.");
+      Alert.alert(
+        "Select a category",
+        "Please pick a category for this budget.",
+      );
       return;
     }
     const num = parseFloat(amount);
@@ -131,7 +142,10 @@ export default function AddBudgetScreen() {
     ? (CATEGORY_COLORS[selectedCategory] ?? FALLBACK_CATEGORY_COLOR)
     : colors.border;
   const catIcon = selectedCategory
-    ? ((CATEGORY_ICON_NAMES[selectedCategory] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"])
+    ? ((CATEGORY_ICON_NAMES[selectedCategory] ??
+        "ellipsis-horizontal-outline") as React.ComponentProps<
+        typeof Ionicons
+      >["name"])
     : ("grid-outline" as React.ComponentProps<typeof Ionicons>["name"]);
   const catLabel = selectedCategory
     ? getCategoryLabel(selectedCategory, allCategories)
@@ -140,8 +154,14 @@ export default function AddBudgetScreen() {
   const canCreate = !!selectedCategory && parsedAmount > 0 && !isPending;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top"]}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Pressable
@@ -149,9 +169,18 @@ export default function AddBudgetScreen() {
             hitSlop={12}
             style={[styles.backBtn, { backgroundColor: colors.surface }]}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={colors.textPrimary}
+            />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: colors.textPrimary, fontFamily: FONTS.bold },
+            ]}
+          >
             Add Budget
           </Text>
           <View style={{ width: 36 }} />
@@ -165,7 +194,12 @@ export default function AddBudgetScreen() {
         >
           {/* ── Category dropdown trigger ─── */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+            <Text
+              style={[
+                styles.sectionLabel,
+                { color: colors.textSecondary, fontFamily: FONTS.bold },
+              ]}
+            >
               CATEGORY
             </Text>
             <Pressable
@@ -180,27 +214,60 @@ export default function AddBudgetScreen() {
             >
               {selectedCategory ? (
                 <>
-                  <View style={[styles.catChipIcon, { backgroundColor: catColor + "22" }]}>
+                  <View
+                    style={[
+                      styles.catChipIcon,
+                      { backgroundColor: catColor + "22" },
+                    ]}
+                  >
                     <Ionicons name={catIcon} size={16} color={catColor} />
                   </View>
-                  <Text style={[styles.dropdownValue, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
+                  <Text
+                    style={[
+                      styles.dropdownValue,
+                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
                     {catLabel}
                   </Text>
                 </>
               ) : (
                 <>
-                  <View style={[styles.catChipIcon, { backgroundColor: colors.surface2 }]}>
-                    <Ionicons name="grid-outline" size={16} color={colors.textSubtle} />
+                  <View
+                    style={[
+                      styles.catChipIcon,
+                      { backgroundColor: colors.surface2 },
+                    ]}
+                  >
+                    <Ionicons
+                      name="grid-outline"
+                      size={16}
+                      color={colors.textSubtle}
+                    />
                   </View>
-                  <Text style={[styles.dropdownPlaceholder, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+                  <Text
+                    style={[
+                      styles.dropdownPlaceholder,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
                     Select a category
                   </Text>
                 </>
               )}
-              <Ionicons name="chevron-down-outline" size={16} color={colors.textSubtle} />
+              <Ionicons
+                name="chevron-down-outline"
+                size={16}
+                color={colors.textSubtle}
+              />
             </Pressable>
             {availableCategories.length === 0 && (
-              <Text style={[styles.allBudgetedNote, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+              <Text
+                style={[
+                  styles.allBudgetedNote,
+                  { color: colors.textSubtle, fontFamily: FONTS.regular },
+                ]}
+              >
                 All categories already have a budget.
               </Text>
             )}
@@ -208,15 +275,31 @@ export default function AddBudgetScreen() {
 
           {/* ── Amount ───────────────────── */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+            <Text
+              style={[
+                styles.sectionLabel,
+                { color: colors.textSecondary, fontFamily: FONTS.bold },
+              ]}
+            >
               {period === "monthly" ? "MONTHLY" : "WEEKLY"} LIMIT
             </Text>
-            <View style={[styles.amountRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Pressable onPress={() => nudge(-1000)} style={[styles.nudgeBtn, { backgroundColor: colors.surface2 }]}>
+            <View
+              style={[
+                styles.amountRow,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <Pressable
+                onPress={() => nudge(-1000)}
+                style={[styles.nudgeBtn, { backgroundColor: colors.surface2 }]}
+              >
                 <Ionicons name="remove" size={18} color={colors.textPrimary} />
               </Pressable>
               <TextInput
-                style={[styles.amountInput, { color: colors.textPrimary, fontFamily: FONTS.bold }]}
+                style={[
+                  styles.amountInput,
+                  { color: colors.textPrimary, fontFamily: FONTS.bold },
+                ]}
                 value={amount}
                 onChangeText={handleAmountChange}
                 keyboardType="decimal-pad"
@@ -224,18 +307,31 @@ export default function AddBudgetScreen() {
                 placeholderTextColor={colors.textSubtle}
                 selectTextOnFocus
               />
-              <Pressable onPress={() => nudge(1000)} style={[styles.nudgeBtn, { backgroundColor: colors.surface2 }]}>
+              <Pressable
+                onPress={() => nudge(1000)}
+                style={[styles.nudgeBtn, { backgroundColor: colors.surface2 }]}
+              >
                 <Ionicons name="add" size={18} color={colors.textPrimary} />
               </Pressable>
             </View>
-            <Text style={[styles.currencyHint, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+            <Text
+              style={[
+                styles.currencyHint,
+                { color: colors.textSubtle, fontFamily: FONTS.regular },
+              ]}
+            >
               {refCurrency}
             </Text>
           </View>
 
           {/* ── Period ───────────────────── */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+            <Text
+              style={[
+                styles.sectionLabel,
+                { color: colors.textSecondary, fontFamily: FONTS.bold },
+              ]}
+            >
               RESETS EVERY
             </Text>
             <View style={styles.periodRow}>
@@ -246,8 +342,10 @@ export default function AddBudgetScreen() {
                   style={[
                     styles.periodBtn,
                     {
-                      backgroundColor: period === p ? colors.primary : colors.surface,
-                      borderColor: period === p ? colors.primary : colors.border,
+                      backgroundColor:
+                        period === p ? colors.primary : colors.surface,
+                      borderColor:
+                        period === p ? colors.primary : colors.border,
                     },
                   ]}
                 >
@@ -255,8 +353,10 @@ export default function AddBudgetScreen() {
                     style={[
                       styles.periodLabel,
                       {
-                        color: period === p ? colors.onPrimary : colors.textPrimary,
-                        fontFamily: period === p ? FONTS.semiBold : FONTS.regular,
+                        color:
+                          period === p ? colors.onPrimary : colors.textPrimary,
+                        fontFamily:
+                          period === p ? FONTS.semiBold : FONTS.regular,
                       },
                     ]}
                   >
@@ -272,19 +372,32 @@ export default function AddBudgetScreen() {
             <View
               style={[
                 styles.summaryCard,
-                { backgroundColor: catColor + "15", borderColor: catColor + "40" },
+                {
+                  backgroundColor: catColor + "15",
+                  borderColor: catColor + "40",
+                },
               ]}
             >
-              <View style={[styles.summaryIcon, { backgroundColor: catColor + "22" }]}>
+              <View
+                style={[
+                  styles.summaryIcon,
+                  { backgroundColor: catColor + "22" },
+                ]}
+              >
                 <Ionicons name={catIcon} size={14} color={catColor} />
               </View>
-              <Text style={[styles.summaryText, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
-                <Text style={{ fontFamily: FONTS.semiBold }}>{catLabel}</Text>
-                {" "}budget of{" "}
+              <Text
+                style={[
+                  styles.summaryText,
+                  { color: colors.textPrimary, fontFamily: FONTS.regular },
+                ]}
+              >
+                <Text style={{ fontFamily: FONTS.semiBold }}>{catLabel}</Text>{" "}
+                budget of{" "}
                 <Text style={{ fontFamily: FONTS.mono }}>
                   {refCurrency} {parsedAmount.toLocaleString()}
-                </Text>
-                {" "}per {period === "monthly" ? "month" : "week"}
+                </Text>{" "}
+                per {period === "monthly" ? "month" : "week"}
               </Text>
             </View>
           )}
@@ -312,7 +425,12 @@ export default function AddBudgetScreen() {
             {isPending ? (
               <ActivityIndicator color={colors.onPrimary} />
             ) : (
-              <Text style={[styles.createBtnLabel, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
+              <Text
+                style={[
+                  styles.createBtnLabel,
+                  { color: colors.onPrimary, fontFamily: FONTS.semiBold },
+                ]}
+              >
                 Create budget
               </Text>
             )}
@@ -323,7 +441,10 @@ export default function AddBudgetScreen() {
       {/* ── Category picker overlay ───────────────────────────────────────── */}
       {catPickerOpen && (
         <View style={[StyleSheet.absoluteFillObject, styles.pickerOverlay]}>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closePicker} />
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={closePicker}
+          />
           <Animated.View
             style={[
               styles.pickerSheet,
@@ -334,10 +455,17 @@ export default function AddBudgetScreen() {
               },
             ]}
           >
-            <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
+            <View
+              style={[styles.handle, { backgroundColor: colors.borderStrong }]}
+            />
 
             <View style={styles.pickerHeader}>
-              <Text style={[styles.pickerTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
+              <Text
+                style={[
+                  styles.pickerTitle,
+                  { color: colors.textPrimary, fontFamily: FONTS.bold },
+                ]}
+              >
                 Select Category
               </Text>
               <Pressable
@@ -354,11 +482,20 @@ export default function AddBudgetScreen() {
               contentContainerStyle={styles.pickerList}
               showsVerticalScrollIndicator={false}
             >
-              <View style={[styles.pickerListContainer, { borderColor: colors.border }]}>
+              <View
+                style={[
+                  styles.pickerListContainer,
+                  { borderColor: colors.border },
+                ]}
+              >
                 {availableCategories.map((cat, i, arr) => {
                   const active = selectedCategory === cat.slug;
-                  const tileColor = CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
-                  const icon = (CATEGORY_ICON_NAMES[cat.slug] ?? "ellipsis-horizontal-outline") as React.ComponentProps<typeof Ionicons>["name"];
+                  const tileColor =
+                    CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
+                  const icon = (CATEGORY_ICON_NAMES[cat.slug] ??
+                    "ellipsis-horizontal-outline") as React.ComponentProps<
+                    typeof Ionicons
+                  >["name"];
                   const isLast = i === arr.length - 1;
                   return (
                     <Pressable
@@ -367,13 +504,22 @@ export default function AddBudgetScreen() {
                       style={[
                         styles.pickerRow,
                         {
-                          backgroundColor: active ? tileColor + "12" : "transparent",
-                          borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+                          backgroundColor: active
+                            ? tileColor + "12"
+                            : "transparent",
+                          borderBottomWidth: isLast
+                            ? 0
+                            : StyleSheet.hairlineWidth,
                           borderBottomColor: colors.border,
                         },
                       ]}
                     >
-                      <View style={[styles.pickerRowIcon, { backgroundColor: tileColor + "22" }]}>
+                      <View
+                        style={[
+                          styles.pickerRowIcon,
+                          { backgroundColor: tileColor + "22" },
+                        ]}
+                      >
                         <Ionicons name={icon} size={16} color={tileColor} />
                       </View>
                       <Text
@@ -387,7 +533,13 @@ export default function AddBudgetScreen() {
                       >
                         {cat.name}
                       </Text>
-                      {active && <Ionicons name="checkmark-circle" size={18} color={tileColor} />}
+                      {active && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={18}
+                          color={tileColor}
+                        />
+                      )}
                     </Pressable>
                   );
                 })}

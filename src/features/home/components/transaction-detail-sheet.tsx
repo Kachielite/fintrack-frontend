@@ -35,6 +35,8 @@ import {
 } from "@/features/transactions/transactions.constants";
 import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate, formatTime } from "@/core/common/utils/date";
+import { useLinkedTransaction } from "@/features/transactions/hooks/use-linked-transaction";
+import { useUnmarkTransfer } from "@/features/transactions/hooks/use-transfer-mark";
 import {
   useCategories,
   getCategoryLabel,
@@ -68,6 +70,20 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   const editSheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const showReviewBanner = isReview && !reviewDone;
+
+  const [transferUndone, setTransferUndone] = useState(false);
+  const showTransferBanner = transaction.excludeFromTotals && !transferUndone;
+  const { linkedTransaction } = useLinkedTransaction(transaction.id, showTransferBanner);
+  const { unmarkTransfer, isUnmarking } = useUnmarkTransfer();
+
+  async function handleUndoTransfer() {
+    try {
+      await unmarkTransfer(transaction.id);
+      setTransferUndone(true);
+    } catch {
+      // surfaced via the disabled/loading state below; nothing else to do here
+    }
+  }
 
   const saveMutation = useMutation({
     mutationFn: (payload: { merchant?: string; category?: string }) =>
@@ -263,6 +279,49 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 {formatDate(transaction.transactionDate)} · {formatTime(transaction.transactionDate)}
               </Text>
             </View>
+
+            {/* Transfer banner */}
+            {showTransferBanner && (
+              <View style={[styles.transferCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+                <View style={styles.transferHeader}>
+                  <Ionicons name="swap-horizontal-outline" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.transferLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+                    LOOKS LIKE A TRANSFER
+                  </Text>
+                </View>
+                <Text style={[styles.transferBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
+                  {linkedTransaction
+                    ? `This looks like a transfer to "${linkedTransaction.merchant}" — not counted as spend or income.`
+                    : "This looks like a transfer or currency conversion — not counted as spend or income."}
+                </Text>
+                {linkedTransaction && (
+                  <View style={[styles.linkedRow, { borderColor: colors.border }]}>
+                    <Text
+                      style={[styles.linkedMerchant, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}
+                      numberOfLines={1}
+                    >
+                      {linkedTransaction.merchant}
+                    </Text>
+                    <Text style={[styles.linkedAmount, { color: colors.textSubtle, fontFamily: FONTS.mono }]}>
+                      {formatTransactionAmount(linkedTransaction.amount, linkedTransaction.currency)}
+                    </Text>
+                  </View>
+                )}
+                <Pressable
+                  onPress={handleUndoTransfer}
+                  disabled={isUnmarking}
+                  style={[styles.undoBtn, { borderColor: colors.border, opacity: isUnmarking ? 0.6 : 1 }]}
+                >
+                  {isUnmarking ? (
+                    <ActivityIndicator size="small" color={colors.textSecondary} />
+                  ) : (
+                    <Text style={[styles.undoText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                      Not a transfer — count it
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            )}
 
             {/* Review banner */}
             {showReviewBanner && (
@@ -621,6 +680,32 @@ const styles = StyleSheet.create({
   refAmount: { fontSize: 13 },
   merchant: { fontSize: 16, letterSpacing: -0.3, marginTop: 4 },
   dateLine: { fontSize: 13, marginTop: 2 },
+  transferCard: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    padding: SPACING.base,
+    gap: SPACING.sm,
+  },
+  transferHeader: { flexDirection: "row", alignItems: "center", gap: SPACING.xs },
+  transferLabel: { fontSize: 11, letterSpacing: 0.6 },
+  transferBody: { fontSize: 14, lineHeight: 20 },
+  linkedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: SPACING.sm,
+  },
+  linkedMerchant: { fontSize: 13, flex: 1, marginRight: SPACING.sm },
+  linkedAmount: { fontSize: 12 },
+  undoBtn: {
+    borderWidth: 1,
+    borderRadius: RADIUS.full,
+    paddingVertical: SPACING.xs + 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  undoText: { fontSize: 13 },
   reviewCard: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,
