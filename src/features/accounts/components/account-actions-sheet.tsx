@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +26,8 @@ import {
 } from "@/core/common/constants/theme";
 import { Account } from "../accounts.interface";
 import { useUpdateAccount } from "../hooks/use-update-account";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface Props {
   visible: boolean;
@@ -135,6 +138,13 @@ export default function AccountActionsSheet({
     );
   }
 
+  const headerTitle =
+    mode === "menu"
+      ? account.label
+      : mode === "rename"
+        ? "Rename Account"
+        : "Merge Into…";
+
   return (
     <Modal
       visible={visible}
@@ -144,7 +154,7 @@ export default function AccountActionsSheet({
       statusBarTranslucent
     >
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={handleClose} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={{ width: "100%" }}
@@ -161,6 +171,21 @@ export default function AccountActionsSheet({
             handleColor={colors.borderStrong}
           >
             <View style={styles.header}>
+              {mode !== "menu" ? (
+                <Pressable
+                  onPress={() => setMode("menu")}
+                  hitSlop={12}
+                  style={[styles.iconBtn, { backgroundColor: colors.surface2 }]}
+                >
+                  <Ionicons
+                    name="chevron-back"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+              ) : (
+                <View style={styles.iconBtnSpacer} />
+              )}
               <Text
                 style={[
                   styles.title,
@@ -168,11 +193,7 @@ export default function AccountActionsSheet({
                 ]}
                 numberOfLines={1}
               >
-                {mode === "menu"
-                  ? account.label
-                  : mode === "rename"
-                    ? "Rename account"
-                    : "Merge into…"}
+                {headerTitle}
               </Text>
               <Pressable
                 onPress={handleClose}
@@ -185,77 +206,94 @@ export default function AccountActionsSheet({
 
             {mode === "menu" && (
               <View style={styles.body}>
-                <MenuRow
-                  icon="pencil-outline"
-                  label="Rename"
-                  onPress={() => setMode("rename")}
-                />
-                <MenuRow
-                  icon="git-merge-outline"
-                  label="Merge into another account"
-                  disabled={otherAccounts.length === 0}
-                  onPress={() => setMode("merge")}
-                />
-                <MenuRow
-                  icon="eye-off-outline"
-                  label="Deactivate"
-                  destructive
-                  onPress={handleDeactivate}
-                />
+                <View
+                  style={[styles.listContainer, { borderColor: colors.border }]}
+                >
+                  <MenuRow
+                    icon="pencil-outline"
+                    label="Rename"
+                    onPress={() => setMode("rename")}
+                    showBorder
+                  />
+                  <MenuRow
+                    icon="git-merge-outline"
+                    label="Merge into another account"
+                    disabled={otherAccounts.length === 0}
+                    onPress={() => setMode("merge")}
+                    showBorder
+                  />
+                  <MenuRow
+                    icon="eye-off-outline"
+                    label="Deactivate"
+                    destructive
+                    onPress={handleDeactivate}
+                  />
+                </View>
               </View>
             )}
 
             {mode === "rename" && (
-              <View style={styles.body}>
-                <TextInput
-                  value={labelDraft}
-                  onChangeText={setLabelDraft}
-                  placeholder="Account name"
-                  placeholderTextColor={colors.textSubtle}
-                  autoFocus
-                  style={[
-                    styles.input,
-                    {
-                      color: colors.textPrimary,
-                      borderColor: colors.border,
-                      backgroundColor: colors.surface2,
-                      fontFamily: FONTS.regular,
-                    },
-                  ]}
-                  returnKeyType="done"
-                  onSubmitEditing={handleRenameSave}
-                />
-                <Pressable
-                  onPress={handleRenameSave}
-                  disabled={isUpdating || labelDraft.trim().length === 0}
-                  style={[
-                    styles.primaryBtn,
-                    {
-                      backgroundColor: colors.primary,
-                      opacity:
-                        isUpdating || labelDraft.trim().length === 0 ? 0.5 : 1,
-                    },
-                  ]}
+              <>
+                <View style={styles.body}>
+                  <TextInput
+                    value={labelDraft}
+                    onChangeText={setLabelDraft}
+                    placeholder="Account name"
+                    placeholderTextColor={colors.textSubtle}
+                    autoFocus
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.textPrimary,
+                        borderColor: colors.border,
+                        backgroundColor: colors.background,
+                        fontFamily: FONTS.regular,
+                      },
+                    ]}
+                    returnKeyType="done"
+                    onSubmitEditing={handleRenameSave}
+                  />
+                </View>
+                <View
+                  style={[styles.footer, { borderTopColor: colors.border }]}
                 >
-                  {isUpdating ? (
-                    <ActivityIndicator size="small" color={colors.surface} />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.primaryBtnText,
-                        { color: colors.surface, fontFamily: FONTS.semiBold },
-                      ]}
-                    >
-                      Save
-                    </Text>
-                  )}
-                </Pressable>
-              </View>
+                  <Pressable
+                    onPress={handleRenameSave}
+                    disabled={isUpdating || labelDraft.trim().length === 0}
+                    style={[
+                      styles.primaryBtn,
+                      {
+                        backgroundColor: colors.primary,
+                        opacity:
+                          isUpdating || labelDraft.trim().length === 0
+                            ? 0.5
+                            : 1,
+                      },
+                    ]}
+                  >
+                    {isUpdating ? (
+                      <ActivityIndicator color={colors.onPrimary} />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.primaryBtnLabel,
+                          {
+                            color: colors.onPrimary,
+                            fontFamily: FONTS.semiBold,
+                          },
+                        ]}
+                      >
+                        Save
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              </>
             )}
 
             {mode === "merge" && (
               <ScrollView
-                style={{ maxHeight: 320 }}
+                style={{ maxHeight: SCREEN_HEIGHT * 0.5 }}
                 contentContainerStyle={styles.body}
               >
                 <Text
@@ -267,35 +305,84 @@ export default function AccountActionsSheet({
                   Choose the account to move all of this account&apos;s
                   transactions into.
                 </Text>
-                {otherAccounts.map((target) => (
-                  <Pressable
-                    key={target.id}
-                    onPress={() => handleMergeInto(target)}
-                    disabled={isUpdating}
-                    style={[styles.targetRow, { borderColor: colors.border }]}
-                  >
-                    <Text
-                      style={[
-                        styles.targetLabel,
-                        {
-                          color: colors.textPrimary,
-                          fontFamily: FONTS.semiBold,
-                        },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {target.label}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.targetCurrency,
-                        { color: colors.textSubtle, fontFamily: FONTS.regular },
-                      ]}
-                    >
-                      {target.currency}
-                    </Text>
-                  </Pressable>
-                ))}
+                <View
+                  style={[styles.listContainer, { borderColor: colors.border }]}
+                >
+                  {otherAccounts.map((target, i) => {
+                    const initial = target.bankName?.trim()?.[0]?.toUpperCase();
+                    return (
+                      <Pressable
+                        key={target.id}
+                        onPress={() => handleMergeInto(target)}
+                        disabled={isUpdating}
+                        style={[
+                          styles.targetRow,
+                          i < otherAccounts.length - 1 && {
+                            borderBottomWidth: StyleSheet.hairlineWidth,
+                            borderBottomColor: colors.border,
+                          },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.targetIcon,
+                            { backgroundColor: colors.primaryMid },
+                          ]}
+                        >
+                          {initial ? (
+                            <Text
+                              style={[
+                                styles.targetIconText,
+                                {
+                                  color: colors.primary,
+                                  fontFamily: FONTS.bold,
+                                },
+                              ]}
+                            >
+                              {initial}
+                            </Text>
+                          ) : (
+                            <Ionicons
+                              name="wallet-outline"
+                              size={14}
+                              color={colors.primary}
+                            />
+                          )}
+                        </View>
+                        <Text
+                          style={[
+                            styles.targetLabel,
+                            {
+                              color: colors.textPrimary,
+                              fontFamily: FONTS.semiBold,
+                            },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {target.label}
+                        </Text>
+                        <View
+                          style={[
+                            styles.currencyChip,
+                            { backgroundColor: colors.surface2 },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.currencyChipText,
+                              {
+                                color: colors.textSubtle,
+                                fontFamily: FONTS.semiBold,
+                              },
+                            ]}
+                          >
+                            {target.currency}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </ScrollView>
             )}
           </DraggableSheet>
@@ -311,15 +398,22 @@ function MenuRow({
   onPress,
   destructive,
   disabled,
+  showBorder,
 }: {
   icon: React.ComponentProps<typeof Ionicons>["name"];
   label: string;
   onPress: () => void;
   destructive?: boolean;
   disabled?: boolean;
+  showBorder?: boolean;
 }) {
   const colors = useThemeColors();
-  const color = disabled
+  const tint = disabled
+    ? colors.textSubtle
+    : destructive
+      ? colors.error
+      : colors.primary;
+  const textColor = disabled
     ? colors.textSubtle
     : destructive
       ? colors.error
@@ -330,13 +424,27 @@ function MenuRow({
       disabled={disabled}
       style={({ pressed }) => [
         styles.menuRow,
+        showBorder && {
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: colors.border,
+        },
         pressed && !disabled ? { opacity: 0.6 } : undefined,
       ]}
     >
-      <Ionicons name={icon} size={19} color={color} />
-      <Text style={[styles.menuLabel, { color, fontFamily: FONTS.semiBold }]}>
+      <View style={[styles.menuIcon, { backgroundColor: tint + "1E" }]}>
+        <Ionicons name={icon} size={16} color={tint} />
+      </View>
+      <Text
+        style={[
+          styles.menuLabel,
+          { color: textColor, fontFamily: FONTS.semiBold },
+        ]}
+      >
         {label}
       </Text>
+      {!disabled && !destructive && (
+        <Ionicons name="chevron-forward" size={15} color={colors.textSubtle} />
+      )}
     </Pressable>
   );
 }
@@ -347,68 +455,93 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "flex-end",
   },
-  backdrop: { ...StyleSheet.absoluteFillObject },
   sheet: { borderTopLeftRadius: RADIUS.xxl, borderTopRightRadius: RADIUS.xxl },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.md,
+    paddingVertical: SPACING.md,
+    gap: SPACING.sm,
   },
   title: {
-    fontSize: FONT_SIZE.h3,
-    letterSpacing: -0.3,
     flex: 1,
-    marginRight: SPACING.sm,
+    fontSize: FONT_SIZE.h2,
+    letterSpacing: -0.4,
+    textAlign: "center",
   },
   iconBtn: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     borderRadius: 99,
     alignItems: "center",
     justifyContent: "center",
   },
+  iconBtnSpacer: { width: 32, height: 32 },
   body: {
     paddingHorizontal: SPACING.xl,
     paddingBottom: SPACING.base,
     gap: SPACING.sm,
+  },
+  listContainer: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    overflow: "hidden",
   },
   menuRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
     paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.base,
   },
-  menuLabel: { fontSize: FONT_SIZE.bodySmall },
+  menuIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: RADIUS.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuLabel: { flex: 1, fontSize: FONT_SIZE.bodySmall },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.lg,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.base,
     fontSize: FONT_SIZE.body,
   },
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+  },
   primaryBtn: {
     borderRadius: RADIUS.xl,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.md + 2,
     alignItems: "center",
   },
-  primaryBtnText: { fontSize: 14 },
+  primaryBtnLabel: { fontSize: FONT_SIZE.body, letterSpacing: -0.2 },
   hint: { fontSize: 12, lineHeight: 17, marginBottom: SPACING.xs },
   targetRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: SPACING.sm,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.base,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: RADIUS.md,
   },
-  targetLabel: {
-    fontSize: FONT_SIZE.bodySmall,
-    flex: 1,
-    marginRight: SPACING.sm,
+  targetIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: RADIUS.sm,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  targetCurrency: { fontSize: 11 },
+  targetIconText: { fontSize: 13 },
+  targetLabel: { flex: 1, fontSize: FONT_SIZE.bodySmall },
+  currencyChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+  },
+  currencyChipText: { fontSize: 10, letterSpacing: 0.3 },
 });
