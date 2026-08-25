@@ -31,7 +31,7 @@ import {
   CATEGORY_COLORS,
   FALLBACK_CATEGORY_COLOR,
 } from "@/core/common/constants/theme";
-import { CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
+import { getCategoryIconName } from "@/features/transactions/transactions.constants";
 import {
   useCategories,
   getCategoryLabel,
@@ -193,10 +193,10 @@ export default function AddTransactionSheet({
     ? (CATEGORY_COLORS[selectedCategory] ?? FALLBACK_CATEGORY_COLOR)
     : colors.border;
   const catIcon = selectedCategory
-    ? ((CATEGORY_ICON_NAMES[selectedCategory] ??
-        "ellipsis-horizontal-outline") as React.ComponentProps<
-        typeof Ionicons
-      >["name"])
+    ? (getCategoryIconName(
+        selectedCategory,
+        allCategories,
+      ) as React.ComponentProps<typeof Ionicons>["name"])
     : ("grid-outline" as React.ComponentProps<typeof Ionicons>["name"]);
   const catLabel = selectedCategory
     ? getCategoryLabel(selectedCategory, allCategories)
@@ -666,10 +666,10 @@ export default function AddTransactionSheet({
               {allCategories.map((cat) => {
                 const color =
                   CATEGORY_COLORS[cat.slug] ?? FALLBACK_CATEGORY_COLOR;
-                const icon = (CATEGORY_ICON_NAMES[cat.slug] ??
-                  "ellipsis-horizontal-outline") as React.ComponentProps<
-                  typeof Ionicons
-                >["name"];
+                const icon = getCategoryIconName(
+                  cat.slug,
+                  allCategories,
+                ) as React.ComponentProps<typeof Ionicons>["name"];
                 return (
                   <Pressable
                     key={cat.slug}
