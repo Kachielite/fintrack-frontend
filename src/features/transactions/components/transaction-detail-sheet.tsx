@@ -37,7 +37,12 @@ import {
   getCategoryLabel,
 } from "@/features/categories/hooks/use-categories";
 import { useLinkedTransaction } from "../hooks/use-linked-transaction";
-import { useUnmarkTransfer } from "../hooks/use-transfer-mark";
+import { useMarkTransfer, useUnmarkTransfer } from "../hooks/use-transfer-mark";
+
+/** Friendly, best-effort label for the account a transaction belongs to (e.g. "Access Bank (USD)"). */
+function accountLabel(t: Transaction): string {
+  return t.bankName ? `${t.bankName} (${t.currency})` : `your ${t.currency} account`;
+}
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -69,17 +74,41 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
 
   const showReviewBanner = isReview && !reviewDone;
 
-  const [transferUndone, setTransferUndone] = useState(false);
-  const showTransferBanner = transaction.excludeFromTotals && !transferUndone;
+  const [transferResolved, setTransferResolved] = useState(false);
+  const showTransferBanner = transaction.excludeFromTotals && !transferResolved;
   const { linkedTransaction } = useLinkedTransaction(transaction.id, showTransferBanner);
+  const { markTransfer, isMarking } = useMarkTransfer();
   const { unmarkTransfer, isUnmarking } = useUnmarkTransfer();
 
-  async function handleUndoTransfer() {
+  // The user's choice ("it is a transfer" / "it's not") is asked first; only once we
+  // know both accounts involved do we ask whether to remember it for next time — so
+  // this stays undefined for a single-leg exclusion with no counterpart account.
+  const [pendingTransferChoice, setPendingTransferChoice] = useState<"yes" | "no" | null>(null);
+  const canRememberTransferChoice =
+    linkedTransaction != null &&
+    transaction.accountId != null &&
+    linkedTransaction.accountId != null &&
+    transaction.accountId !== linkedTransaction.accountId;
+  const isResolvingTransfer = isMarking || isUnmarking;
+
+  function handleTransferChoice(choice: "yes" | "no") {
+    setPendingTransferChoice(choice);
+    if (!canRememberTransferChoice) {
+      void finalizeTransferChoice(choice, false);
+    }
+  }
+
+  async function finalizeTransferChoice(choice: "yes" | "no", remember: boolean) {
     try {
-      await unmarkTransfer(transaction.id);
-      setTransferUndone(true);
+      if (choice === "yes") {
+        await markTransfer({ id: transaction.id, linkedTransactionId: linkedTransaction?.id, remember });
+      } else {
+        await unmarkTransfer({ id: transaction.id, remember });
+      }
+      setTransferResolved(true);
     } catch {
-      // surfaced via the disabled/loading state below; nothing else to do here
+      // surfaced via the disabled/loading state below; let the user retry
+      setPendingTransferChoice(null);
     }
   }
 
@@ -284,13 +313,15 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                 <View style={styles.transferHeader}>
                   <Ionicons name="swap-horizontal-outline" size={14} color={colors.textSecondary} />
                   <Text style={[styles.transferLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
-                    LOOKS LIKE A TRANSFER
+                    MONEY MOVED BETWEEN YOUR ACCOUNTS?
                   </Text>
                 </View>
                 <Text style={[styles.transferBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
                   {linkedTransaction
-                    ? `This looks like a transfer to "${linkedTransaction.merchant}" — not counted as spend or income.`
-                    : "This looks like a transfer or currency conversion — not counted as spend or income."}
+                    ? transaction.currency !== linkedTransaction.currency
+                      ? `This looks like it was converted from ${accountLabel(transaction)} to ${accountLabel(linkedTransaction)} — not counted as spend or income.`
+                      : `This looks like a transfer to ${accountLabel(linkedTransaction)} — not counted as spend or income.`
+                    : "This looks like money moving between your own accounts, not spend or income — but we couldn't find the other side of it."}
                 </Text>
                 {linkedTransaction && (
                   <View style={[styles.linkedRow, { borderColor: colors.border }]}>
@@ -305,19 +336,66 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                     </Text>
                   </View>
                 )}
-                <Pressable
-                  onPress={handleUndoTransfer}
-                  disabled={isUnmarking}
-                  style={[styles.undoBtn, { borderColor: colors.border, opacity: isUnmarking ? 0.6 : 1 }]}
-                >
-                  {isUnmarking ? (
-                    <ActivityIndicator size="small" color={colors.textSecondary} />
-                  ) : (
-                    <Text style={[styles.undoText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
-                      Not a transfer — count it
+
+                {pendingTransferChoice === null ? (
+                  <View style={styles.transferChoiceRow}>
+                    <Pressable
+                      onPress={() => handleTransferChoice("yes")}
+                      disabled={isResolvingTransfer}
+                      style={[
+                        styles.transferChoiceBtn,
+                        { backgroundColor: colors.primary, opacity: isResolvingTransfer ? 0.6 : 1 },
+                      ]}
+                    >
+                      <Text style={[styles.transferChoiceTextOn, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
+                        Yes, it&apos;s a transfer
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleTransferChoice("no")}
+                      disabled={isResolvingTransfer}
+                      style={[
+                        styles.transferChoiceBtn,
+                        { borderColor: colors.border, borderWidth: 1, opacity: isResolvingTransfer ? 0.6 : 1 },
+                      ]}
+                    >
+                      <Text style={[styles.transferChoiceText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                        No — count it
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : isResolvingTransfer && !canRememberTransferChoice ? (
+                  <ActivityIndicator size="small" color={colors.textSecondary} />
+                ) : canRememberTransferChoice ? (
+                  <View style={[styles.rememberBox, { borderColor: colors.border }]}>
+                    <Text style={[styles.transferBody, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>
+                      Always treat transfers between {accountLabel(transaction)} and{" "}
+                      {accountLabel(linkedTransaction!)} this way?
                     </Text>
-                  )}
-                </Pressable>
+                    {isResolvingTransfer ? (
+                      <ActivityIndicator size="small" color={colors.textSecondary} />
+                    ) : (
+                      <View style={styles.transferChoiceRow}>
+                        <Pressable
+                          onPress={() => finalizeTransferChoice(pendingTransferChoice, true)}
+                          style={[styles.transferChoiceBtn, { backgroundColor: colors.primary }]}
+                        >
+                          <Text style={[styles.transferChoiceTextOn, { color: colors.onPrimary, fontFamily: FONTS.semiBold }]}>
+                            Yes, always
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => finalizeTransferChoice(pendingTransferChoice, false)}
+                          style={[styles.transferChoiceBtn, { borderColor: colors.border, borderWidth: 1 }]}
+                        >
+                          <Text style={[styles.transferChoiceText, { color: colors.textSecondary, fontFamily: FONTS.semiBold }]}>
+                            No, ask each time
+                          </Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </View>
+                ) : null}
               </View>
             )}
 
@@ -712,14 +790,21 @@ const styles = StyleSheet.create({
   },
   linkedMerchant: { fontSize: 13, flex: 1, marginRight: SPACING.sm },
   linkedAmount: { fontSize: 12 },
-  undoBtn: {
-    borderWidth: 1,
+  transferChoiceRow: { flexDirection: "row", gap: SPACING.sm },
+  transferChoiceBtn: {
+    flex: 1,
     borderRadius: RADIUS.full,
-    paddingVertical: SPACING.xs + 2,
+    paddingVertical: SPACING.xs + 4,
     alignItems: "center",
     justifyContent: "center",
   },
-  undoText: { fontSize: 13 },
+  transferChoiceText: { fontSize: 13 },
+  transferChoiceTextOn: { fontSize: 13 },
+  rememberBox: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: SPACING.sm,
+    gap: SPACING.sm,
+  },
   reviewCard: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,

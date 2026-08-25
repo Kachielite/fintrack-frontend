@@ -81,6 +81,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   travel: "#5AB8A0",
   bank_charges: "#B05A6E",
   currency_conversion: "#8A8A5A",
+  self_transfer: "#6E7A8A",
   salary_wages: "#5AB05A",
   refunds_reimbursements: "#5A8A8A",
   healthcare: "#D45A7A",

@@ -91,19 +91,24 @@ export const TransactionService = {
   async markTransfer(
     id: number,
     linkedTransactionId?: number,
+    remember?: boolean,
   ): Promise<Transaction> {
     const { data } = await apiClient.post<TransactionDto>(
       API_ENDPOINTS.TRANSACTION_MARK_TRANSFER(id),
-      linkedTransactionId != null
-        ? { linked_transaction_id: linkedTransactionId }
-        : {},
+      {
+        ...(linkedTransactionId != null
+          ? { linked_transaction_id: linkedTransactionId }
+          : {}),
+        ...(remember != null ? { remember } : {}),
+      },
     );
     return mapTransactionFromDto(data);
   },
 
-  async unmarkTransfer(id: number): Promise<Transaction> {
+  async unmarkTransfer(id: number, remember?: boolean): Promise<Transaction> {
     const { data } = await apiClient.post<TransactionDto>(
       API_ENDPOINTS.TRANSACTION_UNMARK_TRANSFER(id),
+      remember != null ? { remember } : {},
     );
     return mapTransactionFromDto(data);
   },
