@@ -63,6 +63,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] });
     },
   });
 

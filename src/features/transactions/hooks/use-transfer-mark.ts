@@ -28,10 +28,12 @@ export function useMarkTransfer() {
     mutationFn: ({
       id,
       linkedTransactionId,
+      remember,
     }: {
       id: number;
       linkedTransactionId?: number;
-    }) => TransactionService.markTransfer(id, linkedTransactionId),
+      remember?: boolean;
+    }) => TransactionService.markTransfer(id, linkedTransactionId, remember),
     onSuccess: invalidate,
   });
   return { markTransfer: mutation.mutateAsync, isMarking: mutation.isPending };
@@ -40,7 +42,8 @@ export function useMarkTransfer() {
 export function useUnmarkTransfer() {
   const invalidate = useInvalidateAfterTransferChange();
   const mutation = useMutation({
-    mutationFn: (id: number) => TransactionService.unmarkTransfer(id),
+    mutationFn: ({ id, remember }: { id: number; remember?: boolean }) =>
+      TransactionService.unmarkTransfer(id, remember),
     onSuccess: invalidate,
   });
   return {
