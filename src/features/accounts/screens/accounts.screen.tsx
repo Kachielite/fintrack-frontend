@@ -7,8 +7,10 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
@@ -28,6 +30,7 @@ import SkeletonBox from "@/core/common/components/SkeletonBox";
 
 export default function AccountsScreen() {
   const colors = useThemeColors();
+  const navigation = useNavigation<any>();
   const { accounts, isLoading, refetch } = useAccounts();
   const { rescan, isRescanning } = useRescanTransfers();
 
@@ -54,6 +57,16 @@ export default function AccountsScreen() {
             : "No new transfers found",
         text2: `Checked ${result.scanned} transaction${result.scanned === 1 ? "" : "s"}`,
       });
+      if (result.linked > 0) {
+        Alert.alert(
+          "Transfers found",
+          `We excluded ${result.linked} transaction${result.linked === 1 ? "" : "s"} from your totals. Want to review them now?`,
+          [
+            { text: "Later", style: "cancel" },
+            { text: "Review now", onPress: () => navigation.navigate("ReviewTransfers") },
+          ],
+        );
+      }
     } catch {
       Toast.show({ type: "error", text1: "Could not re-scan transactions" });
     }
@@ -75,25 +88,42 @@ export default function AccountsScreen() {
           />
         }
       >
-        <Pressable
-          onPress={handleRescan}
-          disabled={isRescanning}
-          style={styles.rescanRow}
-        >
-          {isRescanning ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Ionicons name="sync-outline" size={16} color={colors.primary} />
-          )}
-          <Text
-            style={[
-              styles.rescanText,
-              { color: colors.primary, fontFamily: FONTS.semiBold },
-            ]}
+        <View style={styles.actionsRow}>
+          <Pressable
+            onPress={handleRescan}
+            disabled={isRescanning}
+            style={styles.rescanRow}
           >
-            Re-scan for transfers
-          </Text>
-        </Pressable>
+            {isRescanning ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Ionicons name="sync-outline" size={16} color={colors.primary} />
+            )}
+            <Text
+              style={[
+                styles.rescanText,
+                { color: colors.primary, fontFamily: FONTS.semiBold },
+              ]}
+            >
+              Re-scan for transfers
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => navigation.navigate("ReviewTransfers")}
+            style={styles.rescanRow}
+          >
+            <Ionicons name="swap-horizontal-outline" size={16} color={colors.textSecondary} />
+            <Text
+              style={[
+                styles.rescanText,
+                { color: colors.textSecondary, fontFamily: FONTS.semiBold },
+              ]}
+            >
+              Review transfers
+            </Text>
+          </Pressable>
+        </View>
 
         {isLoading ? (
           <View style={{ gap: SPACING.sm }}>
@@ -145,6 +175,11 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.md,
     paddingBottom: SPACING.xxl,
     gap: SPACING.base,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.lg,
   },
   rescanRow: {
     flexDirection: "row",
