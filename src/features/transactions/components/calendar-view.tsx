@@ -23,7 +23,7 @@ import {
 } from "@/core/common/constants/theme";
 import { formatCurrency } from "@/core/common/utils/currency";
 import { useDailySpend } from "../hooks/use-daily-spend";
-import { useUserStore } from "@/features/user/user.state";
+import { useProfile } from "@/features/user/hooks/use-profile";
 import DayTransactionsSheet from "./day-transactions-sheet";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
@@ -67,7 +67,8 @@ function cellTint(
 
 export default function CalendarView() {
   const colors = useThemeColors();
-  const refCurrency = useUserStore((s) => s.profile?.refCurrency ?? "NGN");
+  const { profile } = useProfile();
+  const refCurrency = profile?.refCurrency ?? "NGN";
 
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -75,26 +76,17 @@ export default function CalendarView() {
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth() + 1;
-  const { dailySpend, isLoading } = useDailySpend(year, month);
+  const { dailySpend, monthTotals, isLoading } = useDailySpend(year, month);
 
   const dataByDate = useMemo(() => {
-    const map = new Map<string, { spend: number; income: number }>();
+    const map = new Map<
+      string,
+      { spend: number; income: number; net: number }
+    >();
     for (const p of dailySpend)
-      map.set(p.date, { spend: p.spend, income: p.income });
+      map.set(p.date, { spend: p.spend, income: p.income, net: p.net });
     return map;
   }, [dailySpend]);
-
-  const monthTotals = useMemo(
-    () =>
-      dailySpend.reduce(
-        (acc, p) => ({
-          spend: acc.spend + p.spend,
-          income: acc.income + p.income,
-        }),
-        { spend: 0, income: 0 },
-      ),
-    [dailySpend],
-  );
 
   const maxSpend = useMemo(
     () => dailySpend.reduce((max, p) => Math.max(max, p.spend), 0),
@@ -111,8 +103,14 @@ export default function CalendarView() {
     return eachDayOfInterval({ start, end });
   }, [cursor]);
 
-  function dayData(day: Date): { spend: number; income: number } {
-    return dataByDate.get(format(day, "yyyy-MM-dd")) ?? { spend: 0, income: 0 };
+  function dayData(day: Date): { spend: number; income: number; net: number } {
+    return (
+      dataByDate.get(format(day, "yyyy-MM-dd")) ?? {
+        spend: 0,
+        income: 0,
+        net: 0,
+      }
+    );
   }
 
   function selectDay(day: Date) {
@@ -121,7 +119,7 @@ export default function CalendarView() {
   }
 
   const selected = selectedDay ? dayData(selectedDay) : null;
-  const selectedNet = selected ? selected.income - selected.spend : 0;
+  const selectedNet = selected?.net ?? 0;
 
   return (
     <>
@@ -443,6 +441,29 @@ export default function CalendarView() {
                     ]}
                   >
                     {formatCurrency(monthTotals.income, refCurrency)}
+                  </Text>
+                </View>
+                <View style={styles.totalStat}>
+                  <Text
+                    style={[
+                      styles.totalStatLabel,
+                      { color: colors.textSubtle, fontFamily: FONTS.regular },
+                    ]}
+                  >
+                    Net
+                  </Text>
+                  <Text
+                    style={[
+                      styles.totalValue,
+                      {
+                        color:
+                          monthTotals.net >= 0 ? colors.success : colors.error,
+                        fontFamily: FONTS.mono,
+                      },
+                    ]}
+                  >
+                    {monthTotals.net >= 0 ? "+" : "-"}
+                    {formatCurrency(Math.abs(monthTotals.net), refCurrency)}
                   </Text>
                 </View>
               </View>
