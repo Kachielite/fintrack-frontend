@@ -8,7 +8,7 @@ import apiClient from "@/core/common/network/api-client";
 import { ENV } from "@/core/common/constants/env";
 import { API_ENDPOINTS } from "@/core/common/network/api-endpoints";
 import { mapAxiosErrorToAppError } from "@/core/common/error/app-error";
-import { AuthResponseDto } from "./auth.dto";
+import { AuthResponseDto, SignUpSchemaType } from "./auth.dto";
 import { AuthSession } from "./auth.interface";
 import { mapAuthSessionFromDto } from "./auth.mapper";
 
@@ -106,13 +106,27 @@ export const AuthService = {
     }
   },
 
-  loginDemo: async (email: string, password: string): Promise<AuthSession> => {
+  login: async (email: string, password: string): Promise<AuthSession> => {
     try {
-      const { data } = await apiClient.post<AuthResponseDto>(API_ENDPOINTS.AUTH_DEMO, {
+      const { data } = await apiClient.post<AuthResponseDto>(API_ENDPOINTS.AUTH_LOGIN, {
         email,
         password,
       });
       return mapAuthSessionFromDto(data);
+    } catch (error) {
+      throw mapAxiosErrorToAppError(error);
+    }
+  },
+
+  register: async (
+    data: Omit<SignUpSchemaType, "confirm_password">,
+  ): Promise<AuthSession> => {
+    try {
+      const { data: response } = await apiClient.post<AuthResponseDto>(
+        API_ENDPOINTS.AUTH_REGISTER,
+        data,
+      );
+      return mapAuthSessionFromDto(response);
     } catch (error) {
       throw mapAxiosErrorToAppError(error);
     }
