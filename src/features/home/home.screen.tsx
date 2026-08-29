@@ -8,15 +8,22 @@ import { useTransactionSummary } from "@/features/transactions/hooks/use-transac
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 import { useInsights } from "@/features/insights/hooks/use-insights";
 import { useAccounts } from "@/features/accounts/hooks/use-accounts";
+import { useAuthStore } from "@/features/auth/auth.state";
+import ImportCsvSheet from "@/features/transactions/components/import-csv-sheet";
 import HomeHeader from "./components/home-header";
 import SpendingOverviewCard from "./components/spending-overview-card";
 import AccountsSummaryCard from "./components/accounts-summary-card";
 import CategoryBreakdownCard from "./components/category-breakdown-card";
 import IrisInsightCard from "./components/iris-insight-card";
 import RecentTransactionsCard from "./components/recent-transactions-card";
+import ConnectSourceBanner from "./components/connect-source-banner";
 
 export default function HomeScreen() {
   const colors = useThemeColors();
+  const dataSourceSkipped = useAuthStore((s) => s.dataSourceSkipped);
+  const setDataSourceSkipped = useAuthStore((s) => s.setDataSourceSkipped);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [importSheetVisible, setImportSheetVisible] = useState(false);
 
   const now = new Date();
   const year = now.getFullYear();
@@ -61,6 +68,12 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.content}>
+          {dataSourceSkipped && !bannerDismissed && (
+            <ConnectSourceBanner
+              onDismiss={() => setBannerDismissed(true)}
+              onImportPress={() => setImportSheetVisible(true)}
+            />
+          )}
           <SpendingOverviewCard summary={summary} isLoading={summaryLoading} />
           <AccountsSummaryCard accounts={accounts} isLoading={accountsLoading} />
           <CategoryBreakdownCard summary={summary} isLoading={summaryLoading} />
@@ -74,6 +87,14 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
+
+      <ImportCsvSheet
+        visible={importSheetVisible}
+        onClose={() => setImportSheetVisible(false)}
+        onImported={(result) => {
+          if (result.imported > 0) setDataSourceSkipped(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -9,10 +9,12 @@ interface AuthState {
   token: string | null;
   refreshToken: string | null;
   onboardingComplete: boolean;
+  dataSourceSkipped: boolean;
   setSession(session: AuthSession): void;
   clearSession(): void;
   setOnboardingComplete(): void;
   persistOnboardingComplete(): void;
+  setDataSourceSkipped(v: boolean): void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       onboardingComplete: false,
+      dataSourceSkipped: false,
 
       setSession(session) {
         set({
@@ -38,7 +41,12 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           refreshToken: null,
           onboardingComplete: false,
+          dataSourceSkipped: false,
         });
+      },
+
+      setDataSourceSkipped(v) {
+        set({ dataSourceSkipped: v });
       },
 
       setOnboardingComplete() {

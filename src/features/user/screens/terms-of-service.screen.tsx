@@ -41,7 +41,7 @@ const SECTIONS = [
   },
   {
     title: "9. Account termination",
-    body: `You may delete your account at any time via Profile → Delete account. Your data will be permanently deleted within 30 days of your request.\n\nWe reserve the right to suspend or terminate accounts that violate these Terms of Service, with or without notice.\n\nUpon termination, your right to use the Service ceases immediately.`,
+    body: `You may delete your account at any time via Profile → Delete account. Your data will be permanently deleted within 14 days of your request.\n\nWe reserve the right to suspend or terminate accounts that violate these Terms of Service, with or without notice.\n\nUpon termination, your right to use the Service ceases immediately.`,
   },
   {
     title: "10. Changes to terms",

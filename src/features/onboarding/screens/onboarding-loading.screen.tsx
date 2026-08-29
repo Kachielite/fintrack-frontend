@@ -60,7 +60,7 @@ export default function OnboardingLoadingScreen() {
   useEffect(() => {
     if (phase === "done" || phase === "skipped") {
       const t = setTimeout(() => {
-        (navigation as any).navigate("OnboardingResults", { transactionCount });
+        (navigation as any).navigate("OnboardingResults", { transactionCount, source: "email" });
       }, 1000);
       return () => clearTimeout(t);
     }

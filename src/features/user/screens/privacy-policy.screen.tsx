@@ -25,7 +25,7 @@ const SECTIONS = [
   },
   {
     title: "5. Data retention",
-    body: `Your transaction data is retained for as long as your account is active. When you delete your account:\n\n• Your account and profile data are deleted within 30 days.\n• Your raw transaction data is deleted within 30 days.\n• Anonymised, aggregated analytics data (not linked to you) may be retained.\n\nYou can request immediate deletion by contacting us at privacy@vela.app.`,
+    body: `Your transaction data is retained for as long as your account is active. When you delete your account:\n\n• Your account and profile data are deleted within 14 days.\n• Your raw transaction data is deleted within 14 days.\n• Anonymised, aggregated analytics data (not linked to you) may be retained.\n\nYou can request immediate deletion by contacting us at privacy@vela.app.`,
   },
   {
     title: "6. Security",

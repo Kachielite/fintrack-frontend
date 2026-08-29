@@ -52,6 +52,23 @@ export default function OnboardingGmailScreen() {
 
   return (
     <ScreenContainer scrollable>
+      {/* Back button */}
+      <Pressable
+        onPress={() => navigation.goBack()}
+        hitSlop={12}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: RADIUS.md,
+          backgroundColor: colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: SPACING.lg,
+        }}
+      >
+        <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+      </Pressable>
+
       {/* Step indicator */}
       <View
         style={{ flexDirection: "row", gap: 6, marginBottom: SPACING.xxxl }}
