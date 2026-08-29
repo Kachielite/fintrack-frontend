@@ -38,6 +38,7 @@ import {
 } from "@/features/categories/hooks/use-categories";
 import { useLinkedTransaction } from "../hooks/use-linked-transaction";
 import { useMarkTransfer, useUnmarkTransfer } from "../hooks/use-transfer-mark";
+import SimilarTransactionsSheet from "./similar-transactions-sheet";
 
 /** Friendly, best-effort label for the account a transaction belongs to (e.g. "Access Bank (USD)"). */
 function accountLabel(t: Transaction): string {
@@ -139,12 +140,13 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     },
   });
 
-  const { data: similarTransactions = [] } = useQuery({
+  const { data: similarTransactions = [], isFetching: isFindingSimilar } = useQuery({
     queryKey: [QUERY_KEYS.TRANSACTION_DETAIL, transaction.id, "similar"],
     queryFn: () => TransactionService.getSimilarTransactions(transaction.id),
     enabled: confirmedCategory !== null && !similarDismissed,
     staleTime: Infinity,
   });
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
 
   const bulkMutation = useMutation({
     mutationFn: (ids: number[]) =>
@@ -160,8 +162,13 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     },
   });
 
+  const showFindingSimilar =
+    confirmedCategory !== null && !similarDismissed && isFindingSimilar;
   const showSimilarBanner =
-    confirmedCategory !== null && !similarDismissed && similarTransactions.length > 0;
+    confirmedCategory !== null &&
+    !similarDismissed &&
+    !isFindingSimilar &&
+    similarTransactions.length > 0;
 
   const isCredit = transaction.transactionType === "credit";
   const showRef = transaction.currency !== transaction.refCurrency;
@@ -249,6 +256,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   }
 
   return (
+    <>
     <Modal
       visible={visible}
       transparent
@@ -439,6 +447,18 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               </View>
             )}
 
+            {/* Looking for similar transactions */}
+            {showFindingSimilar && (
+              <View style={[styles.similarCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+                <View style={styles.similarHeader}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={[styles.similarLabel, { color: colors.primary, fontFamily: FONTS.bold }]}>
+                    LOOKING FOR SIMILAR TRANSACTIONS
+                  </Text>
+                </View>
+              </View>
+            )}
+
             {/* Similar banner */}
             {showSimilarBanner && (
               <View style={[styles.similarCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
@@ -484,6 +504,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                     </Text>
                   </Pressable>
                 </View>
+                <Pressable onPress={() => setReviewSheetOpen(true)} hitSlop={6} style={styles.similarViewLink}>
+                  <Text style={[styles.similarViewLinkText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
+                    View transactions
+                  </Text>
+                </Pressable>
               </View>
             )}
 
@@ -679,6 +704,17 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
         </KeyboardAvoidingView>
       )}
     </Modal>
+    <SimilarTransactionsSheet
+      visible={reviewSheetOpen}
+      onClose={() => setReviewSheetOpen(false)}
+      transactions={similarTransactions}
+      targetCategory={confirmedCategory ?? savedCategory}
+      isSubmitting={bulkMutation.isPending}
+      onConfirm={(ids) => {
+        bulkMutation.mutate(ids, { onSuccess: () => setReviewSheetOpen(false) });
+      }}
+    />
+    </>
   );
 }
 
@@ -896,4 +932,6 @@ const styles = StyleSheet.create({
     minHeight: 34,
   },
   similarBtnText: { fontSize: 13 },
+  similarViewLink: { alignSelf: "flex-start", marginTop: 2 },
+  similarViewLinkText: { fontSize: 13, textDecorationLine: "underline" },
 });
