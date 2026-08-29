@@ -20,6 +20,8 @@ import {
 
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
+import SignInScreen from "@/features/auth/screens/sign-in.screen";
+import SignUpScreen from "@/features/auth/screens/sign-up.screen";
 // Onboarding
 import OnboardingGetStartedScreen from "@/features/onboarding/screens/onboarding-get-started.screen";
 import OnboardingGmailScreen from "@/features/onboarding/screens/onboarding-gmail.screen";
@@ -251,6 +253,8 @@ function UnauthenticatedStack() {
   return (
     <UnauthStack.Navigator screenOptions={{ headerShown: false }}>
       <UnauthStack.Screen name="Auth" component={AuthScreen} />
+      <UnauthStack.Screen name="SignIn" component={SignInScreen} />
+      <UnauthStack.Screen name="SignUp" component={SignUpScreen} />
       <UnauthStack.Screen
         name="PrivacyPolicy"
         component={PrivacyPolicyScreen}

@@ -2,7 +2,8 @@ export const API_ENDPOINTS = {
   // Auth
   AUTH_GOOGLE: "/auth/google",
   AUTH_APPLE: "/auth/apple",
-  AUTH_DEMO: "/auth/demo",
+  AUTH_LOGIN: "/auth/login",
+  AUTH_REGISTER: "/auth/register",
   AUTH_REFRESH: "/auth/refresh",
   AUTH_LOGOUT: "/auth/logout",
 
