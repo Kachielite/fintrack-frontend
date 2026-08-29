@@ -124,7 +124,7 @@ export default function RescanTransfersSheet({ visible, onClose }: Props) {
                       { color: colors.error, fontFamily: FONTS.semiBold },
                     ]}
                   >
-                    Something went wrong — please try again.
+                    Something went wrong, please try again.
                   </Text>
                 )}
               </>
@@ -156,7 +156,7 @@ export default function RescanTransfersSheet({ visible, onClose }: Props) {
                     { color: colors.textSecondary, fontFamily: FONTS.regular },
                   ]}
                 >
-                  This runs in the background — we&apos;ll notify you when
+                  This runs in the background. We&apos;ll notify you when
                   it&apos;s done and what we found.
                 </Text>
               </>
