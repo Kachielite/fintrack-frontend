@@ -59,7 +59,7 @@ export default function RecentTransactionsCard({
             <View style={{ paddingHorizontal: SPACING.base }}>
               {items.map((tx, i) => (
                 <View
-                  key={tx.reference ?? String(tx.id)}
+                  key={String(tx.id)}
                   style={
                     i < items.length - 1
                       ? [styles.separator, { borderBottomColor: colors.border }]

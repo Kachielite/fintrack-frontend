@@ -117,6 +117,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
       TransactionService.correctTransaction(transaction.id, payload),
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
       if (payload.merchant) setSavedMerchant(payload.merchant);
       if (payload.category) {
         const prevCategory = savedCategory;
@@ -142,6 +147,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
       TransactionService.bulkCorrectCategory(ids, confirmedCategory!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
       setSimilarDismissed(true);
     },
   });

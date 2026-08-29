@@ -26,8 +26,13 @@ export const AccountsService = {
   },
 
   async rescanTransfers(): Promise<RescanTransfersResult> {
+    // Walks the user's full transaction history server-side — can run well
+    // past the global request timeout for accounts with real history, even
+    // though it always completes. Give it room instead of the default.
     const { data } = await apiClient.post<RescanTransfersResult>(
       API_ENDPOINTS.ACCOUNTS_RESCAN_TRANSFERS,
+      undefined,
+      { timeout: 120000 },
     );
     return data;
   },
