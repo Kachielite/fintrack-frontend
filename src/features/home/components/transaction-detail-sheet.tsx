@@ -37,6 +37,7 @@ import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate, formatTime } from "@/core/common/utils/date";
 import { useLinkedTransaction } from "@/features/transactions/hooks/use-linked-transaction";
 import { useMarkTransfer, useUnmarkTransfer } from "@/features/transactions/hooks/use-transfer-mark";
+import SimilarTransactionsSheet from "@/features/transactions/components/similar-transactions-sheet";
 import {
   useCategories,
   getCategoryLabel,
@@ -104,6 +105,10 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     try {
       if (choice === "yes") {
         await markTransfer({ id: transaction.id, linkedTransactionId: linkedTransaction?.id, remember });
+        // Same "similar transactions" prompt a manual category edit triggers —
+        // catches other transactions from this merchant that auto-detection missed.
+        setSavedCategory("self_transfer");
+        setConfirmedCategory("self_transfer");
       } else {
         await unmarkTransfer({ id: transaction.id, remember });
       }
@@ -119,6 +124,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
       TransactionService.correctTransaction(transaction.id, payload),
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
       if (payload.merchant) setSavedMerchant(payload.merchant);
       if (payload.category) {
         const prevCategory = savedCategory;
@@ -132,24 +142,35 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     },
   });
 
-  const { data: similarTransactions = [] } = useQuery({
+  const { data: similarTransactions = [], isFetching: isFindingSimilar } = useQuery({
     queryKey: [QUERY_KEYS.TRANSACTION_DETAIL, transaction.id, "similar"],
     queryFn: () => TransactionService.getSimilarTransactions(transaction.id),
     enabled: confirmedCategory !== null && !similarDismissed,
     staleTime: Infinity,
   });
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
 
   const bulkMutation = useMutation({
     mutationFn: (ids: number[]) =>
       TransactionService.bulkCorrectCategory(ids, confirmedCategory!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
       setSimilarDismissed(true);
     },
   });
 
+  const showFindingSimilar =
+    confirmedCategory !== null && !similarDismissed && isFindingSimilar;
   const showSimilarBanner =
-    confirmedCategory !== null && !similarDismissed && similarTransactions.length > 0;
+    confirmedCategory !== null &&
+    !similarDismissed &&
+    !isFindingSimilar &&
+    similarTransactions.length > 0;
 
   const isCredit = transaction.transactionType === "credit";
   const showRef = transaction.currency !== transaction.refCurrency;
@@ -237,8 +258,9 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   }
 
   return (
+    <>
     <Modal
-      visible={visible}
+      visible={visible && !reviewSheetOpen}
       transparent
       animationType="slide"
       onRequestClose={onClose}
@@ -424,6 +446,18 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
               </View>
             )}
 
+            {/* Looking for similar transactions */}
+            {showFindingSimilar && (
+              <View style={[styles.similarCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+                <View style={styles.similarHeader}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={[styles.similarLabel, { color: colors.primary, fontFamily: FONTS.bold }]}>
+                    LOOKING FOR SIMILAR TRANSACTIONS
+                  </Text>
+                </View>
+              </View>
+            )}
+
             {/* Similar banner */}
             {showSimilarBanner && (
               <View style={[styles.similarCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
@@ -469,6 +503,11 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
                     </Text>
                   </Pressable>
                 </View>
+                <Pressable onPress={() => setReviewSheetOpen(true)} hitSlop={6} style={styles.similarViewLink}>
+                  <Text style={[styles.similarViewLinkText, { color: colors.primary, fontFamily: FONTS.semiBold }]}>
+                    View transactions
+                  </Text>
+                </Pressable>
               </View>
             )}
 
@@ -655,6 +694,17 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
         </KeyboardAvoidingView>
       )}
     </Modal>
+    <SimilarTransactionsSheet
+      visible={reviewSheetOpen}
+      onClose={() => setReviewSheetOpen(false)}
+      transactions={similarTransactions}
+      targetCategory={confirmedCategory ?? savedCategory}
+      isSubmitting={bulkMutation.isPending}
+      onConfirm={(ids) => {
+        bulkMutation.mutate(ids, { onSuccess: () => setReviewSheetOpen(false) });
+      }}
+    />
+    </>
   );
 }
 
@@ -863,4 +913,6 @@ const styles = StyleSheet.create({
     minHeight: 34,
   },
   similarBtnText: { fontSize: 13 },
+  similarViewLink: { alignSelf: "flex-start", marginTop: 2 },
+  similarViewLinkText: { fontSize: 13, textDecorationLine: "underline" },
 });

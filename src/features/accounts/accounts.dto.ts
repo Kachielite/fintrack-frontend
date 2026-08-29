@@ -27,6 +27,7 @@ export interface AccountDto {
 }
 
 export interface RescanTransfersResult {
-  scanned: number;
-  linked: number;
+  success: boolean;
+  message: string;
+  data: null;
 }

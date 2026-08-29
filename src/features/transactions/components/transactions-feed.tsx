@@ -56,6 +56,9 @@ interface Props {
   onPressTx: (tx: Transaction) => void;
   refreshing: boolean;
   onRefresh: () => void;
+  emptyIcon?: React.ComponentProps<typeof EmptyState>["icon"];
+  emptyMessage?: string;
+  emptySubMessage?: string;
 }
 
 export default function TransactionsFeed({
@@ -67,6 +70,9 @@ export default function TransactionsFeed({
   onPressTx,
   refreshing,
   onRefresh,
+  emptyIcon = "search-outline",
+  emptyMessage = "Nothing matches that",
+  emptySubMessage = "Try a different search or clear a filter to see more.",
 }: Props) {
   const colors = useThemeColors();
 
@@ -104,9 +110,9 @@ export default function TransactionsFeed({
       }
       ListEmptyComponent={
         <EmptyState
-          icon="search-outline"
-          message="Nothing matches that"
-          subMessage="Try a different search or clear a filter to see more."
+          icon={emptyIcon}
+          message={emptyMessage}
+          subMessage={emptySubMessage}
         />
       }
       ListFooterComponent={

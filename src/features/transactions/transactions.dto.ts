@@ -63,6 +63,7 @@ export interface TransactionQueryParams {
   date_from?: string;
   date_to?: string;
   search?: string;
+  exclude_from_totals?: boolean;
 }
 
 export interface TransactionSummaryDto {

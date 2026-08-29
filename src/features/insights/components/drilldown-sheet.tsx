@@ -130,7 +130,7 @@ export default function DrilldownSheet({
             >
               {transactions.map((tx) => (
                 <TransactionRow
-                  key={tx.reference ?? String(tx.id)}
+                  key={String(tx.id)}
                   transaction={tx}
                   onPress={() => onTransactionPress(tx)}
                 />

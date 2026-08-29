@@ -19,31 +19,25 @@ import {
   RADIUS,
 } from "@/core/common/constants/theme";
 import { useRescanTransfers } from "../hooks/use-rescan-transfers";
-import { RescanTransfersResult } from "../accounts.dto";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onReview: () => void;
 }
 
-export default function RescanTransfersSheet({
-  visible,
-  onClose,
-  onReview,
-}: Props) {
+export default function RescanTransfersSheet({ visible, onClose }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { rescan, isRescanning } = useRescanTransfers();
 
-  const [result, setResult] = useState<RescanTransfersResult | null>(null);
+  const [started, setStarted] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      setResult(null);
+      setStarted(false);
       setFailed(false);
     }
   }, [visible]);
@@ -51,16 +45,11 @@ export default function RescanTransfersSheet({
   async function handleStart() {
     setFailed(false);
     try {
-      const r = await rescan();
-      setResult(r);
+      await rescan();
+      setStarted(true);
     } catch {
       setFailed(true);
     }
-  }
-
-  function handleReview() {
-    onClose();
-    onReview();
   }
 
   return (
@@ -104,7 +93,7 @@ export default function RescanTransfersSheet({
           </View>
 
           <View style={styles.body}>
-            {result === null ? (
+            {!started ? (
               <>
                 <View
                   style={[
@@ -135,7 +124,7 @@ export default function RescanTransfersSheet({
                       { color: colors.error, fontFamily: FONTS.semiBold },
                     ]}
                   >
-                    Something went wrong — please try again.
+                    Something went wrong, please try again.
                   </Text>
                 )}
               </>
@@ -144,22 +133,13 @@ export default function RescanTransfersSheet({
                 <View
                   style={[
                     styles.iconWrap,
-                    {
-                      backgroundColor:
-                        result.linked > 0 ? colors.primaryMid : colors.surface2,
-                    },
+                    { backgroundColor: colors.primaryMid },
                   ]}
                 >
                   <Ionicons
-                    name={
-                      result.linked > 0
-                        ? "checkmark-circle-outline"
-                        : "checkmark-outline"
-                    }
+                    name="checkmark-outline"
                     size={26}
-                    color={
-                      result.linked > 0 ? colors.primary : colors.textSubtle
-                    }
+                    color={colors.primary}
                   />
                 </View>
                 <Text
@@ -168,9 +148,7 @@ export default function RescanTransfersSheet({
                     { color: colors.textPrimary, fontFamily: FONTS.semiBold },
                   ]}
                 >
-                  {result.linked > 0
-                    ? `Found ${result.linked} transfer${result.linked === 1 ? "" : "s"}`
-                    : "No new transfers found"}
+                  Scan started
                 </Text>
                 <Text
                   style={[
@@ -178,18 +156,15 @@ export default function RescanTransfersSheet({
                     { color: colors.textSecondary, fontFamily: FONTS.regular },
                   ]}
                 >
-                  Checked {result.scanned} transaction
-                  {result.scanned === 1 ? "" : "s"}.
-                  {result.linked > 0
-                    ? " We excluded them from your spend and income totals."
-                    : ""}
+                  This runs in the background. We&apos;ll notify you when
+                  it&apos;s done and what we found.
                 </Text>
               </>
             )}
           </View>
 
           <View style={[styles.footer, { borderTopColor: colors.border }]}>
-            {result === null ? (
+            {!started ? (
               <Pressable
                 onPress={handleStart}
                 disabled={isRescanning}
@@ -214,38 +189,6 @@ export default function RescanTransfersSheet({
                   </Text>
                 )}
               </Pressable>
-            ) : result.linked > 0 ? (
-              <View style={{ gap: SPACING.sm }}>
-                <Pressable
-                  onPress={handleReview}
-                  style={[
-                    styles.primaryBtn,
-                    { backgroundColor: colors.primary },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.primaryBtnLabel,
-                      { color: colors.onPrimary, fontFamily: FONTS.semiBold },
-                    ]}
-                  >
-                    Review transfers
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={onClose}
-                  style={[styles.secondaryBtn, { borderColor: colors.border }]}
-                >
-                  <Text
-                    style={[
-                      styles.secondaryBtnLabel,
-                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
-                    ]}
-                  >
-                    Done
-                  </Text>
-                </Pressable>
-              </View>
             ) : (
               <Pressable
                 onPress={onClose}
@@ -331,11 +274,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryBtnLabel: { fontSize: FONT_SIZE.body, letterSpacing: -0.2 },
-  secondaryBtn: {
-    borderRadius: RADIUS.xl,
-    paddingVertical: SPACING.md + 2,
-    alignItems: "center",
-    borderWidth: 1,
-  },
-  secondaryBtnLabel: { fontSize: FONT_SIZE.body, letterSpacing: -0.2 },
 });

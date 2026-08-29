@@ -25,6 +25,9 @@ export const AccountsService = {
     return mapAccountFromDto(data);
   },
 
+  // Runs in the background server-side and acknowledges immediately — the
+  // result arrives later as a transfer_scan_complete/failed notification,
+  // so this only confirms the scan started.
   async rescanTransfers(): Promise<RescanTransfersResult> {
     const { data } = await apiClient.post<RescanTransfersResult>(
       API_ENDPOINTS.ACCOUNTS_RESCAN_TRANSFERS,

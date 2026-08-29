@@ -5,7 +5,9 @@ export type NotificationType =
   | "insight_generated"
   | "budget_warning"
   | "budget_exceeded"
-  | "iris_ready";
+  | "iris_ready"
+  | "transfer_scan_complete"
+  | "transfer_scan_failed";
 
 export interface AppNotification {
   id: number;

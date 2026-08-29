@@ -139,7 +139,6 @@ export default function AccountsScreen() {
       <RescanTransfersSheet
         visible={rescanSheetOpen}
         onClose={() => setRescanSheetOpen(false)}
-        onReview={() => navigation.navigate("ReviewTransfers")}
       />
     </SafeAreaView>
   );
