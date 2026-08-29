@@ -17,8 +17,9 @@ import { useAuthStore } from "@/features/auth/auth.state";
 export default function OnboardingResultsScreen() {
   const colors = useThemeColors();
   const route = useRoute();
-  const { transactionCount } = (route.params ?? { transactionCount: 0 }) as {
+  const { transactionCount, source = "email" } = (route.params ?? { transactionCount: 0 }) as {
     transactionCount: number;
+    source?: "email" | "statement";
   };
   const setOnboardingComplete = useAuthStore((s) => s.setOnboardingComplete);
 
@@ -97,6 +98,19 @@ export default function OnboardingResultsScreen() {
 
   const hasTransactions = transactionCount > 0;
 
+  function getTagline() {
+    if (hasTransactions) {
+      if (source === "statement") {
+        return "Vela has read your bank statement and organised every transaction. Ready to see the big picture?";
+      }
+      return "Vela has read, categorised, and organised your spending history. Ready to see the big picture?";
+    }
+    if (source === "statement") {
+      return "We could not find any transactions in that file. You can try another statement or connect your email any time from Settings.";
+    }
+    return "Connect your Gmail label any time to let Vela organise your bank emails automatically.";
+  }
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Glow background */}
@@ -172,9 +186,7 @@ export default function OnboardingResultsScreen() {
             { color: colors.textSubtle, fontFamily: FONTS.regular },
           ]}
         >
-          {hasTransactions
-            ? "Vela has read, categorised, and organised your spending history. Ready to see the big picture?"
-            : "Connect your Gmail label any time to let Vela organise your bank emails automatically."}
+          {getTagline()}
         </Text>
 
         {/* CTA */}

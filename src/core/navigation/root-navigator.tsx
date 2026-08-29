@@ -21,7 +21,9 @@ import {
 // Auth
 import AuthScreen from "@/features/auth/auth.screen";
 // Onboarding
+import OnboardingGetStartedScreen from "@/features/onboarding/screens/onboarding-get-started.screen";
 import OnboardingGmailScreen from "@/features/onboarding/screens/onboarding-gmail.screen";
+import OnboardingImportStatementScreen from "@/features/onboarding/screens/onboarding-import-statement.screen";
 import OnboardingConnectScreen from "@/features/onboarding/screens/onboarding-connect.screen";
 import OnboardingManualEntryScreen from "@/features/onboarding/screens/onboarding-manual-entry.screen";
 import OnboardingGoalScreen from "@/features/onboarding/screens/onboarding-goal.screen";
@@ -267,8 +269,16 @@ function OnboardingNavigator() {
   return (
     <OnboardingStack.Navigator screenOptions={{ headerShown: false }}>
       <OnboardingStack.Screen
+        name="OnboardingGetStarted"
+        component={OnboardingGetStartedScreen}
+      />
+      <OnboardingStack.Screen
         name="OnboardingGmail"
         component={OnboardingGmailScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingImportStatement"
+        component={OnboardingImportStatementScreen}
       />
       <OnboardingStack.Screen
         name="OnboardingConnect"

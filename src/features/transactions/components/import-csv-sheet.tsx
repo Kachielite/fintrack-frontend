@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Modal,
   View,
@@ -10,9 +10,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as DocumentPicker from "expo-document-picker";
-import { File } from "expo-file-system";
-import Toast from "react-native-toast-message";
 import DraggableSheet from "@/core/common/components/DraggableSheet";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import {
@@ -21,65 +18,24 @@ import {
   SPACING,
   RADIUS,
 } from "@/core/common/constants/theme";
-import { useImportTransactionsCsv } from "../hooks/use-create-transaction";
+import { usePickAndImportCsv } from "../hooks/use-pick-and-import-csv";
 import { ImportCsvResultDto } from "../transactions.dto";
 
 interface Props {
   visible: boolean;
   onClose: () => void;
+  onImported?: (result: ImportCsvResultDto) => void;
 }
 
-export default function ImportCsvSheet({ visible, onClose }: Props) {
+export default function ImportCsvSheet({ visible, onClose, onImported }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { importCsv, isImporting } = useImportTransactionsCsv();
-
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [result, setResult] = useState<ImportCsvResultDto | null>(null);
+  const { pickAndImport, isImporting, fileName, result, reset } =
+    usePickAndImportCsv(onImported);
 
   function handleClose() {
-    setFileName(null);
-    setResult(null);
+    reset();
     onClose();
-  }
-
-  async function pickFile() {
-    setResult(null);
-    const picked = await DocumentPicker.getDocumentAsync({
-      type: ["text/csv", "text/comma-separated-values", "*/*"],
-      copyToCacheDirectory: true,
-    });
-    if (picked.canceled || !picked.assets[0]) return;
-
-    const asset = picked.assets[0];
-    setFileName(asset.name);
-
-    let content: string;
-    try {
-      content = await new File(asset.uri).text();
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Could not read that file. Try a different CSV.",
-      });
-      return;
-    }
-
-    try {
-      const outcome = await importCsv(content);
-      setResult(outcome);
-      if (outcome.imported > 0) {
-        Toast.show({
-          type: "success",
-          text1: `Imported ${outcome.imported} transaction${outcome.imported === 1 ? "" : "s"}`,
-        });
-      }
-    } catch (err) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Could not import this CSV. Try a different file.";
-      Toast.show({ type: "error", text1: message });
-    }
   }
 
   return (
@@ -134,7 +90,7 @@ export default function ImportCsvSheet({ visible, onClose }: Props) {
             </Text>
 
             <Pressable
-              onPress={pickFile}
+              onPress={pickAndImport}
               disabled={isImporting}
               style={[
                 styles.pickBtn,

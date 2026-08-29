@@ -8,9 +8,10 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
+import { useAuthStore } from "@/features/auth/auth.state";
 import { useCompleteOnboarding } from "../hooks/use-complete-onboarding";
 import OnboardingProgressBar from "../components/onboarding-progress-bar";
 import AdvisorMark from "../components/advisor-mark";
@@ -25,8 +26,26 @@ type Currency = CompleteOnboardingSchemaType["ref_currency"];
 export default function OnboardingGoalScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
+  const route = useRoute();
+  const { source = "email", transactionCount } = (route.params ?? {}) as {
+    source?: "email" | "statement" | "skipped";
+    transactionCount?: number;
+  };
+  const setOnboardingComplete = useAuthStore((s) => s.setOnboardingComplete);
   const { form, isSubmitting, completeOnboarding } = useCompleteOnboarding(
-    () => navigation.navigate("OnboardingLoading" as never),
+    () => {
+      if (source === "statement") {
+        (navigation as any).navigate("OnboardingResults", {
+          transactionCount: transactionCount ?? 0,
+          source: "statement",
+        });
+      } else if (source === "skipped") {
+        // No congratulatory page for the skipped path — go straight to Home.
+        setOnboardingComplete();
+      } else {
+        navigation.navigate("OnboardingLoading" as never);
+      }
+    },
   );
 
   const goalType = form.watch("goal_type");
