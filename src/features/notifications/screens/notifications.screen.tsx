@@ -13,6 +13,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
+import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { useNotifications, useMarkRead, useMarkAllRead } from "../hooks/use-notifications";
 import { AppNotification } from "../notifications.interface";
 import { useConnectGmail } from "@/features/email-connection/hooks/use-connect-gmail";
@@ -25,6 +26,8 @@ const ICON_MAP: Record<string, { name: string; color: string }> = {
   budget_warning: { name: "warning", color: "#f59e0b" },
   budget_exceeded: { name: "alert-circle", color: "#ef4444" },
   iris_ready: { name: "sparkles", color: "#a78bfa" },
+  transfer_scan_complete: { name: "swap-horizontal", color: "#22c55e" },
+  transfer_scan_failed: { name: "close-circle", color: "#ef4444" },
 };
 
 interface Section {
@@ -74,18 +77,31 @@ function navigate(navigation: any, type: string) {
     case "budget_exceeded":
       navigation.navigate("Tabs", { screen: "Budget" });
       break;
+    case "transfer_scan_complete":
+      navigation.navigate("ReviewTransfers");
+      break;
   }
 }
 
 function NotificationRow({ item }: { item: AppNotification }) {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
+  const qc = useQueryClient();
   const { mutate: markRead } = useMarkRead();
   const { connectGmail, isConnecting } = useConnectGmail();
   const icon = ICON_MAP[item.type] ?? { name: "notifications", color: colors.primary };
   const isUnread = item.readAt === null;
   const handlePress = () => {
     if (isUnread) markRead(item.id);
+    if (item.type === "transfer_scan_complete") {
+      // A completed scan can flip exclude_from_totals on transactions,
+      // changing every spend/income figure downstream.
+      qc.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      qc.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
+      qc.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
+      qc.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
+      qc.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
+    }
     if (item.type === "sync_failed" && item.data?.reason === "auth_revoked") {
       connectGmail();
       return;

@@ -25,14 +25,12 @@ export const AccountsService = {
     return mapAccountFromDto(data);
   },
 
+  // Runs in the background server-side and acknowledges immediately — the
+  // result arrives later as a transfer_scan_complete/failed notification,
+  // so this only confirms the scan started.
   async rescanTransfers(): Promise<RescanTransfersResult> {
-    // Walks the user's full transaction history server-side — can run well
-    // past the global request timeout for accounts with real history, even
-    // though it always completes. Give it room instead of the default.
     const { data } = await apiClient.post<RescanTransfersResult>(
       API_ENDPOINTS.ACCOUNTS_RESCAN_TRANSFERS,
-      undefined,
-      { timeout: 120000 },
     );
     return data;
   },
