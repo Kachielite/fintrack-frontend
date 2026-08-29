@@ -104,6 +104,10 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     try {
       if (choice === "yes") {
         await markTransfer({ id: transaction.id, linkedTransactionId: linkedTransaction?.id, remember });
+        // Same "similar transactions" prompt a manual category edit triggers —
+        // catches other transactions from this merchant that auto-detection missed.
+        setSavedCategory("self_transfer");
+        setConfirmedCategory("self_transfer");
       } else {
         await unmarkTransfer({ id: transaction.id, remember });
       }
