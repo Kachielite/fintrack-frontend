@@ -260,7 +260,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
   return (
     <>
     <Modal
-      visible={visible}
+      visible={visible && !reviewSheetOpen}
       transparent
       animationType="slide"
       onRequestClose={onClose}
