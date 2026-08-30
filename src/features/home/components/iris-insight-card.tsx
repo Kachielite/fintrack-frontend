@@ -7,6 +7,7 @@ import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { Insight } from "@/features/insights/insights.interface";
 import InsightReportDetail from "@/features/insights/components/insight-report-detail";
+import { formatPeriodLabel } from "@/features/insights/insights.utils";
 import { RootStackParamList } from "@/core/navigation/root-navigator";
 
 interface IrisInsightCardProps {
@@ -23,6 +24,7 @@ export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardP
   if (!insight) return null;
 
   const detail = insight.contextData?.headline ? insight.contextData : null;
+  const periodLabel = formatPeriodLabel(insight);
 
   return (
     <View
@@ -44,6 +46,14 @@ export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardP
         >
           IRIS NOTICED
         </Text>
+        <View style={{ flex: 1 }} />
+        {periodLabel && (
+          <Text
+            style={[styles.periodLabel, { color: colors.textSubtle, fontFamily: FONTS.medium }]}
+          >
+            {periodLabel}
+          </Text>
+        )}
       </View>
 
       {expanded && detail ? (
@@ -106,6 +116,7 @@ const styles = StyleSheet.create({
   },
   headerRow: { flexDirection: "row", alignItems: "center", gap: SPACING.xs },
   label: { fontSize: 10, letterSpacing: 0.8 },
+  periodLabel: { fontSize: 11 },
   message: {
     fontSize: FONT_SIZE.body + 1,
     lineHeight: 26,

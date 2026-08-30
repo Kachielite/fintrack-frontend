@@ -44,6 +44,7 @@ import GlassCard from "@/core/common/components/GlassCard";
 import DonutChart from "@/core/common/components/DonutChart";
 import { useInsights } from "./hooks/use-insights";
 import { useMarkInsightRead } from "./hooks/use-mark-insight-read";
+import { formatPeriodLabel } from "./insights.utils";
 import {
   useChartData,
   Period,
@@ -129,13 +130,21 @@ function IrisAICard() {
   if (!insight) return null;
 
   const detail = insight.contextData?.headline ? insight.contextData : null;
+  const periodLabel = formatPeriodLabel(insight);
 
   return (
     <GlassCard style={styles.irisCard}>
       <View style={styles.irisHeader}>
-        <View style={[styles.irisBadge, { backgroundColor: colors.primaryMid }]}>
-          <Ionicons name="sparkles" size={14} color={colors.primary} />
-          <Text style={[styles.irisBadgeLabel, { color: colors.primary, fontFamily: FONTS.semiBold }]}>Iris AI</Text>
+        <View style={styles.irisHeaderLeft}>
+          <View style={[styles.irisBadge, { backgroundColor: colors.primaryMid }]}>
+            <Ionicons name="sparkles" size={14} color={colors.primary} />
+            <Text style={[styles.irisBadgeLabel, { color: colors.primary, fontFamily: FONTS.semiBold }]}>Iris AI</Text>
+          </View>
+          {periodLabel && (
+            <Text style={[styles.irisPeriodLabel, { color: colors.textSubtle, fontFamily: FONTS.medium }]}>
+              {periodLabel}
+            </Text>
+          )}
         </View>
         {!insight.isRead && (
           <Pressable onPress={() => markRead(insight.id)} hitSlop={8} disabled={isMarking}>
@@ -153,7 +162,7 @@ function IrisAICard() {
           </Text>
           <View style={[styles.irisEmptyHint, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
             <Text style={[styles.irisEmptyText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-              Full analysis refreshes nightly at 2:30 AM
+              Full analysis refreshes every Monday
             </Text>
           </View>
         </>
@@ -833,8 +842,10 @@ const styles = StyleSheet.create({
   // Iris card
   irisCard: { padding: SPACING.base, gap: SPACING.sm },
   irisHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  irisHeaderLeft: { flexDirection: "row", alignItems: "center", gap: SPACING.xs, flexShrink: 1 },
   irisBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.full },
   irisBadgeLabel: { fontSize: 11 },
+  irisPeriodLabel: { fontSize: 12 },
   markRead: { fontSize: 12 },
   irisMessage: { fontSize: FONT_SIZE.body, lineHeight: 22 },
   irisEmptyHint: { borderRadius: RADIUS.md, borderWidth: 1, padding: SPACING.md, alignItems: "center" },
