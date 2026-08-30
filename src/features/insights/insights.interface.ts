@@ -26,11 +26,16 @@ export interface InsightDetail {
   goal_alignment: { status: GoalAlignmentStatus; summary: string } | null;
 }
 
+export type InsightPeriodType = "weekly" | "monthly";
+
 export interface Insight {
   id: number;
   type: InsightType;
   message: string;
   contextData: InsightDetail | null;
+  periodType: InsightPeriodType | null;
+  periodStart: Date | null;
+  periodEnd: Date | null;
   isRead: boolean;
   expiresAt: Date | null;
   createdAt: Date;
