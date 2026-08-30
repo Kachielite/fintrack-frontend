@@ -71,7 +71,7 @@ function groupNotifications(items: AppNotification[]): Section[] {
 function navigate(navigation: any, type: string) {
   switch (type) {
     case "insight_generated":
-      navigation.navigate("Insights");
+      navigation.navigate("Tabs", { screen: "Budget" });
       break;
     case "budget_warning":
     case "budget_exceeded":
