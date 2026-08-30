@@ -46,7 +46,10 @@ export default function AccountsSummaryCard({ accounts, isLoading }: Props) {
                 style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border }]}
               >
                 <SkeletonBox width={28} height={28} radius={14} />
-                <SkeletonBox width={44} height={12} radius={6} />
+                <View style={{ gap: 4 }}>
+                  <SkeletonBox width={50} height={10} radius={5} />
+                  <SkeletonBox width={44} height={12} radius={6} />
+                </View>
               </View>
             ))
           : accounts.map((account) => (
@@ -66,14 +69,22 @@ export default function AccountsSummaryCard({ accounts, isLoading }: Props) {
                     <Ionicons name="wallet-outline" size={13} color={colors.primary} />
                   )}
                 </View>
-                <Text
-                  style={[styles.balance, { color: colors.textPrimary, fontFamily: FONTS.mono }]}
-                  numberOfLines={1}
-                >
-                  {account.balance != null
-                    ? formatCompactCurrency(account.balance, account.currency)
-                    : "—"}
-                </Text>
+                <View style={styles.chipTextCol}>
+                  <Text
+                    style={[styles.label, { color: colors.textSubtle, fontFamily: FONTS.medium }]}
+                    numberOfLines={1}
+                  >
+                    {account.label}
+                  </Text>
+                  <Text
+                    style={[styles.balance, { color: colors.textPrimary, fontFamily: FONTS.mono }]}
+                    numberOfLines={1}
+                  >
+                    {account.balance != null
+                      ? formatCompactCurrency(account.balance, account.currency)
+                      : "—"}
+                  </Text>
+                </View>
               </Pressable>
             ))}
       </ScrollView>
@@ -101,5 +112,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: { fontSize: 11 },
+  chipTextCol: { maxWidth: 90 },
+  label: { fontSize: 10, letterSpacing: 0.1 },
   balance: { fontSize: FONT_SIZE.bodySmall - 1, letterSpacing: -0.2 },
 });
