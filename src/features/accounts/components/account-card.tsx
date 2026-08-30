@@ -93,16 +93,26 @@ export default function AccountCard({ account, onPress }: Props) {
         </View>
 
         <View style={styles.right}>
-          <Text
-            style={[
-              styles.balance,
-              { color: colors.textPrimary, fontFamily: FONTS.mono },
-            ]}
-          >
-            {account.balance != null
-              ? formatCurrency(account.balance, account.currency)
-              : "—"}
-          </Text>
+          <View style={styles.balanceCol}>
+            <Text
+              style={[
+                styles.balanceLabel,
+                { color: colors.textSubtle, fontFamily: FONTS.regular },
+              ]}
+            >
+              Balance
+            </Text>
+            <Text
+              style={[
+                styles.balance,
+                { color: colors.textPrimary, fontFamily: FONTS.mono },
+              ]}
+            >
+              {account.balance != null
+                ? formatCurrency(account.balance, account.currency)
+                : "—"}
+            </Text>
+          </View>
           <Ionicons
             name="chevron-forward"
             size={14}
@@ -147,6 +157,8 @@ const styles = StyleSheet.create({
   currencyText: { fontSize: 10, letterSpacing: 0.3 },
   mask: { fontSize: 11 },
   synced: { fontSize: 11, marginTop: 2 },
-  right: { alignItems: "flex-end", flexShrink: 0, gap: 4 },
+  right: { flexDirection: "row", alignItems: "center", flexShrink: 0, gap: 6 },
+  balanceCol: { alignItems: "flex-end", gap: 1 },
+  balanceLabel: { fontSize: 10, letterSpacing: 0.2 },
   balance: { fontSize: FONT_SIZE.bodySmall, letterSpacing: -0.2 },
 });

@@ -80,7 +80,7 @@ export default function AccountsSummaryCard({ accounts, isLoading }: Props) {
                     style={[styles.balance, { color: colors.textPrimary, fontFamily: FONTS.mono }]}
                     numberOfLines={1}
                   >
-                    {account.balance != null
+                    Bal {account.balance != null
                       ? formatCompactCurrency(account.balance, account.currency)
                       : "—"}
                   </Text>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: { fontSize: 11 },
-  chipTextCol: { maxWidth: 90 },
+  chipTextCol: { maxWidth: 100 },
   label: { fontSize: 10, letterSpacing: 0.1 },
   balance: { fontSize: FONT_SIZE.bodySmall - 1, letterSpacing: -0.2 },
 });
