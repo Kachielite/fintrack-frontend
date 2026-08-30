@@ -21,6 +21,20 @@ export function formatCurrency(amount: number, currency: string): string {
   return `${symbol}${formatted}`;
 }
 
+export function formatCompactCurrency(amount: number, currency: string): string {
+  const symbol = currencySymbol(currency);
+  const abs = Math.abs(amount);
+  let formatted: string;
+  if (abs >= 1_000_000) {
+    formatted = `${(abs / 1_000_000).toFixed(1)}M`;
+  } else if (abs >= 1_000) {
+    formatted = `${(abs / 1_000).toFixed(1)}k`;
+  } else {
+    formatted = Math.round(abs).toString();
+  }
+  return `${symbol}${formatted}`;
+}
+
 export function formatTransactionAmount(
   amount: number,
   currency: string,
