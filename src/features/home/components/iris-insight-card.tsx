@@ -91,7 +91,11 @@ export default function IrisInsightCard({ insight, isLoading }: IrisInsightCardP
           <View />
         )}
 
-        <Pressable onPress={() => navigation.navigate("Insights")} style={styles.link} hitSlop={8}>
+        <Pressable
+          onPress={() => (navigation as any).navigate("Tabs", { screen: "Budget" })}
+          style={styles.link}
+          hitSlop={8}
+        >
           <Text
             style={[
               styles.linkText,
