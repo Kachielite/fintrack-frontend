@@ -75,11 +75,11 @@ export default function HomeScreen() {
             />
           )}
           <SpendingOverviewCard summary={summary} isLoading={summaryLoading} />
+          <CategoryBreakdownCard summary={summary} isLoading={summaryLoading} />
           <IrisInsightCard
             insight={latestInsight}
             isLoading={insightsLoading}
           />
-          <CategoryBreakdownCard summary={summary} isLoading={summaryLoading} />
           <AccountsSummaryCard accounts={accounts} isLoading={accountsLoading} />
           <RecentTransactionsCard
             transactions={transactions}
