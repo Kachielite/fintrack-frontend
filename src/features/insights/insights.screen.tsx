@@ -700,9 +700,11 @@ export default function InsightsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
-        </Pressable>
+        {navigation.canGoBack() && (
+          <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+          </Pressable>
+        )}
         <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>Insights</Text>
         <View style={{ flex: 1 }} />
         <Pressable
