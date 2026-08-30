@@ -7,6 +7,11 @@ export const updateUserSchema = z.object({
     .enum(["NGN", "USD", "GBP", "EUR", "GHS", "KES", "ZAR"])
     .optional(),
   advisor_tone: z.enum(["encouraging", "direct", "analytical"]).optional(),
+  goal_type: z.enum(["save", "debt", "daily", "specific"]).optional(),
+  income_range: z.string().min(1).optional(),
+  pay_frequency: z
+    .enum(["weekly", "biweekly", "monthly", "irregular"])
+    .optional(),
 });
 
 export type UpdateUserSchemaType = z.infer<typeof updateUserSchema>;

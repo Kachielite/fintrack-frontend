@@ -40,6 +40,7 @@ import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import GlassCard from "@/core/common/components/GlassCard";
 import SectionHeader from "@/core/common/components/SectionHeader";
 import EmailConnectionsSheet from "@/features/email-connection/components/email-connections-sheet";
+import FinancialProfileSheet from "@/features/user/components/financial-profile-sheet";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -52,6 +53,20 @@ const CURRENCIES: { code: string; name: string; symbol: string }[] = [
   { code: "GHS", name: "Ghanaian Cedi", symbol: "GH₵" },
   { code: "ZAR", name: "South African Rand", symbol: "R" },
 ];
+
+const GOAL_LABELS: Record<string, string> = {
+  save: "Build savings",
+  debt: "Clear debt",
+  daily: "Manage day-to-day",
+  specific: "Save for something specific",
+};
+
+const PAY_FREQUENCY_LABELS: Record<string, string> = {
+  weekly: "Weekly",
+  biweekly: "Bi-weekly",
+  monthly: "Monthly",
+  irregular: "Irregular",
+};
 
 const PLANS = [
   {
@@ -817,6 +832,7 @@ export default function ProfileScreen() {
   const { deleteAccount, isDeleting } = useDeleteAccount();
 
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [financialProfileOpen, setFinancialProfileOpen] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
   const [connectionsOpen, setConnectionsOpen] = useState(false);
   const [reportSenderOpen, setReportSenderOpen] = useState(false);
@@ -1005,6 +1021,48 @@ export default function ProfileScreen() {
           </GlassCard>
         </View>
 
+        {/* Financial profile */}
+        <View style={styles.section}>
+          <SectionHeader title="Financial profile" />
+          <GlassCard>
+            <SettingRow
+              icon="flag-outline"
+              label="Goal"
+              sub="What Iris optimizes advice for"
+              value={
+                profile?.goalType
+                  ? (GOAL_LABELS[profile.goalType] ?? profile.goalType)
+                  : "Not set"
+              }
+              onPress={() => setFinancialProfileOpen(true)}
+            />
+            <View
+              style={[styles.rowDivider, { backgroundColor: colors.border }]}
+            />
+            <SettingRow
+              icon="cash-outline"
+              label="Monthly income"
+              sub="Used to judge what's affordable"
+              value={profile?.incomeRange ?? "Not set"}
+              onPress={() => setFinancialProfileOpen(true)}
+            />
+            <View
+              style={[styles.rowDivider, { backgroundColor: colors.border }]}
+            />
+            <SettingRow
+              icon="calendar-outline"
+              label="Pay frequency"
+              sub="When you typically get paid"
+              value={
+                profile?.payFrequency
+                  ? (PAY_FREQUENCY_LABELS[profile.payFrequency] ?? profile.payFrequency)
+                  : "Not set"
+              }
+              onPress={() => setFinancialProfileOpen(true)}
+            />
+          </GlassCard>
+        </View>
+
         {/* Connections */}
         <View style={styles.section}>
           <SectionHeader title="Connections" />
@@ -1106,6 +1164,12 @@ export default function ProfileScreen() {
         current={profile?.refCurrency ?? "NGN"}
         onSelect={(code) => updateCurrencyMutation.mutate(code)}
         onClose={() => setCurrencyOpen(false)}
+      />
+
+      <FinancialProfileSheet
+        visible={financialProfileOpen}
+        profile={profile}
+        onClose={() => setFinancialProfileOpen(false)}
       />
 
       <PlansSheet
