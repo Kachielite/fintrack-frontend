@@ -1,4 +1,7 @@
 export type InsightType =
+  | "report"
+  // Legacy types — no longer produced by the backend, kept so historical
+  // rows still type-check.
   | "spending_pattern"
   | "budget_warning"
   | "goal_progress"
@@ -12,12 +15,15 @@ export interface InsightChartPoint {
   highlight: boolean;
 }
 
+export type GoalAlignmentStatus = "on_track" | "ahead" | "behind" | "no_goals";
+
 export interface InsightDetail {
-  title: string;
-  body: string | null;
-  action_text: string | null;
+  headline: string;
+  findings: string[];
   chart_type: "bar_by_category" | "bar_by_merchant" | null;
   chart_data: InsightChartPoint[] | null;
+  closing: string | null;
+  goal_alignment: { status: GoalAlignmentStatus; summary: string } | null;
 }
 
 export interface Insight {

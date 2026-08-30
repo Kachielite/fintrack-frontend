@@ -15,6 +15,7 @@ import { TransactionQueryParams } from "@/features/transactions/transactions.dto
 import { Transaction } from "@/features/transactions/transactions.interface";
 import { CATEGORY_LABELS, CATEGORY_ICON_NAMES } from "@/features/transactions/transactions.constants";
 import DrilldownSheet from "./components/drilldown-sheet";
+import InsightReportDetail from "./components/insight-report-detail";
 import TransactionDetailSheet from "@/features/transactions/components/transaction-detail-sheet";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, {
@@ -112,38 +113,6 @@ function CardQuestion({ text }: { text: string }) {
 // ──────────────────────────────────────────────────────────
 // Iris AI card
 // ──────────────────────────────────────────────────────────
-function InsightBarChart({ data }: { data: { label: string; value: number; highlight: boolean }[] }) {
-  const colors = useThemeColors();
-  const max = Math.max(...data.map((d) => d.value), 1);
-  const fmt = (v: number) => {
-    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-    if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
-    return String(Math.round(v));
-  };
-  return (
-    <View style={[styles.insightChartCard, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
-      <View style={styles.insightChartBars}>
-        {data.map((d) => {
-          const pct = (d.value / max) * 100;
-          return (
-            <View key={d.label} style={styles.insightBarCol}>
-              <Text style={[styles.insightBarValue, { color: d.highlight ? colors.primary : colors.textSubtle, fontFamily: FONTS.semiBold }]} numberOfLines={1}>
-                {fmt(d.value)}
-              </Text>
-              <View style={styles.insightBarTrack}>
-                <View style={[styles.insightBarFill, { height: `${Math.max(pct, 4)}%` as any, backgroundColor: d.highlight ? colors.primary : colors.border }]} />
-              </View>
-              <Text style={[styles.insightBarLabel, { color: d.highlight ? colors.primary : colors.textSubtle, fontFamily: d.highlight ? FONTS.bold : FONTS.semiBold }]} numberOfLines={1}>
-                {d.label}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
 function IrisAICard() {
   const colors = useThemeColors();
   const { insights, isLoading } = useInsights();
@@ -159,8 +128,7 @@ function IrisAICard() {
   }
   if (!insight) return null;
 
-  const detail = insight.contextData && (insight.contextData as any).title
-    ? (insight.contextData as any) : null;
+  const detail = insight.contextData?.headline ? insight.contextData : null;
 
   return (
     <GlassCard style={styles.irisCard}>
@@ -176,33 +144,19 @@ function IrisAICard() {
         )}
       </View>
 
-      <Text style={[styles.irisMessage, { color: colors.textPrimary, fontFamily: FONTS.medium }]}>
-        {insight.message}
-      </Text>
-
-      {detail && (
+      {detail ? (
+        <InsightReportDetail detail={detail} />
+      ) : (
         <>
-          {detail.title && (
-            <Text style={[styles.irisDetailTitle, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>{detail.title}</Text>
-          )}
-          {detail.body && (
-            <Text style={[styles.irisDetailBody, { color: colors.textSecondary, fontFamily: FONTS.regular }]}>{detail.body}</Text>
-          )}
-          {detail.chart_data?.length > 0 && <InsightBarChart data={detail.chart_data} />}
-          {detail.action_text && (
-            <View style={[styles.irisTip, { backgroundColor: colors.primaryLight, borderColor: colors.primaryMid }]}>
-              <Text style={[styles.irisTipText, { color: colors.textPrimary, fontFamily: FONTS.regular }]}>{detail.action_text}</Text>
-            </View>
-          )}
-        </>
-      )}
-
-      {!detail && (
-        <View style={[styles.irisEmptyHint, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
-          <Text style={[styles.irisEmptyText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-            Full analysis refreshes nightly at 2:30 AM
+          <Text style={[styles.irisMessage, { color: colors.textPrimary, fontFamily: FONTS.medium }]}>
+            {insight.message}
           </Text>
-        </View>
+          <View style={[styles.irisEmptyHint, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+            <Text style={[styles.irisEmptyText, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
+              Full analysis refreshes nightly at 2:30 AM
+            </Text>
+          </View>
+        </>
       )}
 
       {insight.expiresAt && (
@@ -883,20 +837,9 @@ const styles = StyleSheet.create({
   irisBadgeLabel: { fontSize: 11 },
   markRead: { fontSize: 12 },
   irisMessage: { fontSize: FONT_SIZE.body, lineHeight: 22 },
-  irisDetailTitle: { fontSize: 18, lineHeight: 26, letterSpacing: -0.4 },
-  irisDetailBody: { fontSize: 14, lineHeight: 22 },
-  irisTip: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.md },
-  irisTipText: { fontSize: 14, lineHeight: 22 },
   irisEmptyHint: { borderRadius: RADIUS.md, borderWidth: 1, padding: SPACING.md, alignItems: "center" },
   irisEmptyText: { fontSize: 13 },
   irisExpiry: { fontSize: 12 },
-  insightChartCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.base },
-  insightChartBars: { flexDirection: "row", alignItems: "flex-end", height: 100, gap: 6 },
-  insightBarCol: { flex: 1, alignItems: "center", gap: 4, height: "100%" as any },
-  insightBarValue: { fontSize: 9, textAlign: "center" },
-  insightBarTrack: { flex: 1, width: "100%", justifyContent: "flex-end" },
-  insightBarFill: { width: "100%", borderRadius: 4, minHeight: 4 },
-  insightBarLabel: { fontSize: 11, textAlign: "center" },
 
   // Empty state
   emptyChart: { height: 80, alignItems: "center", justifyContent: "center" },
