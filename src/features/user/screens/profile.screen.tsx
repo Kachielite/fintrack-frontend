@@ -43,6 +43,8 @@ import EmailConnectionsSheet from "@/features/email-connection/components/email-
 import FinancialProfileSheet, {
   FinancialProfileField,
 } from "@/features/user/components/financial-profile-sheet";
+import EditNameSheet from "@/features/user/components/edit-name-sheet";
+import { maskEmail } from "@/core/common/utils/mask-email";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -822,6 +824,8 @@ export default function ProfileScreen() {
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [financialProfileField, setFinancialProfileField] =
     useState<FinancialProfileField | null>(null);
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [emailRevealed, setEmailRevealed] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
   const [connectionsOpen, setConnectionsOpen] = useState(false);
   const [reportSenderOpen, setReportSenderOpen] = useState(false);
@@ -935,22 +939,46 @@ export default function ProfileScreen() {
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  styles.userName,
-                  { color: colors.textPrimary, fontFamily: FONTS.bold },
-                ]}
-              >
-                {fullName}
-              </Text>
-              <Text
-                style={[
-                  styles.userEmail,
-                  { color: colors.textSubtle, fontFamily: FONTS.regular },
-                ]}
-              >
-                {profile?.email ?? "—"}
-              </Text>
+              <View style={styles.nameRow}>
+                <Text
+                  style={[
+                    styles.userName,
+                    { color: colors.textPrimary, fontFamily: FONTS.bold },
+                  ]}
+                >
+                  {fullName}
+                </Text>
+                <Pressable
+                  onPress={() => setEditNameOpen(true)}
+                  hitSlop={10}
+                  style={[styles.editNameBtn, { backgroundColor: colors.surface2 }]}
+                >
+                  <Ionicons name="pencil-outline" size={13} color={colors.textSecondary} />
+                </Pressable>
+              </View>
+              <View style={styles.emailRow}>
+                <Text
+                  style={[
+                    styles.userEmail,
+                    { color: colors.textSubtle, fontFamily: FONTS.regular },
+                  ]}
+                >
+                  {profile?.email
+                    ? emailRevealed
+                      ? profile.email
+                      : maskEmail(profile.email)
+                    : "—"}
+                </Text>
+                {profile?.email ? (
+                  <Pressable onPress={() => setEmailRevealed((v) => !v)} hitSlop={10}>
+                    <Ionicons
+                      name={emailRevealed ? "eye-off-outline" : "eye-outline"}
+                      size={14}
+                      color={colors.textSubtle}
+                    />
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
           </View>
         </GlassCard>
@@ -1150,6 +1178,12 @@ export default function ProfileScreen() {
         onClose={() => setFinancialProfileField(null)}
       />
 
+      <EditNameSheet
+        visible={editNameOpen}
+        profile={profile}
+        onClose={() => setEditNameOpen(false)}
+      />
+
       <PlansSheet
         visible={plansOpen}
         currentTier={profile?.planTier ?? "free"}
@@ -1201,8 +1235,17 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: { fontSize: 20 },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: SPACING.xs },
   userName: { fontSize: 17, letterSpacing: -0.3 },
-  userEmail: { fontSize: 13, marginTop: 2 },
+  editNameBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 99,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emailRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
+  userEmail: { fontSize: 13 },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
