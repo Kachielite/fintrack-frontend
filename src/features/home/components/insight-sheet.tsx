@@ -36,6 +36,7 @@ function timeUntilNextRun(): string {
 }
 
 const TYPE_SUBTITLE: Record<InsightType, string> = {
+  report: "On your finances",
   spending_pattern: "On your spending habits",
   budget_warning: "On your budget",
   goal_progress: "On your savings goal",
