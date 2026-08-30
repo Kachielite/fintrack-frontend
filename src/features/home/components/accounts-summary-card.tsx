@@ -77,12 +77,15 @@ export default function AccountsSummaryCard({ accounts, isLoading }: Props) {
                     {account.label}
                   </Text>
                   <Text
-                    style={[styles.balance, { color: colors.textPrimary, fontFamily: FONTS.mono }]}
+                    style={[styles.balance, { fontFamily: FONTS.mono }]}
                     numberOfLines={1}
                   >
-                    Bal {account.balance != null
-                      ? formatCompactCurrency(account.balance, account.currency)
-                      : "—"}
+                    <Text style={{ color: colors.textSubtle }}>Bal </Text>
+                    <Text style={{ color: colors.textPrimary }}>
+                      {account.balance != null
+                        ? formatCompactCurrency(account.balance, account.currency)
+                        : "—"}
+                    </Text>
                   </Text>
                 </View>
               </Pressable>
@@ -98,9 +101,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.xs,
-    paddingVertical: SPACING.xs + 2,
+    paddingVertical: SPACING.sm + 4,
     paddingHorizontal: SPACING.sm + 2,
-    borderRadius: RADIUS.full,
+    borderRadius: RADIUS.xl,
     borderWidth: 1,
   },
   avatar: {
