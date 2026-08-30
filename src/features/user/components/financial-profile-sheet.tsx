@@ -29,16 +29,25 @@ type GoalType = CompleteOnboardingSchemaType["goal_type"];
 type PayFrequency = CompleteOnboardingSchemaType["pay_frequency"];
 type Currency = CompleteOnboardingSchemaType["ref_currency"];
 
+export type FinancialProfileField = "goal" | "income" | "pay_frequency";
+
+const TITLES: Record<FinancialProfileField, string> = {
+  goal: "Goal",
+  income: "Monthly income",
+  pay_frequency: "Pay frequency",
+};
+
 interface Props {
-  visible: boolean;
+  field: FinancialProfileField | null;
   profile: UserProfile | undefined;
   onClose: () => void;
 }
 
-export default function FinancialProfileSheet({ visible, profile, onClose }: Props) {
+export default function FinancialProfileSheet({ field, profile, onClose }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const visible = field !== null;
 
   const currency = (profile?.refCurrency as Currency) ?? "NGN";
   const tiers = INCOMES_BY_CURRENCY[currency] ?? INCOMES_BY_CURRENCY.NGN;
@@ -59,12 +68,11 @@ export default function FinancialProfileSheet({ visible, profile, onClose }: Pro
   }, [visible]);
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      UserService.updateProfile({
-        goal_type: goalType,
-        income_range: incomeRange,
-        pay_frequency: payFrequency,
-      }),
+    mutationFn: () => {
+      if (field === "goal") return UserService.updateProfile({ goal_type: goalType });
+      if (field === "income") return UserService.updateProfile({ income_range: incomeRange });
+      return UserService.updateProfile({ pay_frequency: payFrequency });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ME] });
       onClose();
@@ -89,7 +97,7 @@ export default function FinancialProfileSheet({ visible, profile, onClose }: Pro
         >
           <View style={sheet.header}>
             <Text style={[sheet.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>
-              Financial profile
+              {field ? TITLES[field] : ""}
             </Text>
             <Pressable onPress={onClose} hitSlop={12} style={[sheet.closeBtn, { backgroundColor: colors.surface2 }]}>
               <Ionicons name="close" size={18} color={colors.textSecondary} />
@@ -101,9 +109,9 @@ export default function FinancialProfileSheet({ visible, profile, onClose }: Pro
             contentContainerStyle={sheet.body}
             showsVerticalScrollIndicator={false}
           >
-            <GoalSelector value={goalType} onChange={setGoalType} />
-            <IncomeSlider value={incomeRange} currency={currency} onChange={setIncomeRange} />
-            <PayFrequencyGrid value={payFrequency} onChange={setPayFrequency} />
+            {field === "goal" && <GoalSelector value={goalType} onChange={setGoalType} />}
+            {field === "income" && <IncomeSlider value={incomeRange} currency={currency} onChange={setIncomeRange} />}
+            {field === "pay_frequency" && <PayFrequencyGrid value={payFrequency} onChange={setPayFrequency} />}
           </ScrollView>
 
           <View style={[sheet.footer, { borderTopColor: colors.border }]}>
