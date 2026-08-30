@@ -74,7 +74,6 @@ export type RootStackParamList = {
   GoalDetail: { goalId: number };
   AddGoal: undefined;
   EditGoal: { goalId: number };
-  Insights: undefined;
   CurrencyBreakdown: undefined;
   EmailConnections: undefined;
   ConnectGmail: undefined;
@@ -378,11 +377,6 @@ function MainStack() {
         name="EditGoal"
         component={EditGoalScreen}
         options={modalOptions}
-      />
-      <Stack.Screen
-        name="Insights"
-        component={InsightsScreen}
-        options={{ headerShown: false }}
       />
       <Stack.Screen name="CurrencyBreakdown" component={ExchangeRatesScreen} />
       <Stack.Screen

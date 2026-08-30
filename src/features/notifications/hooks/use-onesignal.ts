@@ -84,7 +84,7 @@ export function useOnesignal(isAuthenticated: boolean) {
           break;
         case "insight_generated":
           qc.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
-          nav.navigate("Insights");
+          nav.navigate("Tabs", { screen: "Budget" });
           break;
         case "budget_warning":
         case "budget_exceeded":
