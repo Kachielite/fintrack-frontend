@@ -11,13 +11,13 @@ import {
 } from "@/core/common/constants/theme";
 import ScreenContainer from "@/core/common/components/ScreenContainer";
 import PrimaryButton from "@/core/common/components/PrimaryButton";
-import { usePickAndImportCsv } from "@/features/transactions/hooks/use-pick-and-import-csv";
+import { usePickAndImportStatement } from "@/features/transactions/hooks/use-pick-and-import-statement";
 
 const SETUP_ITEMS = [
   {
     icon: "document-attach-outline" as const,
-    title: "Export a CSV from your bank's app",
-    desc: "Most banking apps let you download a statement or transaction history as a CSV file.",
+    title: "Export a statement from your bank's app",
+    desc: "Most banking apps let you download a statement or transaction history as a CSV, Excel, PDF, or Word file.",
   },
   {
     icon: "options-outline" as const,
@@ -39,7 +39,7 @@ const SETUP_ITEMS = [
 export default function OnboardingImportStatementScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
-  const { pickAndImport, isImporting, fileName, result } = usePickAndImportCsv();
+  const { pickAndImport, isImporting, fileName, result, error } = usePickAndImportStatement();
 
   function handleContinue() {
     navigation.navigate("OnboardingGoal", {
@@ -118,8 +118,8 @@ export default function OnboardingImportStatementScreen() {
           marginBottom: SPACING.xxxl,
         }}
       >
-        Pick a CSV export of your bank statement and we will turn it into
-        clear, categorised transactions in seconds.
+        Pick a statement export — CSV, Excel, PDF, or Word — and we will turn
+        it into clear, categorised transactions in seconds.
       </Text>
 
       {/* What happens */}
@@ -172,6 +172,36 @@ export default function OnboardingImportStatementScreen() {
         ))}
       </View>
 
+      {/* Error state — a file couldn't be read/parsed at all */}
+      {error && !isImporting && (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: SPACING.sm,
+            backgroundColor: colors.error + "15",
+            borderRadius: RADIUS.md,
+            borderWidth: 1,
+            borderColor: colors.error + "55",
+            padding: SPACING.md,
+            marginBottom: SPACING.lg,
+          }}
+        >
+          <Ionicons name="alert-circle-outline" size={18} color={colors.error} />
+          <Text
+            style={{
+              flex: 1,
+              fontFamily: FONTS.medium,
+              fontSize: FONT_SIZE.bodySmall,
+              color: colors.error,
+              lineHeight: 19,
+            }}
+          >
+            {error}
+          </Text>
+        </View>
+      )}
+
       {/* Result summary */}
       {result && (
         <View
@@ -221,7 +251,7 @@ export default function OnboardingImportStatementScreen() {
         <PrimaryButton label="Continue" onPress={handleContinue} />
       ) : (
         <PrimaryButton
-          label={isImporting ? "Importing…" : fileName ? "Try another file" : "Choose a CSV file"}
+          label={isImporting ? "Importing…" : fileName ? "Try another file" : "Choose a statement file"}
           onPress={pickAndImport}
           isLoading={isImporting}
           disabled={isImporting}

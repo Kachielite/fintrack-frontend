@@ -7,7 +7,8 @@ import {
   TransactionSummaryDto,
   CorrectTransactionSchemaType,
   CreateManualTransactionPayload,
-  ImportCsvResultDto,
+  ImportStatementResultDto,
+  PickedStatementFile,
 } from "./transactions.dto";
 import { Transaction, TransactionSummary } from "./transactions.interface";
 import {
@@ -123,10 +124,21 @@ export const TransactionService = {
     return mapTransactionFromDto(data);
   },
 
-  async importTransactionsCsv(csv: string): Promise<ImportCsvResultDto> {
-    const { data } = await apiClient.post<ImportCsvResultDto>(
+  async importStatementFile(file: PickedStatementFile): Promise<ImportStatementResultDto> {
+    const formData = new FormData();
+    // React Native's FormData expects this {uri, name, type} shape rather than a
+    // real Blob — the native networking layer streams the file directly from the
+    // uri, so nothing is read into JS memory here.
+    formData.append("file", {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType || "application/octet-stream",
+    } as unknown as Blob);
+
+    const { data } = await apiClient.post<ImportStatementResultDto>(
       API_ENDPOINTS.TRANSACTIONS_IMPORT,
-      { csv },
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return data;
   },

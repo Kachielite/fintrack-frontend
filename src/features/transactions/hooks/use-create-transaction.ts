@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionService } from "../transactions.service";
-import { CreateManualTransactionPayload } from "../transactions.dto";
+import { CreateManualTransactionPayload, PickedStatementFile } from "../transactions.dto";
 import { invalidateTransactionQueries } from "../transaction-query-invalidation";
 
 function useInvalidateAfterNewTransaction() {
@@ -22,14 +22,14 @@ export function useCreateTransaction() {
   };
 }
 
-export function useImportTransactionsCsv() {
+export function useImportStatementFile() {
   const invalidate = useInvalidateAfterNewTransaction();
   const mutation = useMutation({
-    mutationFn: (csv: string) => TransactionService.importTransactionsCsv(csv),
+    mutationFn: (file: PickedStatementFile) => TransactionService.importStatementFile(file),
     onSuccess: invalidate,
   });
   return {
-    importCsv: mutation.mutateAsync,
+    importStatementFile: mutation.mutateAsync,
     isImporting: mutation.isPending,
     error: mutation.error,
   };
