@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   View,
@@ -19,6 +19,8 @@ import {
   RADIUS,
 } from "@/core/common/constants/theme";
 import { usePickAndImportStatement } from "../hooks/use-pick-and-import-statement";
+import { ImportTarget } from "../transactions.dto";
+import ImportAccountPicker from "./import-account-picker";
 
 interface Props {
   visible: boolean;
@@ -29,12 +31,19 @@ interface Props {
 export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { pickAndImport, isImporting, fileName, accepted, error, reset } =
+  const { pickFile, confirmImport, isImporting, fileName, hasPickedFile, accepted, error, reset } =
     usePickAndImportStatement(onAccepted);
+  const [target, setTarget] = useState<ImportTarget | undefined>(undefined);
+  const canImport = !!(target?.accountId !== undefined || target?.currency);
 
   function handleClose() {
     reset();
+    setTarget(undefined);
     onClose();
+  }
+
+  function handleImport() {
+    confirmImport(target);
   }
 
   return (
@@ -88,8 +97,8 @@ export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) 
             </Text>
 
             <Pressable
-              onPress={pickAndImport}
-              disabled={isImporting}
+              onPress={pickFile}
+              disabled={isImporting || accepted}
               style={[
                 styles.pickBtn,
                 {
@@ -112,6 +121,29 @@ export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) 
                 {fileName ?? "Choose a statement file"}
               </Text>
             </Pressable>
+
+            {hasPickedFile && !accepted && !isImporting && (
+              <>
+                <ImportAccountPicker value={target} onChange={setTarget} />
+                <Pressable
+                  onPress={handleImport}
+                  disabled={!canImport}
+                  style={[
+                    styles.importBtn,
+                    { backgroundColor: canImport ? colors.primary : colors.border },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.importBtnLabel,
+                      { color: canImport ? colors.onPrimary : colors.textSubtle, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
+                    Import
+                  </Text>
+                </Pressable>
+              </>
+            )}
 
             {isImporting && (
               <View style={styles.loadingRow}>
@@ -228,6 +260,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   pickBtnLabel: { fontSize: 15, flex: 1 },
+  importBtn: {
+    height: 50,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  importBtnLabel: { fontSize: 15 },
   loadingRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
   loadingLabel: { fontSize: 14 },
   errorCard: {

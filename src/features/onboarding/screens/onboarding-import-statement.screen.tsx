@@ -39,7 +39,17 @@ const SETUP_ITEMS = [
 export default function OnboardingImportStatementScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
-  const { pickAndImport, isImporting, fileName, accepted, error } = usePickAndImportStatement();
+  const { pickFile, confirmImport, isImporting, fileName, accepted, error } =
+    usePickAndImportStatement();
+
+  // Onboarding has no existing accounts to choose from yet (first-time user),
+  // so it skips the account-selection step ImportCsvSheet adds elsewhere —
+  // pick and import happen back to back, same as before. The backend falls
+  // through to the user's refCurrency when no target is given.
+  async function handlePickAndImport() {
+    const picked = await pickFile();
+    if (picked) await confirmImport();
+  }
 
   function handleContinue() {
     // The import runs in the background now — there's no known transaction
@@ -238,7 +248,7 @@ export default function OnboardingImportStatementScreen() {
       ) : (
         <PrimaryButton
           label={isImporting ? "Importing…" : fileName ? "Try another file" : "Choose a statement file"}
-          onPress={pickAndImport}
+          onPress={handlePickAndImport}
           isLoading={isImporting}
           disabled={isImporting}
         />

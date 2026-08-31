@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import Toast from "react-native-toast-message";
 import { useImportStatementFile } from "./use-create-transaction";
+import { ImportTarget } from "../transactions.dto";
 
 // Must match the backend's actually-supported formats exactly (see the backend
 // ticket's PR) — not the broader CSV/PDF/XLSX/XLS/DOCX/DOC set originally assumed,
@@ -15,6 +16,11 @@ const SUPPORTED_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
 ];
 
+// Split into pickFile() + confirmImport() (rather than one combined action)
+// so a caller can insert a step in between — e.g. ImportCsvSheet's
+// account-selection picker. A caller that doesn't need that (onboarding) can
+// just call both back to back.
+//
 // `onAccepted` fires once the upload is accepted (queued for background
 // processing) — not once the import actually finishes. The real result
 // arrives later as an import_complete/import_failed notification.
@@ -22,32 +28,42 @@ export function usePickAndImportStatement(onAccepted?: () => void) {
   const { importStatementFile, isImporting } = useImportStatementFile();
 
   const [fileName, setFileName] = useState<string | null>(null);
+  const [pickedAsset, setPickedAsset] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function reset() {
     setFileName(null);
+    setPickedAsset(null);
     setAccepted(false);
     setError(null);
   }
 
-  async function pickAndImport() {
+  async function pickFile(): Promise<boolean> {
     setAccepted(false);
     setError(null);
     const picked = await DocumentPicker.getDocumentAsync({
       type: SUPPORTED_MIME_TYPES,
       copyToCacheDirectory: true,
     });
-    if (picked.canceled || !picked.assets[0]) return;
+    if (picked.canceled || !picked.assets[0]) return false;
 
     const asset = picked.assets[0];
     setFileName(asset.name);
+    setPickedAsset(asset);
+    return true;
+  }
 
+  async function confirmImport(target?: ImportTarget) {
+    if (!pickedAsset) return;
     try {
       await importStatementFile({
-        uri: asset.uri,
-        name: asset.name,
-        mimeType: asset.mimeType,
+        file: {
+          uri: pickedAsset.uri,
+          name: pickedAsset.name,
+          mimeType: pickedAsset.mimeType,
+        },
+        target,
       });
       setAccepted(true);
       Toast.show({
@@ -65,5 +81,14 @@ export function usePickAndImportStatement(onAccepted?: () => void) {
     }
   }
 
-  return { pickAndImport, isImporting, fileName, accepted, error, reset };
+  return {
+    pickFile,
+    confirmImport,
+    isImporting,
+    fileName,
+    hasPickedFile: !!pickedAsset,
+    accepted,
+    error,
+    reset,
+  };
 }
