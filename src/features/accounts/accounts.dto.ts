@@ -12,6 +12,14 @@ export const updateAccountSchema = z
 
 export type UpdateAccountSchemaType = z.infer<typeof updateAccountSchema>;
 
+export const createAccountSchema = z.object({
+  currency: z.string().length(3),
+  bank_id: z.number().int().positive().optional(),
+  label: z.string().min(1).max(100).optional(),
+});
+
+export type CreateAccountSchemaType = z.infer<typeof createAccountSchema>;
+
 export interface AccountDto {
   id: number;
   bank_id: number | null;

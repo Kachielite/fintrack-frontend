@@ -2,6 +2,7 @@ import apiClient from "@/core/common/network/api-client";
 import { API_ENDPOINTS } from "@/core/common/network/api-endpoints";
 import {
   AccountDto,
+  CreateAccountSchemaType,
   RescanTransfersResult,
   UpdateAccountSchemaType,
 } from "./accounts.dto";
@@ -12,6 +13,17 @@ export const AccountsService = {
   async listAccounts(): Promise<Account[]> {
     const { data } = await apiClient.get<AccountDto[]>(API_ENDPOINTS.ACCOUNTS);
     return data.map(mapAccountFromDto);
+  },
+
+  // Dedupes server-side by (bank_id, currency) — creating with a currency
+  // that already has an account just returns/reactivates that one instead
+  // of a duplicate.
+  async createAccount(payload: CreateAccountSchemaType): Promise<Account> {
+    const { data } = await apiClient.post<AccountDto>(
+      API_ENDPOINTS.ACCOUNTS,
+      payload,
+    );
+    return mapAccountFromDto(data);
   },
 
   async updateAccount(

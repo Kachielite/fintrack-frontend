@@ -22,6 +22,7 @@ import { Account } from "../accounts.interface";
 import AccountCard from "../components/account-card";
 import AccountActionsSheet from "../components/account-actions-sheet";
 import RescanTransfersSheet from "../components/rescan-transfers-sheet";
+import CreateAccountSheet from "../components/create-account-sheet";
 import EmptyState from "@/core/common/components/EmptyState";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
 
@@ -32,6 +33,7 @@ export default function AccountsScreen() {
 
   const [selected, setSelected] = useState<Account | null>(null);
   const [rescanSheetOpen, setRescanSheetOpen] = useState(false);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
@@ -64,6 +66,14 @@ export default function AccountsScreen() {
         >
           Accounts
         </Text>
+        <Pressable
+          onPress={() => setCreateSheetOpen(true)}
+          hitSlop={12}
+          accessibilityLabel="Add account"
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons name="add" size={20} color={colors.textPrimary} />
+        </Pressable>
         <Pressable
           onPress={() => setRescanSheetOpen(true)}
           hitSlop={12}
@@ -112,7 +122,7 @@ export default function AccountsScreen() {
           <EmptyState
             icon="wallet-outline"
             message="No accounts yet"
-            subMessage="Accounts are created automatically as we recognise transactions from your bank alerts."
+            subMessage="Accounts are created automatically as we recognise transactions from your bank alerts, or you can add one yourself with the + above."
           />
         ) : (
           <View style={{ gap: SPACING.sm }}>
@@ -139,6 +149,11 @@ export default function AccountsScreen() {
       <RescanTransfersSheet
         visible={rescanSheetOpen}
         onClose={() => setRescanSheetOpen(false)}
+      />
+
+      <CreateAccountSheet
+        visible={createSheetOpen}
+        onClose={() => setCreateSheetOpen(false)}
       />
     </SafeAreaView>
   );
