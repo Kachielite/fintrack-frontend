@@ -16,7 +16,12 @@ export function useSignIn() {
 
   const mutation = useMutation({
     mutationFn: (data: LoginSchemaType) => AuthService.login(data.email, data.password),
-    onSuccess: (session) => setSession(session),
+    onSuccess: (session) => {
+      setSession(session);
+      if (session.reactivated) {
+        Toast.show({ type: "success", text1: "Welcome back — your account has been reactivated." });
+      }
+    },
     onError: (error: Error) => {
       Toast.show({ type: "error", text1: error.message ?? "Sign in failed" });
     },

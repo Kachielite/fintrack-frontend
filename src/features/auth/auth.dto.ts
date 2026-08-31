@@ -44,4 +44,7 @@ export interface AuthResponseDto {
   access_token: string;
   refresh_token: string;
   user: AuthUserDto;
+  // Present and true only when this login reactivated an account that was
+  // pending 14-day deletion — a sibling of `user`, not a field on it.
+  reactivated?: boolean;
 }

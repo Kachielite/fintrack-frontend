@@ -894,7 +894,7 @@ export default function ProfileScreen() {
   function handleDeleteAccount() {
     Alert.alert(
       "Delete account",
-      "Your account and all data will be permanently deleted within 14 days. You can contact us before then to cancel.\n\nThis action cannot be undone.",
+      "Your account and all data will be permanently deleted within 14 days. Log back in any time in the next 14 days to keep your account.\n\nThis action cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {

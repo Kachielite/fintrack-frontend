@@ -8,7 +8,12 @@ export function useGoogleSignIn() {
 
   const mutation = useMutation({
     mutationFn: () => AuthService.loginGoogle(),
-    onSuccess: (session) => setSession(session),
+    onSuccess: (session) => {
+      setSession(session);
+      if (session.reactivated) {
+        Toast.show({ type: "success", text1: "Welcome back — your account has been reactivated." });
+      }
+    },
     onError: (error: Error) => {
       console.log("[GoogleSignIn] error:", error);
       Toast.show({ type: "error", text1: error.message ?? "Google sign-in failed" });

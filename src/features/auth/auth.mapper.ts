@@ -15,5 +15,6 @@ export function mapAuthSessionFromDto(dto: AuthResponseDto): AuthSession {
     accessToken: dto.access_token,
     refreshToken: dto.refresh_token,
     user: mapAuthUserFromDto(dto.user),
+    reactivated: dto.reactivated,
   };
 }
