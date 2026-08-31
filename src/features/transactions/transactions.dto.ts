@@ -65,6 +65,7 @@ export interface ImportTarget {
   currency?: string;
   bankId?: number;
   label?: string;
+  accountNumber?: string;
 }
 
 // Shape of the `data` field on an import_complete notification (see
