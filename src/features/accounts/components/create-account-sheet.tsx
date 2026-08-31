@@ -4,7 +4,6 @@ import {
   View,
   Text,
   Pressable,
-  TextInput,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
@@ -15,17 +14,9 @@ import DraggableSheet from "@/core/common/components/DraggableSheet";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { useCreateAccount } from "../hooks/use-create-account";
+import NewAccountFields, { NewAccountFieldsValue } from "./new-account-fields";
 
-// Mirrors add-transaction-sheet.tsx's / import-account-picker.tsx's currency chip list.
-const CURRENCIES = [
-  { code: "NGN", label: "₦ NGN" },
-  { code: "USD", label: "$ USD" },
-  { code: "GBP", label: "£ GBP" },
-  { code: "EUR", label: "€ EUR" },
-  { code: "GHS", label: "₵ GHS" },
-  { code: "KES", label: "KSh KES" },
-  { code: "ZAR", label: "R ZAR" },
-];
+const EMPTY: NewAccountFieldsValue = { bankName: "", accountNumber: "", currency: null };
 
 interface Props {
   visible: boolean;
@@ -36,12 +27,10 @@ export default function CreateAccountSheet({ visible, onClose }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { createAccount, isCreating } = useCreateAccount();
-  const [currency, setCurrency] = useState<string | null>(null);
-  const [label, setLabel] = useState("");
+  const [fields, setFields] = useState<NewAccountFieldsValue>(EMPTY);
 
   function reset() {
-    setCurrency(null);
-    setLabel("");
+    setFields(EMPTY);
   }
 
   function handleClose() {
@@ -50,9 +39,13 @@ export default function CreateAccountSheet({ visible, onClose }: Props) {
   }
 
   function handleCreate() {
-    if (!currency) return;
+    if (!fields.currency) return;
     createAccount(
-      { currency, label: label.trim() || undefined },
+      {
+        currency: fields.currency,
+        bank_id: fields.bankId,
+        account_number: fields.accountNumber.trim() || undefined,
+      },
       {
         onSuccess: () => {
           Toast.show({ type: "success", text1: "Account created" });
@@ -95,57 +88,14 @@ export default function CreateAccountSheet({ visible, onClose }: Props) {
           </View>
 
           <View style={styles.body}>
-            <Text style={[styles.label, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
-              CURRENCY
-            </Text>
-            <View style={styles.currencyRow}>
-              {CURRENCIES.map((c) => {
-                const active = currency === c.code;
-                return (
-                  <Pressable
-                    key={c.code}
-                    onPress={() => setCurrency(c.code)}
-                    style={[
-                      styles.currencyChip,
-                      {
-                        backgroundColor: active ? colors.primary : colors.background,
-                        borderColor: active ? colors.primary : colors.border,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.currencyChipLabel,
-                        { color: active ? colors.onPrimary : colors.textPrimary, fontFamily: FONTS.semiBold },
-                      ]}
-                    >
-                      {c.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={[styles.label, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
-              NAME (OPTIONAL)
-            </Text>
-            <TextInput
-              value={label}
-              onChangeText={setLabel}
-              placeholder="e.g. M-Pesa"
-              placeholderTextColor={colors.textSubtle}
-              style={[
-                styles.input,
-                { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
-              ]}
-            />
+            <NewAccountFields value={fields} onChange={setFields} />
 
             <Pressable
               onPress={handleCreate}
-              disabled={!currency || isCreating}
+              disabled={!fields.currency || isCreating}
               style={[
                 styles.createBtn,
-                { backgroundColor: currency && !isCreating ? colors.primary : colors.border },
+                { backgroundColor: fields.currency && !isCreating ? colors.primary : colors.border },
               ]}
             >
               {isCreating ? (
@@ -154,7 +104,7 @@ export default function CreateAccountSheet({ visible, onClose }: Props) {
                 <Text
                   style={[
                     styles.createBtnLabel,
-                    { color: currency ? colors.onPrimary : colors.textSubtle, fontFamily: FONTS.semiBold },
+                    { color: fields.currency ? colors.onPrimary : colors.textSubtle, fontFamily: FONTS.semiBold },
                   ]}
                 >
                   Create account
@@ -194,30 +144,14 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.xxl,
-    gap: SPACING.sm,
-  },
-  label: { fontSize: 11, letterSpacing: 0.6, marginTop: SPACING.sm },
-  currencyRow: { flexDirection: "row", flexWrap: "wrap", gap: SPACING.xs },
-  currencyChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 99,
-    borderWidth: 1.5,
-  },
-  currencyChipLabel: { fontSize: 13 },
-  input: {
-    height: 48,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    paddingHorizontal: SPACING.md,
-    fontSize: 15,
+    gap: SPACING.md,
   },
   createBtn: {
     height: 52,
     borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: SPACING.md,
+    marginTop: SPACING.sm,
   },
   createBtnLabel: { fontSize: 16 },
 });

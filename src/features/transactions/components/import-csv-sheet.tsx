@@ -98,8 +98,10 @@ export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) 
               currency column).
             </Text>
 
+            {/* key remounts this on open/close so its internal selection state
+                doesn't linger. RN's Modal keeps children mounted while hidden. */}
             {!accepted && !isImporting && (
-              <ImportAccountPicker value={target} onChange={setTarget} />
+              <ImportAccountPicker key={String(visible)} onChange={setTarget} />
             )}
 
             <View style={{ gap: SPACING.sm }}>

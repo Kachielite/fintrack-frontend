@@ -16,6 +16,7 @@ export const createAccountSchema = z.object({
   currency: z.string().length(3),
   bank_id: z.number().int().positive().optional(),
   label: z.string().min(1).max(100).optional(),
+  account_number: z.string().min(1).max(50).optional(),
 });
 
 export type CreateAccountSchemaType = z.infer<typeof createAccountSchema>;

@@ -1,205 +1,94 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
-import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
+import { SPACING } from "@/core/common/constants/theme";
+import Dropdown from "@/core/common/components/Dropdown";
 import { useAccounts } from "@/features/accounts/hooks/use-accounts";
 import { ImportTarget } from "../transactions.dto";
+import NewAccountFields, { NewAccountFieldsValue } from "@/features/accounts/components/new-account-fields";
 
-// Mirrors add-transaction-sheet.tsx's currency chip list.
-const CURRENCIES = [
-  { code: "NGN", label: "₦ NGN" },
-  { code: "USD", label: "$ USD" },
-  { code: "GBP", label: "£ GBP" },
-  { code: "EUR", label: "€ EUR" },
-  { code: "GHS", label: "₵ GHS" },
-  { code: "KES", label: "KSh KES" },
-  { code: "ZAR", label: "R ZAR" },
-];
+const CREATE_NEW = "__create_new__";
+
+const EMPTY_NEW_ACCOUNT: NewAccountFieldsValue = {
+  bankName: "",
+  accountNumber: "",
+  currency: null,
+};
 
 interface Props {
-  value: ImportTarget | undefined;
   onChange: (target: ImportTarget | undefined) => void;
 }
 
 /**
  * Lets the user pick which account a statement is being imported into (or
- * create a new one by currency) instead of silently falling back to their
- * app-wide reference currency — the fix for statements with no currency
- * column (e.g. M-Pesa) landing as the wrong currency. bank_id is
- * intentionally not exposed here — the backend calls it optional, and
- * there's no bank-picker UI elsewhere in the app to borrow from.
+ * create a new one) instead of silently falling back to their app-wide
+ * reference currency. The AI reading the statement needs to know the target
+ * account since the statement itself may not carry enough information
+ * (e.g. no currency column) to figure it out.
  */
-export default function ImportAccountPicker({ value, onChange }: Props) {
+export default function ImportAccountPicker({ onChange }: Props) {
   const colors = useThemeColors();
   const { accounts, isLoading } = useAccounts();
   const activeAccounts = accounts.filter((a) => a.isActive);
-  const [creatingNew, setCreatingNew] = useState(activeAccounts.length === 0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [newAccount, setNewAccount] = useState<NewAccountFieldsValue>(EMPTY_NEW_ACCOUNT);
 
-  function selectExisting(accountId: number) {
-    setCreatingNew(false);
-    onChange({ accountId });
+  // Default straight into "create new" when there's nothing to pick from yet.
+  useEffect(() => {
+    if (!isLoading && activeAccounts.length === 0 && selected === null) {
+      setSelected(CREATE_NEW);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, activeAccounts.length]);
+
+  function handleSelect(optionValue: string) {
+    setSelected(optionValue);
+    if (optionValue === CREATE_NEW) {
+      onChange(newAccount.currency ? toTarget(newAccount) : undefined);
+    } else {
+      onChange({ accountId: Number(optionValue) });
+    }
   }
 
-  function selectCurrency(currency: string) {
-    onChange({ currency, label: value?.currency ? value?.label : undefined });
+  function handleNewAccountChange(next: NewAccountFieldsValue) {
+    setNewAccount(next);
+    onChange(next.currency ? toTarget(next) : undefined);
   }
 
-  function updateLabel(label: string) {
-    if (!value?.currency) return;
-    onChange({ currency: value.currency, label: label || undefined });
+  function toTarget(fields: NewAccountFieldsValue): ImportTarget {
+    return {
+      currency: fields.currency ?? undefined,
+      bankId: fields.bankId,
+      accountNumber: fields.accountNumber.trim() || undefined,
+    };
   }
 
-  const selectedAccountId = value?.accountId;
-  const selectedCurrency = !creatingNew ? undefined : value?.currency;
+  const options = [
+    ...activeAccounts.map((account) => ({
+      value: String(account.id),
+      label: account.label,
+      sub: [account.currency, account.bankName].filter(Boolean).join(". "),
+    })),
+    { value: CREATE_NEW, label: "Create a new account" },
+  ];
+
+  if (isLoading) {
+    return <ActivityIndicator color={colors.primary} />;
+  }
 
   return (
     <View style={{ gap: SPACING.sm }}>
-      <Text style={[styles.label, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
-        IMPORT INTO
-      </Text>
+      <Dropdown
+        label="IMPORT INTO"
+        placeholder="Select an account"
+        value={selected}
+        options={options}
+        onSelect={handleSelect}
+      />
 
-      {isLoading ? (
-        <ActivityIndicator color={colors.primary} />
-      ) : (
-        <>
-          {activeAccounts.length > 0 && (
-            <View style={{ gap: SPACING.xs }}>
-              {activeAccounts.map((account) => {
-                const active = !creatingNew && selectedAccountId === account.id;
-                return (
-                  <Pressable
-                    key={account.id}
-                    onPress={() => selectExisting(account.id)}
-                    style={[
-                      styles.row,
-                      {
-                        backgroundColor: active ? colors.primaryLight : colors.background,
-                        borderColor: active ? colors.primary : colors.border,
-                      },
-                    ]}
-                  >
-                    <View style={[styles.rowIcon, { backgroundColor: colors.surface2 }]}>
-                      <Ionicons name="wallet-outline" size={16} color={colors.textSubtle} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[styles.rowLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}
-                        numberOfLines={1}
-                      >
-                        {account.label}
-                      </Text>
-                      <Text style={[styles.rowSub, { color: colors.textSubtle, fontFamily: FONTS.regular }]}>
-                        {account.currency}
-                        {account.bankName ? ` · ${account.bankName}` : ""}
-                      </Text>
-                    </View>
-                    {active && <Ionicons name="checkmark-circle" size={18} color={colors.primary} />}
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-
-          <Pressable
-            onPress={() => setCreatingNew(true)}
-            style={[
-              styles.row,
-              {
-                backgroundColor: creatingNew ? colors.primaryLight : colors.background,
-                borderColor: creatingNew ? colors.primary : colors.border,
-                borderStyle: "dashed",
-              },
-            ]}
-          >
-            <View style={[styles.rowIcon, { backgroundColor: colors.surface2 }]}>
-              <Ionicons name="add" size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.rowLabel, { color: colors.textPrimary, fontFamily: FONTS.semiBold }]}>
-              Create a new account
-            </Text>
-          </Pressable>
-
-          {creatingNew && (
-            <View style={styles.currencyRow}>
-              {CURRENCIES.map((c) => {
-                const active = selectedCurrency === c.code;
-                return (
-                  <Pressable
-                    key={c.code}
-                    onPress={() => selectCurrency(c.code)}
-                    style={[
-                      styles.currencyChip,
-                      {
-                        backgroundColor: active ? colors.primary : colors.background,
-                        borderColor: active ? colors.primary : colors.border,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.currencyChipLabel,
-                        { color: active ? colors.onPrimary : colors.textPrimary, fontFamily: FONTS.semiBold },
-                      ]}
-                    >
-                      {c.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-
-          {creatingNew && selectedCurrency && (
-            <TextInput
-              value={value?.label ?? ""}
-              onChangeText={updateLabel}
-              placeholder="Account name (optional, e.g. M-Pesa)"
-              placeholderTextColor={colors.textSubtle}
-              style={[
-                styles.labelInput,
-                { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
-              ]}
-            />
-          )}
-        </>
+      {selected === CREATE_NEW && (
+        <NewAccountFields value={newAccount} onChange={handleNewAccountChange} />
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  label: { fontSize: 11, letterSpacing: 0.6 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-    padding: SPACING.md,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-  },
-  rowIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: RADIUS.sm,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rowLabel: { fontSize: 14 },
-  rowSub: { fontSize: 11, marginTop: 1 },
-  currencyRow: { flexDirection: "row", flexWrap: "wrap", gap: SPACING.xs },
-  currencyChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 99,
-    borderWidth: 1.5,
-  },
-  currencyChipLabel: { fontSize: 13 },
-  labelInput: {
-    height: 44,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    paddingHorizontal: SPACING.md,
-    fontSize: 14,
-  },
-});
