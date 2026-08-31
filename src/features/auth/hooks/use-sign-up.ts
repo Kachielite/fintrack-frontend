@@ -27,6 +27,7 @@ export function useSignUp() {
         last_name: data.last_name,
         email: data.email,
         password: data.password,
+        terms_accepted: true,
       }),
     onSuccess: (session) => setSession(session),
     onError: (error: Error) => {

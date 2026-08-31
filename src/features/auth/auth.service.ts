@@ -119,7 +119,9 @@ export const AuthService = {
   },
 
   register: async (
-    data: Omit<SignUpSchemaType, "confirm_password">,
+    data: Omit<SignUpSchemaType, "confirm_password"> & {
+      terms_accepted: true;
+    },
   ): Promise<AuthSession> => {
     try {
       const { data: response } = await apiClient.post<AuthResponseDto>(
