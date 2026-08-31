@@ -91,9 +91,7 @@ export default function HomeScreen() {
       <ImportCsvSheet
         visible={importSheetVisible}
         onClose={() => setImportSheetVisible(false)}
-        onImported={(result) => {
-          if (result.imported > 0) setDataSourceSkipped(false);
-        }}
+        onAccepted={() => setDataSourceSkipped(false)}
       />
     </SafeAreaView>
   );

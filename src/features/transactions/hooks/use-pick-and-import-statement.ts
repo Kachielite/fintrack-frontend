@@ -2,7 +2,6 @@ import { useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import Toast from "react-native-toast-message";
 import { useImportStatementFile } from "./use-create-transaction";
-import { ImportStatementResultDto } from "../transactions.dto";
 
 // Must match the backend's actually-supported formats exactly (see the backend
 // ticket's PR) — not the broader CSV/PDF/XLSX/XLS/DOCX/DOC set originally assumed,
@@ -16,23 +15,24 @@ const SUPPORTED_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
 ];
 
-export function usePickAndImportStatement(
-  onImported?: (result: ImportStatementResultDto) => void,
-) {
+// `onAccepted` fires once the upload is accepted (queued for background
+// processing) — not once the import actually finishes. The real result
+// arrives later as an import_complete/import_failed notification.
+export function usePickAndImportStatement(onAccepted?: () => void) {
   const { importStatementFile, isImporting } = useImportStatementFile();
 
   const [fileName, setFileName] = useState<string | null>(null);
-  const [result, setResult] = useState<ImportStatementResultDto | null>(null);
+  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function reset() {
     setFileName(null);
-    setResult(null);
+    setAccepted(false);
     setError(null);
   }
 
   async function pickAndImport() {
-    setResult(null);
+    setAccepted(false);
     setError(null);
     const picked = await DocumentPicker.getDocumentAsync({
       type: SUPPORTED_MIME_TYPES,
@@ -44,19 +44,18 @@ export function usePickAndImportStatement(
     setFileName(asset.name);
 
     try {
-      const outcome = await importStatementFile({
+      await importStatementFile({
         uri: asset.uri,
         name: asset.name,
         mimeType: asset.mimeType,
       });
-      setResult(outcome);
-      if (outcome.imported > 0) {
-        Toast.show({
-          type: "success",
-          text1: `Imported ${outcome.imported} transaction${outcome.imported === 1 ? "" : "s"}`,
-        });
-        onImported?.(outcome);
-      }
+      setAccepted(true);
+      Toast.show({
+        type: "success",
+        text1: "Import started",
+        text2: "We'll notify you when it's done.",
+      });
+      onAccepted?.();
     } catch (err) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -66,5 +65,5 @@ export function usePickAndImportStatement(
     }
   }
 
-  return { pickAndImport, isImporting, fileName, result, error, reset };
+  return { pickAndImport, isImporting, fileName, accepted, error, reset };
 }

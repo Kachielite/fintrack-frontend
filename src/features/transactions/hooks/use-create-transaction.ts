@@ -23,10 +23,11 @@ export function useCreateTransaction() {
 }
 
 export function useImportStatementFile() {
-  const invalidate = useInvalidateAfterNewTransaction();
+  // No cache invalidation on success here — accepting the upload doesn't
+  // change any data yet. The real invalidation happens once the backend's
+  // import_complete notification arrives (useTransactionSyncWatcher).
   const mutation = useMutation({
     mutationFn: (file: PickedStatementFile) => TransactionService.importStatementFile(file),
-    onSuccess: invalidate,
   });
   return {
     importStatementFile: mutation.mutateAsync,

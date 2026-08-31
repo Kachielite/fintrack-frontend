@@ -28,6 +28,8 @@ const ICON_MAP: Record<string, { name: string; color: string }> = {
   iris_ready: { name: "sparkles", color: "#a78bfa" },
   transfer_scan_complete: { name: "swap-horizontal", color: "#22c55e" },
   transfer_scan_failed: { name: "close-circle", color: "#ef4444" },
+  import_complete: { name: "checkmark-circle", color: "#22c55e" },
+  import_failed: { name: "close-circle", color: "#ef4444" },
 };
 
 interface Section {
@@ -79,6 +81,9 @@ function navigate(navigation: any, type: string) {
       break;
     case "transfer_scan_complete":
       navigation.navigate("ReviewTransfers");
+      break;
+    case "import_complete":
+      navigation.navigate("Tabs", { screen: "Transactions" });
       break;
   }
 }
