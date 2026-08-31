@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionService } from "../transactions.service";
-import { CreateManualTransactionPayload, PickedStatementFile } from "../transactions.dto";
+import { CreateManualTransactionPayload, ImportTarget, PickedStatementFile } from "../transactions.dto";
 import { invalidateTransactionQueries } from "../transaction-query-invalidation";
 
 function useInvalidateAfterNewTransaction() {
@@ -27,7 +27,8 @@ export function useImportStatementFile() {
   // change any data yet. The real invalidation happens once the backend's
   // import_complete notification arrives (useTransactionSyncWatcher).
   const mutation = useMutation({
-    mutationFn: (file: PickedStatementFile) => TransactionService.importStatementFile(file),
+    mutationFn: ({ file, target }: { file: PickedStatementFile; target?: ImportTarget }) =>
+      TransactionService.importStatementFile(file, target),
   });
   return {
     importStatementFile: mutation.mutateAsync,

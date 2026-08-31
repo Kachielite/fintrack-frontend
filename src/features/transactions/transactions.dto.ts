@@ -56,6 +56,18 @@ export interface ImportQueuedDto {
   message: string;
 }
 
+// Optional import destination — pins the import to a specific account
+// instead of the backend falling back to the user's app-wide refCurrency.
+// Exactly one of accountId or currency should be set; providing both is
+// rejected by the backend.
+export interface ImportTarget {
+  accountId?: number;
+  currency?: string;
+  bankId?: number;
+  label?: string;
+  accountNumber?: string;
+}
+
 // Shape of the `data` field on an import_complete notification (see
 // notifications.interface.ts on the backend) — not returned by any request
 // directly anymore, kept for typing that payload where it's read.

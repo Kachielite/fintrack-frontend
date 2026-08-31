@@ -26,6 +26,7 @@ import {
 } from "@/core/common/constants/theme";
 import { Account } from "../accounts.interface";
 import { useUpdateAccount } from "../hooks/use-update-account";
+import BankNameField, { BankNameFieldValue } from "./bank-name-field";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -36,7 +37,11 @@ interface Props {
   otherAccounts: Account[];
 }
 
-type Mode = "menu" | "rename" | "merge";
+type Mode = "menu" | "edit" | "merge";
+
+function bankDraftFrom(account: Account): BankNameFieldValue {
+  return { bankId: account.bankId ?? undefined, bankName: account.bankName ?? "" };
+}
 
 export default function AccountActionsSheet({
   visible,
@@ -50,10 +55,14 @@ export default function AccountActionsSheet({
 
   const [mode, setMode] = useState<Mode>("menu");
   const [labelDraft, setLabelDraft] = useState(account.label);
+  const [bankDraft, setBankDraft] = useState<BankNameFieldValue>(bankDraftFrom(account));
+  const [accountNumberDraft, setAccountNumberDraft] = useState(account.accountNumberMask ?? "");
 
   function reset() {
     setMode("menu");
     setLabelDraft(account.label);
+    setBankDraft(bankDraftFrom(account));
+    setAccountNumberDraft(account.accountNumberMask ?? "");
   }
 
   function handleClose() {
@@ -61,18 +70,25 @@ export default function AccountActionsSheet({
     onClose();
   }
 
-  function handleRenameSave() {
+  function handleEditSave() {
     const label = labelDraft.trim();
     if (!label) return;
     updateAccount(
-      { id: account.id, data: { label } },
+      {
+        id: account.id,
+        data: {
+          label,
+          bank_id: bankDraft.bankId,
+          account_number: accountNumberDraft.trim() || undefined,
+        },
+      },
       {
         onSuccess: () => {
-          Toast.show({ type: "success", text1: "Account renamed" });
+          Toast.show({ type: "success", text1: "Account updated" });
           handleClose();
         },
         onError: () =>
-          Toast.show({ type: "error", text1: "Could not rename account" }),
+          Toast.show({ type: "error", text1: "Could not update account" }),
       },
     );
   }
@@ -141,8 +157,8 @@ export default function AccountActionsSheet({
   const headerTitle =
     mode === "menu"
       ? account.label
-      : mode === "rename"
-        ? "Rename Account"
+      : mode === "edit"
+        ? "Edit Account"
         : "Merge Into…";
 
   return (
@@ -211,8 +227,8 @@ export default function AccountActionsSheet({
                 >
                   <MenuRow
                     icon="pencil-outline"
-                    label="Rename"
-                    onPress={() => setMode("rename")}
+                    label="Edit account"
+                    onPress={() => setMode("edit")}
                     showBorder
                   />
                   <MenuRow
@@ -232,9 +248,9 @@ export default function AccountActionsSheet({
               </View>
             )}
 
-            {mode === "rename" && (
+            {mode === "edit" && (
               <>
-                <View style={styles.body}>
+                <ScrollView style={{ maxHeight: SCREEN_HEIGHT * 0.55 }} contentContainerStyle={styles.body}>
                   <TextInput
                     value={labelDraft}
                     onChangeText={setLabelDraft}
@@ -251,14 +267,35 @@ export default function AccountActionsSheet({
                       },
                     ]}
                     returnKeyType="done"
-                    onSubmitEditing={handleRenameSave}
                   />
-                </View>
+                  <BankNameField value={bankDraft} onChange={setBankDraft} />
+                  <View style={{ gap: SPACING.sm }}>
+                    <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+                      ACCOUNT NUMBER (OPTIONAL)
+                    </Text>
+                    <TextInput
+                      value={accountNumberDraft}
+                      onChangeText={setAccountNumberDraft}
+                      placeholder="Distinguishes accounts at the same bank"
+                      placeholderTextColor={colors.textSubtle}
+                      keyboardType="numeric"
+                      style={[
+                        styles.input,
+                        {
+                          color: colors.textPrimary,
+                          borderColor: colors.border,
+                          backgroundColor: colors.background,
+                          fontFamily: FONTS.regular,
+                        },
+                      ]}
+                    />
+                  </View>
+                </ScrollView>
                 <View
                   style={[styles.footer, { borderTopColor: colors.border }]}
                 >
                   <Pressable
-                    onPress={handleRenameSave}
+                    onPress={handleEditSave}
                     disabled={isUpdating || labelDraft.trim().length === 0}
                     style={[
                       styles.primaryBtn,
@@ -503,6 +540,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   menuLabel: { flex: 1, fontSize: FONT_SIZE.bodySmall },
+  fieldLabel: { fontSize: 11, letterSpacing: 0.6 },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: RADIUS.lg,
