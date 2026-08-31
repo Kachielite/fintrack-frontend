@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,15 +14,30 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import { FONTS, FONT_SIZE, RADIUS, SPACING } from "@/core/common/constants/theme";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { useSignUp } from "../hooks/use-sign-up";
+import AuthFooter from "../components/AuthFooter";
 
 export default function SignUpScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
   const { form, signUp, isLoading } = useSignUp();
   const { control, formState } = form;
+
+  const [agreed, setAgreed] = useState(false);
+
+  function requireConsent(action: () => void) {
+    if (!agreed) {
+      Toast.show({
+        type: "error",
+        text1: "Please accept the Terms of Service and Privacy Policy to continue",
+      });
+      return;
+    }
+    action();
+  }
 
   const fieldStyle = (hasError: boolean) => [
     styles.input,
@@ -190,8 +205,10 @@ export default function SignUpScreen() {
               )}
             </View>
 
+            <AuthFooter agreed={agreed} onToggle={() => setAgreed((v) => !v)} />
+
             <Pressable
-              onPress={() => signUp()}
+              onPress={() => requireConsent(() => signUp())}
               disabled={isLoading}
               style={[
                 styles.submitBtn,
