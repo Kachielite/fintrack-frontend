@@ -18,20 +18,20 @@ import {
   SPACING,
   RADIUS,
 } from "@/core/common/constants/theme";
-import { usePickAndImportCsv } from "../hooks/use-pick-and-import-csv";
-import { ImportCsvResultDto } from "../transactions.dto";
+import { usePickAndImportStatement } from "../hooks/use-pick-and-import-statement";
+import { ImportStatementResultDto } from "../transactions.dto";
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onImported?: (result: ImportCsvResultDto) => void;
+  onImported?: (result: ImportStatementResultDto) => void;
 }
 
 export default function ImportCsvSheet({ visible, onClose, onImported }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { pickAndImport, isImporting, fileName, result, reset } =
-    usePickAndImportCsv(onImported);
+  const { pickAndImport, isImporting, fileName, result, error, reset } =
+    usePickAndImportStatement(onImported);
 
   function handleClose() {
     reset();
@@ -63,7 +63,7 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
                 { color: colors.textPrimary, fontFamily: FONTS.bold },
               ]}
             >
-              Import from CSV
+              Import statement
             </Text>
             <Pressable
               onPress={handleClose}
@@ -84,9 +84,8 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
                 { color: colors.textSecondary, fontFamily: FONTS.regular },
               ]}
             >
-              Pick almost any CSV of transactions — a bank statement export or
-              your own spreadsheet. We'll automatically figure out which columns
-              are the date, description, and amount.
+              Pick a bank statement — CSV, Excel, PDF, or Word — and we'll
+              automatically pull out the transactions.
             </Text>
 
             <Pressable
@@ -111,7 +110,7 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
                   { color: colors.textPrimary, fontFamily: FONTS.semiBold },
                 ]}
               >
-                {fileName ?? "Choose a CSV file"}
+                {fileName ?? "Choose a statement file"}
               </Text>
             </Pressable>
 
@@ -125,6 +124,28 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
                   ]}
                 >
                   Importing…
+                </Text>
+              </View>
+            )}
+
+            {error && !isImporting && (
+              <View
+                style={[
+                  styles.errorCard,
+                  {
+                    backgroundColor: colors.error + "15",
+                    borderColor: colors.error + "55",
+                  },
+                ]}
+              >
+                <Ionicons name="alert-circle-outline" size={18} color={colors.error} />
+                <Text
+                  style={[
+                    styles.errorCardText,
+                    { color: colors.error, fontFamily: FONTS.medium },
+                  ]}
+                >
+                  {error}
                 </Text>
               </View>
             )}
@@ -250,6 +271,15 @@ const styles = StyleSheet.create({
   pickBtnLabel: { fontSize: 15, flex: 1 },
   loadingRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
   loadingLabel: { fontSize: 14 },
+  errorCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: SPACING.sm,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    padding: SPACING.md,
+  },
+  errorCardText: { flex: 1, fontSize: 13, lineHeight: 19 },
   resultCard: {
     borderRadius: RADIUS.md,
     borderWidth: 1,

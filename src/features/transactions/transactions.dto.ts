@@ -46,11 +46,17 @@ export interface CreateManualTransactionPayload {
   balance?: number;
 }
 
-export interface ImportCsvResultDto {
+export interface ImportStatementResultDto {
   imported: number;
   skippedDuplicates: number;
   skippedInvalid: number;
   errors: string[];
+}
+
+export interface PickedStatementFile {
+  uri: string;
+  name: string;
+  mimeType?: string;
 }
 
 export interface TransactionQueryParams {
