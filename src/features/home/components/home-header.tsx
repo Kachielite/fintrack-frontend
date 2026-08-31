@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, SPACING, RADIUS } from "@/core/common/constants/theme";
 import NotificationBell from "@/features/notifications/components/notification-bell";
+import IrisHeaderButton from "@/features/iris/components/IrisHeaderButton";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -44,6 +45,7 @@ export default function HomeHeader({ firstName }: HomeHeaderProps) {
         </Text>
       </View>
 
+      <IrisHeaderButton />
       <NotificationBell />
     </View>
   );

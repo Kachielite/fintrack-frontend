@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { Pressable, View, Text } from "react-native";
+import { Pressable, View, Text, useWindowDimensions } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   NavigationContainer,
@@ -58,6 +59,9 @@ import TermsOfServiceScreen from "@/features/user/screens/terms-of-service.scree
 import NotificationsScreen from "@/features/notifications/screens/notifications.screen";
 import IrisFAB from "@/features/iris/components/IrisFAB";
 import IrisChatModal from "@/features/iris/components/IrisChatModal";
+import AddActionSheet from "@/features/add-action/components/add-action-sheet";
+import { useAddActionStore } from "@/features/add-action/add-action.state";
+import ImportCsvSheet from "@/features/transactions/components/import-csv-sheet";
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -136,68 +140,184 @@ const ANDROID_TABS: {
 
 const BottomTab = createBottomTabNavigator();
 
+// ─── Tab bar bump geometry ──────────────────────────────────────────────────
+// The center "+" floats above the bar, nested in a notch cut into the bar's
+// top edge. Both the notch curve and the button's vertical offset are
+// computed from these constants so they stay visually aligned.
+const BAR_HEIGHT = 60;
+const BUMP_DEPTH = 10;
+const BUMP_HALF_WIDTH = 38;
+const ADD_BUTTON_SIZE = 52;
+const ADD_BUTTON_GLOW_SIZE = ADD_BUTTON_SIZE + 16;
+// Gap between the notch's peak (above) and the button's top edge (below),
+// so the notch pokes up visibly over the button instead of being covered.
+const ADD_BUTTON_NOTCH_GAP = 3;
+// Extra manual nudge downward on top of the gap-preserving position.
+const ADD_BUTTON_EXTRA_DROP = 2;
+const ADD_BUTTON_CENTER_Y =
+  -BUMP_DEPTH + ADD_BUTTON_NOTCH_GAP + ADD_BUTTON_SIZE / 2 + ADD_BUTTON_EXTRA_DROP;
+
+function buildTabBarTopEdgePath(width: number): string {
+  const cx = width / 2;
+  const leftFlatEnd = cx - BUMP_HALF_WIDTH - 20;
+  const rightFlatStart = cx + BUMP_HALF_WIDTH + 20;
+  return [
+    `M0,${BUMP_DEPTH}`,
+    `L${leftFlatEnd},${BUMP_DEPTH}`,
+    `C${cx - BUMP_HALF_WIDTH + 8},${BUMP_DEPTH} ${cx - BUMP_HALF_WIDTH + 4},0 ${cx},0`,
+    `C${cx + BUMP_HALF_WIDTH - 4},0 ${cx + BUMP_HALF_WIDTH - 8},${BUMP_DEPTH} ${rightFlatStart},${BUMP_DEPTH}`,
+    `L${width},${BUMP_DEPTH}`,
+  ].join(" ");
+}
+
+function buildTabBarFillPath(width: number, totalHeight: number): string {
+  return [
+    buildTabBarTopEdgePath(width),
+    `L${width},${totalHeight}`,
+    `L0,${totalHeight}`,
+    "Z",
+  ].join(" ");
+}
+
 function TabsCrossPlatform() {
   const colors = useThemeColors();
 
   // Custom tab bar to completely control press feedback on iOS and Android.
   // Using a custom bar avoids platform-specific overlays applied by the default bar.
   function MyTabBar({ state, _descriptors, navigation }: any) {
-    return (
-      <SafeAreaView
-        edges={["bottom"]}
-        style={{ backgroundColor: colors.surface }}
-      >
-        <View
+    const openChooser = useAddActionStore((s) => s.openChooser);
+    const { width } = useWindowDimensions();
+
+    function renderTab(route: any, index: number) {
+      const focused = state.index === index;
+      const tab = ANDROID_TABS.find((t) => t.name === route.name);
+      const iconName = focused ? tab!.iconFocused : tab!.icon;
+      const color = focused ? colors.primary : colors.textSubtle;
+
+      const onPress = () => {
+        const event = navigation.emit({
+          type: "tabPress",
+          target: route.key,
+          canPreventDefault: true,
+        });
+        if (!event.defaultPrevented) {
+          navigation.navigate(route.name);
+        }
+      };
+
+      const onLongPress = () =>
+        navigation.emit({ type: "tabLongPress", target: route.key });
+
+      return (
+        <Pressable
+          key={route.key}
+          onPress={onPress}
+          onLongPress={onLongPress}
+          android_ripple={null}
+          accessibilityRole="button"
+          accessibilityState={focused ? { selected: true } : {}}
           style={{
-            flexDirection: "row",
-            borderTopColor: colors.border,
-            borderTopWidth: 1,
-            backgroundColor: colors.surface,
-            overflow: "hidden",
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 8,
           }}
         >
-          {state.routes.map((route: any, index: number) => {
-            const focused = state.index === index;
-            const tab = ANDROID_TABS.find((t) => t.name === route.name);
-            const iconName = focused ? tab!.iconFocused : tab!.icon;
-            const color = focused ? colors.primary : colors.textSubtle;
+          <Ionicons name={iconName} size={22} color={color} />
+          <Text style={{ marginTop: 4, fontSize: 12, color }}>
+            {tab?.label ?? route.name}
+          </Text>
+        </Pressable>
+      );
+    }
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
+    // The persistent "+" sits dead-center among the tabs — a UI-only action
+    // that opens the add-action chooser sheet, not a navigable route (so it
+    // isn't part of state.routes / BottomTab.Screen).
+    const mid = Math.ceil(state.routes.length / 2);
+    const firstHalf = state.routes.slice(0, mid);
+    const secondHalf = state.routes.slice(mid);
 
-            const onLongPress = () =>
-              navigation.emit({ type: "tabLongPress", target: route.key });
+    return (
+      <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
+        <View style={{ height: BAR_HEIGHT }}>
+          <Svg
+            width={width}
+            height={BAR_HEIGHT + BUMP_DEPTH}
+            style={{ position: "absolute", top: -BUMP_DEPTH, left: 0 }}
+          >
+            <Path
+              d={buildTabBarFillPath(width, BAR_HEIGHT + BUMP_DEPTH)}
+              fill={colors.surface}
+            />
+            <Path
+              d={buildTabBarTopEdgePath(width)}
+              fill="none"
+              stroke={colors.border}
+              strokeWidth={1}
+            />
+          </Svg>
 
-            return (
-              <Pressable
-                key={route.key}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                android_ripple={null}
-                accessibilityRole="button"
-                accessibilityState={focused ? { selected: true } : {}}
-                style={{
-                  flex: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingVertical: 8,
-                }}
-              >
-                <Ionicons name={iconName} size={22} color={color} />
-                <Text style={{ marginTop: 4, fontSize: 12, color }}>
-                  {tab?.label ?? route.name}
-                </Text>
-              </Pressable>
-            );
-          })}
+          <View style={{ flexDirection: "row", height: BAR_HEIGHT }}>
+            {firstHalf.map((route: any, index: number) => renderTab(route, index))}
+            {/* Empty flex cell reserves the layout slot the floating button sits above. */}
+            <View style={{ flex: 1 }} />
+            {secondHalf.map((route: any, index: number) =>
+              renderTab(route, mid + index),
+            )}
+          </View>
+
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: "absolute",
+              left: width / 2 - ADD_BUTTON_GLOW_SIZE / 2,
+              top: ADD_BUTTON_CENTER_Y - ADD_BUTTON_GLOW_SIZE / 2,
+              width: ADD_BUTTON_GLOW_SIZE,
+              height: ADD_BUTTON_GLOW_SIZE,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Glow rings temporarily disabled — re-enable by uncommenting.
+            <View
+              style={{
+                position: "absolute",
+                width: ADD_BUTTON_GLOW_SIZE,
+                height: ADD_BUTTON_GLOW_SIZE,
+                borderRadius: ADD_BUTTON_GLOW_SIZE / 2,
+                backgroundColor: colors.primary,
+                opacity: 0.16,
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                width: ADD_BUTTON_SIZE + 8,
+                height: ADD_BUTTON_SIZE + 8,
+                borderRadius: (ADD_BUTTON_SIZE + 8) / 2,
+                backgroundColor: colors.primary,
+                opacity: 0.28,
+              }}
+            />
+            */}
+            <Pressable
+              onPress={openChooser}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Add"
+              style={{
+                width: ADD_BUTTON_SIZE,
+                height: ADD_BUTTON_SIZE,
+                borderRadius: ADD_BUTTON_SIZE / 2,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: colors.primary,
+              }}
+            >
+              <Ionicons name="add" size={22} color={colors.onPrimary} />
+            </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -212,7 +332,6 @@ function TabsCrossPlatform() {
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
-          overflow: "hidden",
         },
       })}
       tabBar={(props) => <MyTabBar {...props} />}
@@ -433,15 +552,26 @@ export default function RootNavigator() {
     ActiveNavigator = MainStack;
   }
 
-  const showIris = !!token && onboardingComplete;
+  // True whenever the tab bar (and thus the persistent "+" button) is mounted.
+  const isMainActive = !!token && onboardingComplete;
+  const isImportOpen = useAddActionStore((s) => s.isImportOpen);
+  const closeImport = useAddActionStore((s) => s.closeImport);
 
   return (
     <>
       <NavigationContainer ref={navigationRef} theme={navTheme}>
         <ActiveNavigator />
       </NavigationContainer>
-      {showIris && <IrisFAB />}
-      {showIris && <IrisChatModal />}
+      {/* IrisFAB is temporarily hidden — Iris is now opened via the icon
+          button next to the notification bell in HomeHeader. Left mounted
+          in code (just not rendered) so it's a one-line change to bring
+          back; IrisFAB.tsx itself is untouched. */}
+      {false && isMainActive && <IrisFAB />}
+      {isMainActive && <IrisChatModal />}
+      {isMainActive && <AddActionSheet />}
+      {isMainActive && (
+        <ImportCsvSheet visible={isImportOpen} onClose={closeImport} />
+      )}
     </>
   );
 }
