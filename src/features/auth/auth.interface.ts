@@ -9,4 +9,5 @@ export interface AuthSession {
   accessToken: string;
   refreshToken: string;
   user: AuthUser;
+  reactivated?: boolean;
 }

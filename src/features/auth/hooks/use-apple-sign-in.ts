@@ -8,7 +8,12 @@ export function useAppleSignIn() {
 
   const mutation = useMutation({
     mutationFn: () => AuthService.loginApple(),
-    onSuccess: (session) => setSession(session),
+    onSuccess: (session) => {
+      setSession(session);
+      if (session.reactivated) {
+        Toast.show({ type: "success", text1: "Welcome back — your account has been reactivated." });
+      }
+    },
     onError: (error: Error) => {
       console.log("[AppleSignIn] error:", error);
       Toast.show({ type: "error", text1: error.message ?? "Apple sign-in failed" });
