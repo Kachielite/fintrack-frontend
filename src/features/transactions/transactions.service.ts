@@ -52,13 +52,6 @@ export const TransactionService = {
     return mapTransactionSummaryFromDto(data);
   },
 
-  async getUnverified(): Promise<Transaction[]> {
-    const { data } = await apiClient.get<TransactionDto[]>(
-      API_ENDPOINTS.TRANSACTIONS_UNVERIFIED,
-    );
-    return data.map(mapTransactionFromDto);
-  },
-
   async correctTransaction(
     id: number,
     payload: CorrectTransactionSchemaType,

@@ -29,7 +29,7 @@ const EMPTY_MONTH: MonthSpendSummary = { spend: 0, income: 0, net: 0 };
  * computed on the backend, so they're accurate across mixed-currency data.
  */
 export function useDailySpend(year: number, month: number) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: [QUERY_KEYS.DAILY_SPEND, year, month],
     queryFn: async () => {
       const { data } = await apiClient.get<DailySpendResponse>(
@@ -46,5 +46,6 @@ export function useDailySpend(year: number, month: number) {
     monthTotals: data?.month ?? EMPTY_MONTH,
     isLoading,
     error,
+    refetch,
   };
 }

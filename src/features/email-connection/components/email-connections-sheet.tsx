@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
 import { QUERY_KEYS } from "@/core/common/constants/query-keys";
+import { invalidateTransactionQueries } from "@/features/transactions/transaction-query-invalidation";
 import { EmailConnection } from "../email-connection.interface";
 import { EmailConnectionService } from "../email-connection.service";
 import { useEmailConnections } from "../hooks/use-email-connections";
@@ -58,12 +59,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
     mutationFn: () => EmailConnectionService.deleteConnectionData(connection.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.EMAIL_CONNECTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] });
+      invalidateTransactionQueries(queryClient);
     },
   });
 
@@ -71,7 +67,7 @@ function ConnectionCard({ connection }: { connection: EmailConnection }) {
     mutationFn: () => EmailConnectionService.deleteConnection(connection.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.EMAIL_CONNECTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
+      invalidateTransactionQueries(queryClient);
     },
   });
 

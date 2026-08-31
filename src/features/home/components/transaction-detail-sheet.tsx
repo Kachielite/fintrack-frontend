@@ -38,6 +38,7 @@ import { formatDate, formatTime } from "@/core/common/utils/date";
 import { useLinkedTransaction } from "@/features/transactions/hooks/use-linked-transaction";
 import { useMarkTransfer, useUnmarkTransfer } from "@/features/transactions/hooks/use-transfer-mark";
 import SimilarTransactionsSheet from "@/features/transactions/components/similar-transactions-sheet";
+import { invalidateTransactionQueries } from "@/features/transactions/transaction-query-invalidation";
 import {
   useCategories,
   getCategoryLabel,
@@ -123,12 +124,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     mutationFn: (payload: { merchant?: string; category?: string }) =>
       TransactionService.correctTransaction(transaction.id, payload),
     onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
+      invalidateTransactionQueries(queryClient);
       if (payload.merchant) setSavedMerchant(payload.merchant);
       if (payload.category) {
         const prevCategory = savedCategory;
@@ -154,12 +150,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     mutationFn: (ids: number[]) =>
       TransactionService.bulkCorrectCategory(ids, confirmedCategory!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
+      invalidateTransactionQueries(queryClient);
       setSimilarDismissed(true);
     },
   });

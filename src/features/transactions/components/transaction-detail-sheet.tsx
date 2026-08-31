@@ -30,6 +30,7 @@ import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { Transaction } from "../transactions.interface";
 import { TransactionService } from "../transactions.service";
 import { getCategoryIconName } from "../transactions.constants";
+import { invalidateTransactionQueries } from "../transaction-query-invalidation";
 import { formatTransactionAmount } from "@/core/common/utils/currency";
 import { formatDate, formatTime } from "@/core/common/utils/date";
 import {
@@ -121,12 +122,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     mutationFn: (payload: { merchant?: string; category?: string }) =>
       TransactionService.correctTransaction(transaction.id, payload),
     onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
+      invalidateTransactionQueries(queryClient);
       if (payload.merchant) setSavedMerchant(payload.merchant);
       if (payload.category) {
         const prevCategory = savedCategory;
@@ -152,12 +148,7 @@ export default function TransactionDetailSheet({ visible, onClose, transaction }
     mutationFn: (ids: number[]) =>
       TransactionService.bulkCorrectCategory(ids, confirmedCategory!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
+      invalidateTransactionQueries(queryClient);
       setSimilarDismissed(true);
     },
   });
