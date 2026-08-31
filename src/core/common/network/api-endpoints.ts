@@ -30,7 +30,6 @@ export const API_ENDPOINTS = {
   TRANSACTION_DETAIL: (id: number) => `/transactions/${id}`,
   TRANSACTION_SIMILAR: (id: number) => `/transactions/${id}/similar`,
   TRANSACTIONS_SUMMARY: "/transactions/summary",
-  TRANSACTIONS_UNVERIFIED: "/transactions/unverified",
   TRANSACTIONS_CHART_DATA: "/transactions/chart-data",
   TRANSACTIONS_DAILY_SPEND: "/transactions/daily-spend",
   TRANSACTIONS_BULK_CATEGORY: "/transactions/bulk-category",

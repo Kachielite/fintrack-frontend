@@ -1,5 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   startOfMonth,
@@ -73,10 +80,23 @@ export default function CalendarView() {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth() + 1;
-  const { dailySpend, monthTotals, isLoading } = useDailySpend(year, month);
+  const { dailySpend, monthTotals, isLoading, refetch } = useDailySpend(
+    year,
+    month,
+  );
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   const dataByDate = useMemo(() => {
     const map = new Map<
@@ -165,6 +185,13 @@ export default function CalendarView() {
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
         {isLoading ? (
           <SkeletonBox width="100%" height={340} radius={RADIUS.lg} />

@@ -1,20 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/core/common/constants/query-keys";
 import { TransactionService } from "../transactions.service";
 import { CreateManualTransactionPayload } from "../transactions.dto";
+import { invalidateTransactionQueries } from "../transaction-query-invalidation";
 
 function useInvalidateAfterNewTransaction() {
   const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
-    queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.TRANSACTION_SUMMARY],
-    });
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_DATA] });
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DAILY_SPEND] });
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BUDGETS] });
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] });
-  };
+  return () => invalidateTransactionQueries(queryClient);
 }
 
 export function useCreateTransaction() {
