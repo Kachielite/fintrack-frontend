@@ -41,11 +41,15 @@ export function useConnectGmail() {
   });
 
   return {
-    connectGmail: (options?: { onSuccess?: (alreadyConnected: boolean) => void }) =>
+    connectGmail: (options?: {
+      onSuccess?: (alreadyConnected: boolean) => void;
+      onError?: (error: Error) => void;
+    }) =>
       mutation.mutate(undefined, {
         onSuccess: (data) => {
           if (data !== null) options?.onSuccess?.(data.alreadyConnected);
         },
+        onError: (error) => options?.onError?.(error as Error),
       }),
     isConnecting: mutation.isPending,
     isSuccess: mutation.isSuccess && mutation.data !== null,

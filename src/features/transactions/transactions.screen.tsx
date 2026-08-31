@@ -18,8 +18,6 @@ import TransactionsFilterSheet, {
   AccountOption,
 } from "./components/transactions-filter-sheet";
 import TransactionDetailSheet from "./components/transaction-detail-sheet";
-import AddTransactionSheet from "./components/add-transaction-sheet";
-import ImportCsvSheet from "./components/import-csv-sheet";
 
 const EMPTY_FILTERS: TransactionFilters = {
   categories: [],
@@ -39,8 +37,6 @@ export default function TransactionsScreen() {
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [addSheetOpen, setAddSheetOpen] = useState(false);
-  const [importSheetOpen, setImportSheetOpen] = useState(false);
 
   // ── Data ─────────────────────────────────────────────────────────────────
   const { accounts } = useAccounts();
@@ -145,7 +141,6 @@ export default function TransactionsScreen() {
       <TransactionsHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onAdd={() => setAddSheetOpen(true)}
       />
 
       {viewMode === "calendar" ? (
@@ -191,20 +186,6 @@ export default function TransactionsScreen() {
           )}
         </>
       )}
-
-      <AddTransactionSheet
-        visible={addSheetOpen}
-        onClose={() => setAddSheetOpen(false)}
-        onImportCsv={() => {
-          setAddSheetOpen(false);
-          setImportSheetOpen(true);
-        }}
-      />
-
-      <ImportCsvSheet
-        visible={importSheetOpen}
-        onClose={() => setImportSheetOpen(false)}
-      />
     </SafeAreaView>
   );
 }

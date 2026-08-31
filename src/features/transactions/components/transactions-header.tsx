@@ -14,13 +14,11 @@ export type TransactionsViewMode = "list" | "calendar";
 interface Props {
   viewMode: TransactionsViewMode;
   onViewModeChange: (mode: TransactionsViewMode) => void;
-  onAdd?: () => void;
 }
 
 export default function TransactionsHeader({
   viewMode,
   onViewModeChange,
-  onAdd,
 }: Props) {
   const colors = useThemeColors();
   return (
@@ -33,17 +31,6 @@ export default function TransactionsHeader({
       >
         Transactions
       </Text>
-
-      {onAdd && (
-        <Pressable
-          onPress={onAdd}
-          hitSlop={8}
-          accessibilityLabel="Add transaction"
-          style={[styles.addBtn, { backgroundColor: colors.primary }]}
-        >
-          <Ionicons name="add" size={20} color={colors.onPrimary} />
-        </Pressable>
-      )}
 
       <View
         style={[
@@ -111,14 +98,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.h1,
     letterSpacing: -0.6,
-  },
-  addBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: RADIUS.sm,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: SPACING.sm,
   },
   toggle: {
     flexDirection: "row",

@@ -28,8 +28,6 @@ import Svg, {
   Text as SvgText,
 } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import {
   FONTS,
@@ -39,7 +37,6 @@ import {
   CATEGORY_COLORS,
 } from "@/core/common/constants/theme";
 import { currencySymbol } from "@/core/common/utils/currency";
-import { RootStackParamList } from "@/core/navigation/root-navigator";
 import GlassCard from "@/core/common/components/GlassCard";
 import DonutChart from "@/core/common/components/DonutChart";
 import { useInsights } from "./hooks/use-insights";
@@ -570,7 +567,6 @@ function PeriodDropdown({
 export default function InsightsScreen() {
   const colors = useThemeColors();
   const { width: screenWidth } = useWindowDimensions();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
 
   const [uiPeriod, setUiPeriod] = useState<UIPeriod>("1m");
@@ -663,11 +659,6 @@ export default function InsightsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
       {/* Header */}
       <View style={styles.header}>
-        {navigation.canGoBack() && (
-          <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
-          </Pressable>
-        )}
         <Text style={[styles.title, { color: colors.textPrimary, fontFamily: FONTS.bold }]}>Insights</Text>
         <View style={{ flex: 1 }} />
         <Pressable
@@ -781,14 +772,6 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.base,
     paddingBottom: SPACING.md,
     gap: SPACING.xs,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: RADIUS.md,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 2,
   },
   title: { fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
   filterBtn: {
