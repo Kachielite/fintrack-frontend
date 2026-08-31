@@ -5,6 +5,8 @@ export const updateAccountSchema = z
     label: z.string().min(1).max(100).optional(),
     is_active: z.boolean().optional(),
     merge_into_account_id: z.number().int().positive().optional(),
+    bank_id: z.number().int().positive().optional(),
+    account_number: z.string().min(1).max(50).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
