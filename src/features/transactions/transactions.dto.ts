@@ -46,6 +46,19 @@ export interface CreateManualTransactionPayload {
   balance?: number;
 }
 
+// Shape of the accepted-upload response from POST /transactions/import —
+// the file has been validated and queued, not yet fully processed. The real
+// result (imported/skippedDuplicates/skippedInvalid/errors, still the same
+// shape as ImportStatementResultDto below) arrives later as the `data`
+// field on an `import_complete` notification, not from this endpoint.
+export interface ImportQueuedDto {
+  status: string;
+  message: string;
+}
+
+// Shape of the `data` field on an import_complete notification (see
+// notifications.interface.ts on the backend) — not returned by any request
+// directly anymore, kept for typing that payload where it's read.
 export interface ImportStatementResultDto {
   imported: number;
   skippedDuplicates: number;

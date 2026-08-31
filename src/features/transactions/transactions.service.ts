@@ -7,7 +7,7 @@ import {
   TransactionSummaryDto,
   CorrectTransactionSchemaType,
   CreateManualTransactionPayload,
-  ImportStatementResultDto,
+  ImportQueuedDto,
   PickedStatementFile,
 } from "./transactions.dto";
 import { Transaction, TransactionSummary } from "./transactions.interface";
@@ -124,7 +124,11 @@ export const TransactionService = {
     return mapTransactionFromDto(data);
   },
 
-  async importStatementFile(file: PickedStatementFile): Promise<ImportStatementResultDto> {
+  // The backend validates and queues the import in the background now — this
+  // resolves once the upload is accepted, not once the import finishes. The
+  // real result arrives later as an import_complete/import_failed
+  // notification (see use-notifications.ts's useTransactionSyncWatcher).
+  async importStatementFile(file: PickedStatementFile): Promise<ImportQueuedDto> {
     const formData = new FormData();
     // React Native's FormData expects this {uri, name, type} shape rather than a
     // real Blob — the native networking layer streams the file directly from the
@@ -135,7 +139,7 @@ export const TransactionService = {
       type: file.mimeType || "application/octet-stream",
     } as unknown as Blob);
 
-    const { data } = await apiClient.post<ImportStatementResultDto>(
+    const { data } = await apiClient.post<ImportQueuedDto>(
       API_ENDPOINTS.TRANSACTIONS_IMPORT,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },

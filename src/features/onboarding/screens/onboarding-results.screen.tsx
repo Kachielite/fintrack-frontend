@@ -17,9 +17,10 @@ import { useAuthStore } from "@/features/auth/auth.state";
 export default function OnboardingResultsScreen() {
   const colors = useThemeColors();
   const route = useRoute();
-  const { transactionCount, source = "email" } = (route.params ?? { transactionCount: 0 }) as {
+  const { transactionCount, source = "email", pending = false } = (route.params ?? { transactionCount: 0 }) as {
     transactionCount: number;
     source?: "email" | "statement";
+    pending?: boolean;
   };
   const setOnboardingComplete = useAuthStore((s) => s.setOnboardingComplete);
 
@@ -96,9 +97,16 @@ export default function OnboardingResultsScreen() {
     outputRange: ["-5deg", "5deg"],
   });
 
-  const hasTransactions = transactionCount > 0;
+  // A pending statement import has no real count yet — never treat it as
+  // "found nothing" (transactionCount is 0 here, but that's just "not known
+  // yet", not "confirmed empty").
+  const isPending = pending && source === "statement";
+  const hasTransactions = !isPending && transactionCount > 0;
 
   function getTagline() {
+    if (isPending) {
+      return "We're still organising your statement in the background — you'll get a notification the moment it's ready.";
+    }
     if (hasTransactions) {
       if (source === "statement") {
         return "Vela has read your bank statement and organised every transaction. Ready to see the big picture?";
@@ -149,8 +157,27 @@ export default function OnboardingResultsScreen() {
           ))}
         </View>
 
-        {/* Counter or success message */}
-        {hasTransactions ? (
+        {/* Counter, pending-import message, or empty-state message */}
+        {isPending ? (
+          <>
+            <Text
+              style={[
+                styles.emptyLabel,
+                { color: colors.textPrimary, fontFamily: FONTS.bold },
+              ]}
+            >
+              Import in progress
+            </Text>
+            <Text
+              style={[
+                styles.countLabel,
+                { color: colors.textSecondary, fontFamily: FONTS.regular },
+              ]}
+            >
+              We'll notify you when it's ready
+            </Text>
+          </>
+        ) : hasTransactions ? (
           <>
             <Text
               style={[

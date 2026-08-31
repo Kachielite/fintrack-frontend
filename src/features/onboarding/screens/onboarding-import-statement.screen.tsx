@@ -39,12 +39,15 @@ const SETUP_ITEMS = [
 export default function OnboardingImportStatementScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<any>();
-  const { pickAndImport, isImporting, fileName, result, error } = usePickAndImportStatement();
+  const { pickAndImport, isImporting, fileName, accepted, error } = usePickAndImportStatement();
 
   function handleContinue() {
+    // The import runs in the background now — there's no known transaction
+    // count yet at this point, just confirmation the upload was accepted.
+    // OnboardingResultsScreen renders a distinct "in progress" state for this.
     navigation.navigate("OnboardingGoal", {
       source: "statement",
-      transactionCount: result?.imported ?? 0,
+      pending: true,
     });
   }
 
@@ -202,52 +205,35 @@ export default function OnboardingImportStatementScreen() {
         </View>
       )}
 
-      {/* Result summary */}
-      {result && (
+      {/* Upload accepted — processing continues in the background */}
+      {accepted && (
         <View
           style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
             backgroundColor: colors.surface2,
             borderRadius: RADIUS.md,
             padding: SPACING.md,
             marginBottom: SPACING.lg,
-            gap: 6,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Ionicons
-              name={result.imported > 0 ? "checkmark-circle" : "information-circle"}
-              size={18}
-              color={result.imported > 0 ? colors.success : colors.textSecondary}
-            />
-            <Text
-              style={{
-                fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.body,
-                color: result.imported > 0 ? colors.success : colors.textPrimary,
-              }}
-            >
-              {result.imported > 0
-                ? `${result.imported} transaction${result.imported === 1 ? "" : "s"} imported`
-                : "No transactions were imported from that file"}
-            </Text>
-          </View>
-          {(result.skippedDuplicates > 0 || result.skippedInvalid > 0) && (
-            <Text
-              style={{
-                fontFamily: FONTS.regular,
-                fontSize: FONT_SIZE.bodySmall,
-                color: colors.textSecondary,
-              }}
-            >
-              {result.skippedDuplicates} duplicate{result.skippedDuplicates === 1 ? "" : "s"} skipped,{" "}
-              {result.skippedInvalid} invalid row{result.skippedInvalid === 1 ? "" : "s"} skipped
-            </Text>
-          )}
+          <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+          <Text
+            style={{
+              flex: 1,
+              fontFamily: FONTS.semiBold,
+              fontSize: FONT_SIZE.body,
+              color: colors.success,
+            }}
+          >
+            Statement received — we're organising it now
+          </Text>
         </View>
       )}
 
       {/* CTA */}
-      {result ? (
+      {accepted ? (
         <PrimaryButton label="Continue" onPress={handleContinue} />
       ) : (
         <PrimaryButton

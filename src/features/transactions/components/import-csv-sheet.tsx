@@ -19,19 +19,18 @@ import {
   RADIUS,
 } from "@/core/common/constants/theme";
 import { usePickAndImportStatement } from "../hooks/use-pick-and-import-statement";
-import { ImportStatementResultDto } from "../transactions.dto";
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onImported?: (result: ImportStatementResultDto) => void;
+  onAccepted?: () => void;
 }
 
-export default function ImportCsvSheet({ visible, onClose, onImported }: Props) {
+export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { pickAndImport, isImporting, fileName, result, error, reset } =
-    usePickAndImportStatement(onImported);
+  const { pickAndImport, isImporting, fileName, accepted, error, reset } =
+    usePickAndImportStatement(onAccepted);
 
   function handleClose() {
     reset();
@@ -150,7 +149,7 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
               </View>
             )}
 
-            {result && !isImporting && (
+            {accepted && !isImporting && (
               <View
                 style={[
                   styles.resultCard,
@@ -160,72 +159,32 @@ export default function ImportCsvSheet({ visible, onClose, onImported }: Props) 
                   },
                 ]}
               >
-                <ResultRow
-                  label="Imported"
-                  value={result.imported}
-                  color={colors.success}
-                />
-                <ResultRow
-                  label="Duplicates skipped"
-                  value={result.skippedDuplicates}
-                  color={colors.textSecondary}
-                />
-                <ResultRow
-                  label="Invalid rows skipped"
-                  value={result.skippedInvalid}
-                  color={colors.error}
-                />
-                {result.errors.length > 0 && (
-                  <View style={styles.errorsBox}>
-                    {result.errors.map((err, i) => (
-                      <Text
-                        key={i}
-                        style={[
-                          styles.errorText,
-                          {
-                            color: colors.textSubtle,
-                            fontFamily: FONTS.regular,
-                          },
-                        ]}
-                      >
-                        {err}
-                      </Text>
-                    ))}
-                  </View>
-                )}
+                <View style={styles.acceptedRow}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                  <Text
+                    style={[
+                      styles.acceptedTitle,
+                      { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                    ]}
+                  >
+                    Import started
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.acceptedBody,
+                    { color: colors.textSecondary, fontFamily: FONTS.regular },
+                  ]}
+                >
+                  We're processing your statement in the background — you'll get a
+                  notification with the results shortly. You can close this now.
+                </Text>
               </View>
             )}
           </ScrollView>
         </DraggableSheet>
       </View>
     </Modal>
-  );
-}
-
-function ResultRow({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  const colors = useThemeColors();
-  return (
-    <View style={styles.resultRow}>
-      <Text
-        style={[
-          styles.resultLabel,
-          { color: colors.textSecondary, fontFamily: FONTS.regular },
-        ]}
-      >
-        {label}
-      </Text>
-      <Text style={[styles.resultValue, { color, fontFamily: FONTS.bold }]}>
-        {value}
-      </Text>
-    </View>
   );
 }
 
@@ -286,13 +245,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     gap: SPACING.sm,
   },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  resultLabel: { fontSize: 14 },
-  resultValue: { fontSize: 16 },
-  errorsBox: { marginTop: SPACING.xs, gap: 4 },
-  errorText: { fontSize: 12, lineHeight: 16 },
+  acceptedRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
+  acceptedTitle: { fontSize: 15 },
+  acceptedBody: { fontSize: 13, lineHeight: 19 },
 });

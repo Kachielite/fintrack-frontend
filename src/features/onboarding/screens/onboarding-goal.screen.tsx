@@ -27,9 +27,10 @@ export default function OnboardingGoalScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const route = useRoute();
-  const { source = "email", transactionCount } = (route.params ?? {}) as {
+  const { source = "email", transactionCount, pending } = (route.params ?? {}) as {
     source?: "email" | "statement" | "skipped";
     transactionCount?: number;
+    pending?: boolean;
   };
   const setOnboardingComplete = useAuthStore((s) => s.setOnboardingComplete);
   const { form, isSubmitting, completeOnboarding } = useCompleteOnboarding(
@@ -38,6 +39,7 @@ export default function OnboardingGoalScreen() {
         (navigation as any).navigate("OnboardingResults", {
           transactionCount: transactionCount ?? 0,
           source: "statement",
+          pending: pending ?? false,
         });
       } else if (source === "skipped") {
         // No congratulatory page for the skipped path — go straight to Home.

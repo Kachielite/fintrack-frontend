@@ -47,8 +47,10 @@ export function useMarkAllRead() {
 }
 
 // Watches for new unread notifications. When the count rises, check if any
-// are sync_complete and invalidate transaction-related queries so the lists
-// refresh automatically without a manual pull-to-refresh.
+// are sync_complete or import_complete (a statement import that finished in
+// the background — see fintrack-backend#121) and invalidate
+// transaction-related queries so the lists refresh automatically without a
+// manual pull-to-refresh.
 export function useTransactionSyncWatcher() {
   const qc = useQueryClient();
   const { data: countData } = useUnreadCount();
@@ -59,12 +61,14 @@ export function useTransactionSyncWatcher() {
     if (prevCount.current !== null && count > prevCount.current) {
       // Always refresh the notification list when new unread notifications arrive
       qc.invalidateQueries({ queryKey: KEYS.list });
-      // Only invalidate transaction data when a sync completed
+      // Only invalidate transaction data when a sync/import completed
       NotificationsService.list().then((notifications) => {
-        const hasSync = notifications.some(
-          (n) => n.type === "sync_complete" && n.readAt === null,
+        const hasNewTransactionData = notifications.some(
+          (n) =>
+            (n.type === "sync_complete" || n.type === "import_complete") &&
+            n.readAt === null,
         );
-        if (hasSync) {
+        if (hasNewTransactionData) {
           invalidateTransactionQueries(qc);
         }
       });
