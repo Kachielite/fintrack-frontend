@@ -144,6 +144,7 @@ export const TransactionService = {
     } else if (target?.currency) {
       formData.append("currency", target.currency);
       if (target.bankId !== undefined) formData.append("bank_id", String(target.bankId));
+      if (target.label) formData.append("label", target.label);
     }
 
     const { data } = await apiClient.post<ImportQueuedDto>(

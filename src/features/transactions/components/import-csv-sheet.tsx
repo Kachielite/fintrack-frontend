@@ -92,57 +92,68 @@ export default function ImportCsvSheet({ visible, onClose, onAccepted }: Props) 
                 { color: colors.textSecondary, fontFamily: FONTS.regular },
               ]}
             >
-              Pick a bank statement — CSV, Excel, PDF, or Word — and we'll
-              automatically pull out the transactions.
+              Statements don't follow one fixed column layout, so we read them
+              with AI — it needs to know which account to attribute the
+              transactions to, since the statement itself may not say (e.g. no
+              currency column).
             </Text>
 
-            <Pressable
-              onPress={pickFile}
-              disabled={isImporting || accepted}
-              style={[
-                styles.pickBtn,
-                {
-                  borderColor: colors.border,
-                  backgroundColor: colors.background,
-                },
-              ]}
-            >
-              <Ionicons
-                name="document-attach-outline"
-                size={22}
-                color={colors.primary}
-              />
-              <Text
+            {!accepted && !isImporting && (
+              <ImportAccountPicker value={target} onChange={setTarget} />
+            )}
+
+            <View style={{ gap: SPACING.sm }}>
+              <Text style={[styles.label, { color: colors.textSecondary, fontFamily: FONTS.bold }]}>
+                STATEMENT FILE
+              </Text>
+              <Pressable
+                onPress={pickFile}
+                disabled={isImporting || accepted}
                 style={[
-                  styles.pickBtnLabel,
-                  { color: colors.textPrimary, fontFamily: FONTS.semiBold },
+                  styles.pickBtn,
+                  {
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                  },
                 ]}
               >
-                {fileName ?? "Choose a statement file"}
-              </Text>
-            </Pressable>
-
-            {hasPickedFile && !accepted && !isImporting && (
-              <>
-                <ImportAccountPicker value={target} onChange={setTarget} />
-                <Pressable
-                  onPress={handleImport}
-                  disabled={!canImport}
+                <Ionicons
+                  name="document-attach-outline"
+                  size={22}
+                  color={colors.primary}
+                />
+                <Text
                   style={[
-                    styles.importBtn,
-                    { backgroundColor: canImport ? colors.primary : colors.border },
+                    styles.pickBtnLabel,
+                    { color: colors.textPrimary, fontFamily: FONTS.semiBold },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.importBtnLabel,
-                      { color: canImport ? colors.onPrimary : colors.textSubtle, fontFamily: FONTS.semiBold },
-                    ]}
-                  >
-                    Import
-                  </Text>
-                </Pressable>
-              </>
+                  {fileName ?? "Choose a statement file"}
+                </Text>
+              </Pressable>
+            </View>
+
+            {!accepted && !isImporting && (
+              <Pressable
+                onPress={handleImport}
+                disabled={!canImport || !hasPickedFile}
+                style={[
+                  styles.importBtn,
+                  { backgroundColor: canImport && hasPickedFile ? colors.primary : colors.border },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.importBtnLabel,
+                    {
+                      color: canImport && hasPickedFile ? colors.onPrimary : colors.textSubtle,
+                      fontFamily: FONTS.semiBold,
+                    },
+                  ]}
+                >
+                  Import
+                </Text>
+              </Pressable>
             )}
 
             {isImporting && (
@@ -249,6 +260,7 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
   },
   hint: { fontSize: 13, lineHeight: 20 },
+  label: { fontSize: 11, letterSpacing: 0.6 },
   pickBtn: {
     flexDirection: "row",
     alignItems: "center",

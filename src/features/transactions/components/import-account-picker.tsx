@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/core/common/hooks/use-theme-colors";
 import { FONTS, FONT_SIZE, SPACING, RADIUS } from "@/core/common/constants/theme";
@@ -42,7 +42,12 @@ export default function ImportAccountPicker({ value, onChange }: Props) {
   }
 
   function selectCurrency(currency: string) {
-    onChange({ currency });
+    onChange({ currency, label: value?.currency ? value?.label : undefined });
+  }
+
+  function updateLabel(label: string) {
+    if (!value?.currency) return;
+    onChange({ currency: value.currency, label: label || undefined });
   }
 
   const selectedAccountId = value?.accountId;
@@ -144,6 +149,19 @@ export default function ImportAccountPicker({ value, onChange }: Props) {
               })}
             </View>
           )}
+
+          {creatingNew && selectedCurrency && (
+            <TextInput
+              value={value?.label ?? ""}
+              onChangeText={updateLabel}
+              placeholder="Account name (optional, e.g. M-Pesa)"
+              placeholderTextColor={colors.textSubtle}
+              style={[
+                styles.labelInput,
+                { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+              ]}
+            />
+          )}
         </>
       )}
     </View>
@@ -177,4 +195,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   currencyChipLabel: { fontSize: 13 },
+  labelInput: {
+    height: 44,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.md,
+    fontSize: 14,
+  },
 });
