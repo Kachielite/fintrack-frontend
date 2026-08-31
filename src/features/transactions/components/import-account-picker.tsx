@@ -67,7 +67,17 @@ export default function ImportAccountPicker({ onChange }: Props) {
     ...activeAccounts.map((account) => ({
       value: String(account.id),
       label: account.label,
-      sub: [account.currency, account.bankName].filter(Boolean).join(". "),
+      // Including the mask matters here specifically: two accounts at the
+      // same bank in the same currency (checking vs. savings) are otherwise
+      // indistinguishable in this list, even though the backend now keeps
+      // them as separate accounts (see backend#122's dedupe fix).
+      sub: [
+        account.currency,
+        account.bankName,
+        account.accountNumberMask ? `.... ${account.accountNumberMask}` : null,
+      ]
+        .filter(Boolean)
+        .join(". "),
     })),
     { value: CREATE_NEW, label: "Create a new account" },
   ];
