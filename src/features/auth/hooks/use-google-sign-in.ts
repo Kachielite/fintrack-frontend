@@ -7,7 +7,7 @@ export function useGoogleSignIn() {
   const setSession = useAuthStore((s) => s.setSession);
 
   const mutation = useMutation({
-    mutationFn: () => AuthService.loginGoogle(),
+    mutationFn: (termsAccepted: boolean) => AuthService.loginGoogle(termsAccepted),
     onSuccess: (session) => {
       setSession(session);
       if (session.reactivated) {
