@@ -151,7 +151,19 @@ export const TransactionService = {
     const { data } = await apiClient.post<ImportQueuedDto>(
       API_ENDPOINTS.TRANSACTIONS_IMPORT,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } },
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        // The shared apiClient's default 15s timeout is too short for this one —
+        // for PDF/Word, the backend's "synchronous prepare" phase runs a single AI
+        // extraction call over the whole document before responding, which can
+        // legitimately take well over 15s for a real multi-page statement. Without
+        // this override, a slow-but-successful import throws a client-side timeout
+        // and shows a false failure toast even though the backend keeps running
+        // and the import actually succeeds. See fintrack-backend#143 for the real
+        // fix (moving that extraction into the background job) — this is the
+        // mitigation in the meantime.
+        timeout: 120_000,
+      },
     );
     return data;
   },
