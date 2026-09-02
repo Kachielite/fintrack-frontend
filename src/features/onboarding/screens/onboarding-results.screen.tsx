@@ -17,10 +17,11 @@ import { useAuthStore } from "@/features/auth/auth.state";
 export default function OnboardingResultsScreen() {
   const colors = useThemeColors();
   const route = useRoute();
-  const { transactionCount, source = "email", pending = false } = (route.params ?? { transactionCount: 0 }) as {
+  const { transactionCount, source = "email", pending = false, stillScanning = false } = (route.params ?? { transactionCount: 0 }) as {
     transactionCount: number;
     source?: "email" | "statement";
     pending?: boolean;
+    stillScanning?: boolean;
   };
   const setOnboardingComplete = useAuthStore((s) => s.setOnboardingComplete);
 
@@ -106,6 +107,9 @@ export default function OnboardingResultsScreen() {
   function getTagline() {
     if (isPending) {
       return "We're still organising your statement in the background — you'll get a notification the moment it's ready.";
+    }
+    if (hasTransactions && stillScanning) {
+      return "Vela found these so far and is still scanning the rest of your history in the background — you'll get a notification when it's done.";
     }
     if (hasTransactions) {
       if (source === "statement") {
@@ -193,7 +197,7 @@ export default function OnboardingResultsScreen() {
                 { color: colors.textSecondary, fontFamily: FONTS.regular },
               ]}
             >
-              transactions organised
+              {stillScanning ? "transactions found so far" : "transactions organised"}
             </Text>
           </>
         ) : (

@@ -11,6 +11,10 @@ export interface CrawlStatus {
   statusMessage: string;
   transactionCount: number;
   progress: { processed: number; total: number };
+  // True when the backend is still pacing more chunks of this connection's
+  // backlog in behind the scenes — the count above is a first slice, not the
+  // final total. See fintrack-backend#137's chunked/paced backfill.
+  stillScanning: boolean;
 }
 
 export function useCrawlStatus(): CrawlStatus {
@@ -18,6 +22,7 @@ export function useCrawlStatus(): CrawlStatus {
   const [statusMessage, setStatusMessage] = useState("Connecting to Gmail…");
   const [transactionCount, setTransactionCount] = useState(0);
   const [progress, setProgress] = useState({ processed: 0, total: 0 });
+  const [stillScanning, setStillScanning] = useState(false);
   const closeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -77,11 +82,15 @@ export function useCrawlStatus(): CrawlStatus {
               setStatusMessage(`Reading email ${processed} of ${total}…`);
             } else if (name === "done") {
               const added = (d.added as number) ?? 0;
+              const scanning = (d.stillScanning as boolean) ?? false;
               setTransactionCount(added);
+              setStillScanning(scanning);
               setStatusMessage(
-                added > 0
-                  ? `Found ${added} new transaction${added !== 1 ? "s" : ""}!`
-                  : "Your data is up to date"
+                scanning
+                  ? `Found ${added} transaction${added !== 1 ? "s" : ""} so far — still scanning your history…`
+                  : added > 0
+                    ? `Found ${added} new transaction${added !== 1 ? "s" : ""}!`
+                    : "Your data is up to date"
               );
               setPhase("done");
             } else if (name === "error") {
@@ -112,5 +121,5 @@ export function useCrawlStatus(): CrawlStatus {
     };
   }, []);
 
-  return { phase, statusMessage, transactionCount, progress };
+  return { phase, statusMessage, transactionCount, progress, stillScanning };
 }

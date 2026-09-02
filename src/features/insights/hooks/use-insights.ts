@@ -28,7 +28,13 @@ export function useInsights() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSIGHTS] });
           }, 8000);
         })
-        .catch(() => null);
+        .catch(() => {
+          // Backend rejects this while a backfill is still in progress (or a
+          // report already exists/is generating) — none of those are permanent,
+          // so don't leave this hook permanently unable to retry once the
+          // real condition clears (e.g. the backfill finishes).
+          generationTriggered = false;
+        });
     }
   }, [isLoading, insights, queryClient]);
 

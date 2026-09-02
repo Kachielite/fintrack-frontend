@@ -15,7 +15,7 @@ import { useCrawlStatus } from "../hooks/use-crawl-status";
 export default function OnboardingLoadingScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation();
-  const { phase, statusMessage, transactionCount, progress } = useCrawlStatus();
+  const { phase, statusMessage, transactionCount, progress, stillScanning } = useCrawlStatus();
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const ringAnim = useRef(new Animated.Value(1)).current;
@@ -60,11 +60,11 @@ export default function OnboardingLoadingScreen() {
   useEffect(() => {
     if (phase === "done" || phase === "skipped") {
       const t = setTimeout(() => {
-        (navigation as any).navigate("OnboardingResults", { transactionCount, source: "email" });
+        (navigation as any).navigate("OnboardingResults", { transactionCount, source: "email", stillScanning });
       }, 1000);
       return () => clearTimeout(t);
     }
-  }, [phase, transactionCount, navigation]);
+  }, [phase, transactionCount, stillScanning, navigation]);
 
   const showProgress = phase === "syncing" && progress.total > 0;
   const isError = phase === "error";
