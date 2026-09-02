@@ -13,7 +13,7 @@ import { AuthSession } from "./auth.interface";
 import { mapAuthSessionFromDto } from "./auth.mapper";
 
 export const AuthService = {
-  loginApple: async (): Promise<AuthSession> => {
+  loginApple: async (termsAccepted: boolean): Promise<AuthSession> => {
     try {
       const available = await AppleAuthentication.isAvailableAsync();
       if (!available) {
@@ -35,6 +35,7 @@ export const AuthService = {
         API_ENDPOINTS.AUTH_APPLE,
         {
           id_token: credential.identityToken,
+          terms_accepted: termsAccepted,
           ...(credential.fullName?.givenName
             ? { first_name: credential.fullName.givenName }
             : {}),
@@ -50,7 +51,7 @@ export const AuthService = {
     }
   },
 
-  loginGoogle: async (): Promise<AuthSession> => {
+  loginGoogle: async (termsAccepted: boolean): Promise<AuthSession> => {
     // webClientId  → EXPO_PUBLIC_WEB_CLIENT_ID  (Web/Android OAuth client — used on both platforms to obtain a server-verifiable idToken)
     // iosClientId  → EXPO_PUBLIC_IOS_CLIENT_ID  (iOS OAuth client — drives the native iOS sign-in sheet; ignored on Android)
     GoogleSignin.configure({
@@ -76,7 +77,7 @@ export const AuthService = {
 
       const { data } = await apiClient.post<AuthResponseDto>(
         API_ENDPOINTS.AUTH_GOOGLE,
-        { id_token: idToken },
+        { id_token: idToken, terms_accepted: termsAccepted },
       );
 
       return mapAuthSessionFromDto(data);

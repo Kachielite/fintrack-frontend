@@ -48,8 +48,8 @@ export default function AuthForm() {
           <AuthLogo />
 
           <View style={styles.buttons}>
-            <GoogleSignInButton onPress={() => requireConsent(signInGoogle)} isLoading={googleLoading} />
-            <AppleSignInButton onPress={() => requireConsent(signInApple)} isLoading={appleLoading} />
+            <GoogleSignInButton onPress={() => requireConsent(() => signInGoogle(agreed))} isLoading={googleLoading} />
+            <AppleSignInButton onPress={() => requireConsent(() => signInApple(agreed))} isLoading={appleLoading} />
           </View>
 
           <AuthFooter agreed={agreed} onToggle={() => setAgreed((v) => !v)} />

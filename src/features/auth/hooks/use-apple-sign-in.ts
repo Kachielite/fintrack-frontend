@@ -7,7 +7,7 @@ export function useAppleSignIn() {
   const setSession = useAuthStore((s) => s.setSession);
 
   const mutation = useMutation({
-    mutationFn: () => AuthService.loginApple(),
+    mutationFn: (termsAccepted: boolean) => AuthService.loginApple(termsAccepted),
     onSuccess: (session) => {
       setSession(session);
       if (session.reactivated) {
