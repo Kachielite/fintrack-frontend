@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppState, AppStateStatus, Platform } from "react-native";
+import { QueryClient, QueryClientProvider, focusManager } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -42,6 +43,21 @@ export default function App() {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
+
+  // Without this, any query relying on refetchInterval (e.g. useUnreadCount's
+  // polling) simply stops while the app is backgrounded - JS timers freeze -
+  // and doesn't catch up or refetch immediately on resume. This is the
+  // standard TanStack Query + React Native wiring for that. See
+  // fintrack-frontend#64.
+  useEffect(() => {
+    const onAppStateChange = (status: AppStateStatus) => {
+      if (Platform.OS !== "web") {
+        focusManager.setFocused(status === "active");
+      }
+    };
+    const subscription = AppState.addEventListener("change", onAppStateChange);
+    return () => subscription.remove();
+  }, []);
 
   if (!loaded) return null;
 
