@@ -57,11 +57,22 @@ export default function TransactionsScreen() {
     search,
     date_from: dateRange.from?.toISOString(),
     date_to: dateRange.to?.toISOString(),
+    // Forwarded server-side (fintrack-backend#138) instead of filtered
+    // client-side over whatever's already loaded - filtering against a
+    // partially-fetched infinite-scroll cache silently missed matches
+    // outside the loaded pages (fintrack-frontend#65). `queryKey` already
+    // includes these params, so changing a filter naturally refetches.
+    category: filters.categories.length ? filters.categories.join(",") : undefined,
+    currency: filters.currencies.length ? filters.currencies.join(",") : undefined,
+    bank_id: filters.bankIds.length ? filters.bankIds.join(",") : undefined,
+    account_id: filters.accountIds.length ? filters.accountIds.join(",") : undefined,
   });
 
   const allTransactions: Transaction[] =
     data?.pages.flatMap((p) => p.data) ?? [];
 
+  // The server has already applied every active filter above - this is now
+  // just a harmless no-op safety net, not the primary filtering mechanism.
   const filteredTransactions = allTransactions.filter((tx) => {
     const categoryOk =
       filters.categories.length === 0 ||
@@ -82,18 +93,23 @@ export default function TransactionsScreen() {
     return categoryOk && currencyOk && bankOk && accountOk;
   });
 
+  // Sourced from the unfiltered `accounts` list (like availableAccounts
+  // below), not from allTransactions - once filtering happens server-side,
+  // allTransactions only reflects the currently-filtered subset, which would
+  // otherwise make these dropdowns shrink to match whatever's already
+  // selected instead of showing every option the user could pick.
   const availableCurrencies = useMemo(
-    () => [...new Set(allTransactions.map((t) => t.currency))],
-    [allTransactions],
+    () => [...new Set(accounts.map((a) => a.currency))],
+    [accounts],
   );
 
   const availableBanks = useMemo<BankOption[]>(() => {
     const bankMap = new Map<number, string>();
-    allTransactions.forEach((t) => {
-      if (t.bankId && t.bankName) bankMap.set(t.bankId, t.bankName);
+    accounts.forEach((a) => {
+      if (a.bankId && a.bankName) bankMap.set(a.bankId, a.bankName);
     });
     return Array.from(bankMap.entries()).map(([id, name]) => ({ id, name }));
-  }, [allTransactions]);
+  }, [accounts]);
 
   const availableAccounts = useMemo<AccountOption[]>(
     () => accounts.map((a) => ({ id: a.id, label: a.label })),

@@ -87,9 +87,13 @@ export interface PickedStatementFile {
 export interface TransactionQueryParams {
   page?: number;
   limit?: number;
+  // category/currency/bank_id/account_id accept a comma-separated list for
+  // multi-select (a single value with no comma still works) - matches the
+  // backend's contract in fintrack-backend#138.
   category?: string;
   currency?: string;
-  bank_id?: number;
+  bank_id?: string;
+  account_id?: string;
   status?: string;
   date_from?: string;
   date_to?: string;
