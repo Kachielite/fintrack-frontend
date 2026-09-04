@@ -386,18 +386,34 @@ export default function AccountActionsSheet({
                             />
                           )}
                         </View>
-                        <Text
-                          style={[
-                            styles.targetLabel,
-                            {
-                              color: colors.textPrimary,
-                              fontFamily: FONTS.semiBold,
-                            },
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {target.label}
-                        </Text>
+                        <View style={styles.targetLabel}>
+                          <Text
+                            style={[
+                              styles.targetLabelText,
+                              {
+                                color: colors.textPrimary,
+                                fontFamily: FONTS.semiBold,
+                              },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {target.label}
+                          </Text>
+                          {target.accountNumberMask && (
+                            <Text
+                              style={[
+                                styles.targetMask,
+                                {
+                                  color: colors.textSubtle,
+                                  fontFamily: FONTS.regular,
+                                },
+                              ]}
+                              numberOfLines={1}
+                            >
+                              •••• {target.accountNumberMask}
+                            </Text>
+                          )}
+                        </View>
                         <View
                           style={[
                             styles.currencyChip,
@@ -575,7 +591,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   targetIconText: { fontSize: 13 },
-  targetLabel: { flex: 1, fontSize: FONT_SIZE.bodySmall },
+  targetLabel: { flex: 1, gap: 2 },
+  targetLabelText: { fontSize: FONT_SIZE.bodySmall },
+  targetMask: { fontSize: 11, letterSpacing: 0.2 },
   currencyChip: {
     paddingHorizontal: 6,
     paddingVertical: 2,
