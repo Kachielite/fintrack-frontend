@@ -94,9 +94,19 @@ export default function AccountActionsSheet({
   }
 
   function handleMergeInto(target: Account) {
+    // Merging only reassigns transactions.account_id server-side - it does
+    // not touch currency/amount/refAmount/refCurrency on the moved rows, so
+    // a cross-currency merge silently leaves transactions in one currency
+    // sitting under an account labeled/filtered as another with no
+    // conversion. Call that out explicitly instead of the generic message.
+    // See fintrack-frontend#66.
+    const message =
+      account.currency !== target.currency
+        ? `"${account.label}" is in ${account.currency}, but "${target.label}" is in ${target.currency}. Merged transactions will keep their original ${account.currency} amounts — they won't be converted. "${account.label}" will be deactivated. This cannot be undone.`
+        : `Move every transaction from "${account.label}" into "${target.label}"? "${account.label}" will be deactivated. This cannot be undone.`;
     Alert.alert(
       "Merge accounts",
-      `Move every transaction from "${account.label}" into "${target.label}"? "${account.label}" will be deactivated. This cannot be undone.`,
+      message,
       [
         { text: "Cancel", style: "cancel" },
         {
