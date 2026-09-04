@@ -112,7 +112,13 @@ export default function TransactionsScreen() {
   }, [accounts]);
 
   const availableAccounts = useMemo<AccountOption[]>(
-    () => accounts.map((a) => ({ id: a.id, label: a.label })),
+    () =>
+      accounts.map((a) => ({
+        id: a.id,
+        label: a.label,
+        accountNumberMask: a.accountNumberMask,
+        currency: a.currency,
+      })),
     [accounts],
   );
 
