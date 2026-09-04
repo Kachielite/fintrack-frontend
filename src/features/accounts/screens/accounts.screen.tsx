@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ScrollView,
   View,
@@ -23,8 +23,13 @@ import AccountCard from "../components/account-card";
 import AccountActionsSheet from "../components/account-actions-sheet";
 import RescanTransfersSheet from "../components/rescan-transfers-sheet";
 import CreateAccountSheet from "../components/create-account-sheet";
+import MergeSuggestionsBanner from "../components/merge-suggestions-banner";
 import EmptyState from "@/core/common/components/EmptyState";
 import SkeletonBox from "@/core/common/components/SkeletonBox";
+import {
+  findDuplicateAccountSuggestions,
+  suggestionKey,
+} from "../utils/duplicate-suggestions";
 
 export default function AccountsScreen() {
   const colors = useThemeColors();
@@ -35,6 +40,17 @@ export default function AccountsScreen() {
   const [rescanSheetOpen, setRescanSheetOpen] = useState(false);
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const mergeSuggestions = useMemo(
+    () =>
+      findDuplicateAccountSuggestions(accounts).filter(
+        (s) => !dismissedSuggestions.has(suggestionKey(s)),
+      ),
+    [accounts, dismissedSuggestions],
+  );
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -126,6 +142,18 @@ export default function AccountsScreen() {
           />
         ) : (
           <View style={{ gap: SPACING.sm }}>
+            {mergeSuggestions.map((suggestion) => {
+              const key = suggestionKey(suggestion);
+              return (
+                <MergeSuggestionsBanner
+                  key={key}
+                  suggestion={suggestion}
+                  onDismiss={() =>
+                    setDismissedSuggestions((prev) => new Set(prev).add(key))
+                  }
+                />
+              );
+            })}
             {accounts.map((account) => (
               <AccountCard
                 key={account.id}
