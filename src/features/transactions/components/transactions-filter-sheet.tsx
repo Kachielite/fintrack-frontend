@@ -49,6 +49,8 @@ export interface BankOption {
 export interface AccountOption {
   id: number;
   label: string;
+  accountNumberMask: string | null;
+  currency: string;
 }
 
 type Section = "categories" | "banks" | "currencies" | "accounts" | "date";
@@ -532,18 +534,35 @@ export default function TransactionsFilterSheet({
                           color={colors.primary}
                         />
                       </View>
-                      <Text
-                        style={[
-                          styles.listItemName,
-                          {
-                            color: active ? colors.primary : colors.textPrimary,
-                            fontFamily: active ? FONTS.semiBold : FONTS.regular,
-                          },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {account.label}
-                      </Text>
+                      <View style={styles.listItemTextGroup}>
+                        <Text
+                          style={[
+                            styles.listItemName,
+                            {
+                              color: active
+                                ? colors.primary
+                                : colors.textPrimary,
+                              fontFamily: active
+                                ? FONTS.semiBold
+                                : FONTS.regular,
+                            },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {account.label}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.listItemSubtext,
+                            { color: colors.textSubtle },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {account.accountNumberMask
+                            ? `•••• ${account.accountNumberMask} · ${account.currency}`
+                            : account.currency}
+                        </Text>
+                      </View>
                       {active && (
                         <Ionicons
                           name="checkmark-circle"
@@ -747,7 +766,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  listItemName: { flex: 1, fontSize: 13 },
+  listItemName: { fontSize: 13 },
+  listItemTextGroup: { flex: 1, gap: 1 },
+  listItemSubtext: { fontSize: 11, letterSpacing: 0.1 },
   currencyCode: { fontSize: 11, fontFamily: FONTS.bold },
   // ── Footer buttons ────────────────────────────────────────────────────────
   actions: {
