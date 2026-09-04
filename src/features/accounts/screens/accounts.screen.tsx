@@ -96,6 +96,19 @@ export default function AccountsScreen() {
         </Pressable>
       </View>
 
+      {!isLoading && accounts.length > 0 && (
+        <Text
+          style={[
+            styles.subtitle,
+            { color: colors.textSubtle, fontFamily: FONTS.regular },
+          ]}
+        >
+          Some of these were created automatically from your bank alerts and
+          might include duplicates. Tap any account to edit it, merge it
+          into another, or deactivate it if it isn&apos;t really an account.
+        </Text>
+      )}
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -177,6 +190,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: { flex: 1, fontSize: FONT_SIZE.h1, letterSpacing: -0.6 },
+  subtitle: {
+    fontSize: FONT_SIZE.bodySmall,
+    lineHeight: 19,
+    letterSpacing: -0.1,
+    paddingHorizontal: SPACING.base,
+    paddingBottom: SPACING.md,
+  },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: SPACING.base,
